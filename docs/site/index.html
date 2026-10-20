@@ -54,10 +54,10 @@ jobs:
 <code>X402_FACILITATOR_URL</code>). The Action writes JSON results, a SARIF 2.1.0 file for GitHub code scanning and a
 JUnit XML report; every failure links to its fix in <a href="https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md">docs/FIXES.md</a>.</p>
 <p><strong>One command, nothing to install</strong> (with pipx or uv):</p>
-<pre><code>pipx run --spec "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf offline
-uvx --from "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf live https://x402.org/facilitator</code></pre>
+<pre><code>pipx run --spec x402-conformance x402conf offline
+uvx --from x402-conformance x402conf live https://x402.org/facilitator</code></pre>
 <p><strong>CLI</strong> (Python 3.10+, no dependencies):</p>
-<pre><code>pip install "git+https://github.com/atsp-protocol/x402-conformance@v1"
+<pre><code>pip install x402-conformance
 x402conf live https://x402.org/facilitator   # S1-S4, GET /supported only
 x402conf offline                             # F1-F9 against reference and fault-injected doubles
 x402conf report --dir DIR --sarif out.sarif --junit junit.xml</code></pre>

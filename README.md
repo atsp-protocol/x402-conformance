@@ -22,19 +22,21 @@ Project page with the checks and the latest results: https://atsp-protocol.githu
 | how | command | needs |
 |---|---|---|
 | GitHub Action | `uses: atsp-protocol/x402-conformance@v1` (see [below](#github-action)) | nothing |
-| Python CLI, one-off | `pipx run --spec "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf offline` | [pipx](https://pipx.pypa.io) or [uv](https://docs.astral.sh/uv/) |
-| Python CLI, installed | `pip install "git+https://github.com/atsp-protocol/x402-conformance@v1"` | Python 3.10+, no dependencies |
-| TypeScript runner | `git clone` this repo, then `cd ts && npm ci && npm run build` | Node 20+ |
+| Python CLI, one-off | `pipx run --spec x402-conformance x402conf offline` or `uvx --from x402-conformance x402conf offline` | [pipx](https://pipx.pypa.io) or [uv](https://docs.astral.sh/uv/) |
+| Python CLI, installed | `pip install x402-conformance` | Python 3.10+, no dependencies |
+| TypeScript runner | `npx -y x402-conformance-svm probe --resource <url>` | Node 20+ |
 
-The packages aren't on PyPI (`x402-conformance`) or npm (`x402-conformance-svm`) yet, so `pip install x402-conformance`
-and `npx x402conf-svm` don't work today. Install from the release tag as shown. `@v1` follows the latest 1.x release;
-pin `@v1.2.0` if you want a fixed version.
+Packages: [x402-conformance on PyPI](https://pypi.org/project/x402-conformance/) (command `x402conf`) and
+[x402-conformance-svm on npm](https://www.npmjs.com/package/x402-conformance-svm) (command `x402conf-svm`). Pin
+`x402-conformance==1.2.1`, `x402-conformance-svm@1.2.1` or the Action at `@v1.2.1` if you want a fixed version; `@v1`
+follows the latest 1.x release. Installing straight from the repo
+(`pip install "git+https://github.com/atsp-protocol/x402-conformance@v1"`) still works too.
 
 ## Quickstart
 
 ```
-pipx run --spec "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf offline
-uvx --from "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf live https://x402.org/facilitator
+pipx run --spec x402-conformance x402conf offline
+uvx --from x402-conformance x402conf live https://x402.org/facilitator
 ```
 
 The first runs the F1-F9 safety suite against the built-in reference and fault-injected facilitator doubles. The

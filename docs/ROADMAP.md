@@ -1,6 +1,6 @@
 # Roadmap
 
-v1.2.0 is the current release: S1 to S4 run live with GET only, F1 to F9 run against fault-injected doubles and in
+v1.2.1 is the current release: S1 to S4 run live with GET only, F1 to F9 run against fault-injected doubles and in
 your own CI through the Action, the TypeScript runner covers resource servers, the Lean models cover timeouts,
 `settlement_pending` and concurrent settles, and F1 to F6 have run on Solana devnet against a self-hosted reference
 facilitator ([evidence/devnet](../evidence/devnet)). There are no public users yet.

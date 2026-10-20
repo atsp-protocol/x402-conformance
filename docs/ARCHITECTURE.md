@@ -1,6 +1,6 @@
 # Architecture
 
-Status: experimental, v1.2.0. Expect changes.
+Status: experimental, v1.2.1. Expect changes.
 
 ```mermaid
 flowchart LR

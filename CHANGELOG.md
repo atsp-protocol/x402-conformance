@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
-- README for public use: an install table that says plainly the PyPI and npm packages aren't published yet, CLI
+## 1.2.1 (2026-10-20)
+- Published to PyPI as `x402-conformance` and to npm as `x402-conformance-svm`; the README and project page now
+  install from them.
+- README for public use: an install table, CLI
   exit codes, Action outputs, how to verify the signed Proofline contract yourself, and security and contributing
   sections. Proofline links point to its new home, github.com/Optitransfer/proofline.
 
