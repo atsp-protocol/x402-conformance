@@ -2,21 +2,47 @@
 
 **Prove your x402 payments can't double-credit, credit too early or credit on a broken answer, in one CI step.**
 
-[![ci](https://github.com/atsp-protocol/x402-conformance/actions/workflows/ci.yml/badge.svg)](https://github.com/atsp-protocol/x402-conformance/actions/workflows/ci.yml)
-[![Tested with x402-conformance](https://img.shields.io/badge/tested%20with-x402--conformance-2ea44f)](https://github.com/atsp-protocol/x402-conformance)
+[![ci](https://github.com/atsp-protocol/x402-conformance/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/atsp-protocol/x402-conformance/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/atsp-protocol/x402-conformance)](https://github.com/atsp-protocol/x402-conformance/releases/latest)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-x402%20Conformance-blue?logo=github)](https://github.com/marketplace/actions/x402-conformance)
+[![licence](https://img.shields.io/github/license/atsp-protocol/x402-conformance)](LICENSE)
+[![Tested with x402-conformance](https://img.shields.io/badge/tested%20with-x402--conformance-2ea44f)](https://github.com/atsp-protocol/x402-conformance)
 
-**Experimental.** I built this as an open set of conformance and safety checks for [x402](https://github.com/coinbase/x402)
-V2 facilitators and resource servers, starting with Solana. It complements x402 and its facilitators and doesn't
-replace them. It checks the properties a seller's money depends on, and it never signs, pays or touches mainnet.
+An open set of conformance and safety checks for [x402](https://github.com/coinbase/x402) V2 facilitators and
+resource servers, starting with Solana. It checks the properties a seller's money depends on. It never signs, pays or
+touches mainnet. It complements x402 and its facilitators and doesn't replace them.
+
+**Experimental.** Passing a check is evidence about one property. It doesn't certify conformance to x402.
 — Ryan Gillespie, Optitransfer
 
-Project page with the checks and results: https://atsp-protocol.github.io/x402-conformance/
+Project page with the checks and the latest results: https://atsp-protocol.github.io/x402-conformance/
 
-## 30-second quickstart
+## Install
 
-**GitHub Action** ([on the Marketplace](https://github.com/marketplace/actions/x402-conformance)). Save this as
-`.github/workflows/x402-conformance.yml`. It runs as is:
+| how | command | needs |
+|---|---|---|
+| GitHub Action | `uses: atsp-protocol/x402-conformance@v1` (see [below](#github-action)) | nothing |
+| Python CLI, one-off | `pipx run --spec "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf offline` | [pipx](https://pipx.pypa.io) or [uv](https://docs.astral.sh/uv/) |
+| Python CLI, installed | `pip install "git+https://github.com/atsp-protocol/x402-conformance@v1"` | Python 3.10+, no dependencies |
+| TypeScript runner | `git clone` this repo, then `cd ts && npm ci && npm run build` | Node 20+ |
+
+The packages aren't on PyPI (`x402-conformance`) or npm (`x402-conformance-svm`) yet, so `pip install x402-conformance`
+and `npx x402conf-svm` don't work today. Install from the release tag as shown. `@v1` follows the latest 1.x release;
+pin `@v1.2.0` if you want a fixed version.
+
+## Quickstart
+
+```
+pipx run --spec "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf offline
+uvx --from "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf live https://x402.org/facilitator
+```
+
+The first runs the F1-F9 safety suite against the built-in reference and fault-injected facilitator doubles. The
+second reads `GET /supported` from a facilitator and runs S1-S4. Both print JSON.
+
+## GitHub Action
+
+Save this as `.github/workflows/x402-conformance.yml`. It runs as is:
 
 ```yaml
 name: x402 conformance
@@ -51,9 +77,12 @@ your own resource server, point the Action at your paid route and give it the co
 | `results-dir` | `x402-conformance` | Where `live.json`, `resource-server.json` and `offline.json` are written |
 | `fail-on-error` | `true` | Fail the job when any error-severity check fails |
 
-Outputs: `result` (`pass` or `fail`), `results-dir`, `sarif` (a SARIF 2.1.0 file of failed checks) and `junit` (a
-JUnit XML file). `@v1` is the major-version tag; pin an exact release such as
-`@v1.2.0` if you want a fixed version.
+| output | value |
+|---|---|
+| `result` | `pass` when every requested check passed, otherwise `fail` |
+| `results-dir` | the directory holding the results JSON |
+| `sarif` | `<results-dir>/x402-conformance.sarif`, SARIF 2.1.0 of the failed checks |
+| `junit` | `<results-dir>/junit.xml`, one test case per check |
 
 **Example job summary** (abridged):
 
@@ -80,29 +109,44 @@ failed and how to fix it. Add `permissions: { security-events: write, contents: 
       - run: test "${{ steps.x402.outputs.result }}" = pass
 ```
 
-The `junit` output works with any JUnit test-report viewer. [docs/FIXES.md](docs/FIXES.md) explains every check: what
-failed, why it matters and how to fix it.
+The `junit` output works with any JUnit test-report viewer.
 
-**One command, nothing to install** (with [pipx](https://pipx.pypa.io) or [uv](https://docs.astral.sh/uv/)):
-
-```
-pipx run --spec "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf offline
-uvx --from "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf live https://x402.org/facilitator
-```
-
-**CLI.** Python 3.10 or later, no dependencies:
+## CLI
 
 ```
-pip install "git+https://github.com/atsp-protocol/x402-conformance@v1"
 x402conf live https://x402.org/facilitator     # S1-S4, GET /supported only
 x402conf offline                               # F1-F9 against the reference and fault-injected doubles
+x402conf report --dir DIR --sarif out.sarif --junit junit.xml
+x402conf devnet --faults --keys DIR            # F1-F6 over real /verify and /settle on Solana devnet
 ```
 
-Each command prints JSON with one entry per check (`check`, `pass`, `severity`, `detail`). Save the output as
-`live.json` or `offline.json` in a directory and `x402conf report --dir DIR --sarif out.sarif --junit junit.xml`
-converts it. `offline` exits non-zero
-when the reference double fails a check or a fault-injected double goes uncaught. `live` always exits 0, so read the
-`pass` fields (the Action does that for you).
+`live` and `offline` print JSON with one entry per check (`check`, `pass`, `severity`, `detail`). Save them as
+`live.json` and `offline.json` in one directory and `report` converts them to SARIF and JUnit, printing a one-line
+summary such as `{"checks": 14, "failed": 0, "failed_ids": []}`. `devnet` runs against a self-hosted reference
+facilitator on loopback with throwaway keys from `--keys`, and refuses any other facilitator unless you pass
+`--operator-permission` with the operator's written permission. It needs Node 20+ and a funded devnet fee payer;
+[evidence/devnet](evidence/devnet) shows a full run.
+
+**Exit codes.**
+
+| command | 0 | non-zero |
+|---|---|---|
+| `x402conf offline` | the reference double passes every check and every fault-injected double is caught | `1` otherwise |
+| `x402conf live` | always, even when a check fails or the facilitator can't be reached | read the `pass` fields, or use the Action, which does |
+| `x402conf report` | the reports were written | `2` when the directory holds no results JSON |
+| `x402conf devnet` | the facilitator under test passes every check, and with `--faults` every fault-injected build is caught | `1` otherwise (the current reference exits `1` on F4, see [Results](#results)) |
+| `x402conf-svm probe` (TypeScript) | R0-R9 all pass | `1` when a check fails, `2` on an error |
+
+Usage errors exit `2`.
+
+**TypeScript runner** for resource servers on `@x402/core` and `@x402/svm`, from a clone of this repo:
+
+```
+cd ts && npm ci && npm run build
+node dist/src/cli.js probe --resource http://127.0.0.1:4020/paid --start "node your-server.js" --out results.json
+```
+
+[ts/README.md](ts/README.md) explains what the double does for each of R0-R9.
 
 ## What it catches
 
@@ -123,27 +167,17 @@ when the reference double fails a check or a fault-injected double goes uncaught
 - **F8** a payment that failed on chain stays "pending" instead of failing
 - **F9** a 503, an HTML page or a truncated `/settle` answer is credited, or the payment can't be retried afterwards
 
-The resource-server checks (R0-R9, in `ts/`) put a facilitator double in front of your server and request your paid
-route under each of these faults. [docs/SPEC.md](docs/SPEC.md) quotes the spec text behind every check. Passing a check is evidence
-about one property. It doesn't certify conformance to x402.
+**Resource servers (R0-R9).** The TypeScript runner puts a facilitator double in front of your server and requests your
+paid route under each of the faults above. Your server must answer an unpaid request with a 402 and must not serve
+content on a timeout, a broken `/settle` answer, `settlement_pending`, a failure or a duplicate.
 
-## Add the badge
+[docs/SPEC.md](docs/SPEC.md) quotes the spec text behind every check, and [docs/FIXES.md](docs/FIXES.md) explains, for
+every check, what failed, why it matters and how to fix it.
 
-If your project runs the suite in CI, add this to your README:
+## Results
 
-```markdown
-[![Tested with x402-conformance](https://img.shields.io/badge/tested%20with-x402--conformance-2ea44f)](https://github.com/atsp-protocol/x402-conformance)
-```
+### Live, 2026-10-20, `GET /supported` only
 
-## Who uses it
-
-No public users yet: this is a new project, and I only list a user once they've said so publicly. If you run it,
-open an issue and I'll add you here and to [docs/ADOPTION.md](docs/ADOPTION.md).
-
-**Free run for your project.** Open an issue with your repo or facilitator URL and I'll run the suite against it,
-post the results, and send a tests-only pull request with the Action and badge. It's free, with no conditions.
-
-## Results (2026-10-20, live, `GET /supported` only)
 | facilitator | HTTP | S1 | S2 | S3 | S4 | Solana kinds advertised |
 |---|---|---|---|---|---|---|
 | x402.dexter.cash | 200 | pass | pass | pass | pass | exact (mainnet, devnet), tab, bridge |
@@ -152,7 +186,8 @@ post the results, and send a tests-only pull request with the Action and badge. 
 
 Raw bodies, `run.json` and `SHA256SUMS` are in [evidence/2026-10-20](evidence/2026-10-20).
 
-## Devnet results (2026-10-20, F1-F6 over real `/verify` and `/settle`)
+### Devnet, 2026-10-20, F1-F6 over real `/verify` and `/settle`
+
 I ran F1 to F6 on Solana devnet against my self-hosted reference facilitator (`@x402/core` and `@x402/svm` 2.28.0),
 then against fault-injected builds of it.
 
@@ -167,38 +202,71 @@ it targets. Transaction links, the full `run.json` and its hash are in [evidence
 other facilitators go in the [facilitator matrix](docs/MATRIX.md), and I run them against a third party only with the
 operator's permission.
 
-## What's inside
-- `src/x402conf`: the live checks, the offline suite and the devnet runner (`x402conf devnet`), which runs F1-F6 over
-  real `/verify` and `/settle` against a self-hosted reference facilitator on Solana devnet, with throwaway keys.
-- `ts/`: the TypeScript runner for resource servers built on `@x402/core` and `@x402/svm`.
-- `action.yml`: the GitHub Action.
-- `lean/`: Lean 4 models of the credit rule, nonces, timeouts, `settlement_pending` reconciliation and concurrent
-  settles. They use only standard axioms and contain no `sorry`. They model the rule the suite checks, not any
-  facilitator's code.
-- `proofline.json`: the signed scope contract. `tools/vv.py` checks every acceptance criterion in CI ([docs/VV.md](docs/VV.md)).
+## How this repo is verified
 
-## Free and open core
-Apache-2.0. Every check, the Action, the devnet runner and the Lean models are free, forever. Contributions and new
-check proposals are welcome ([CONTRIBUTING.md](CONTRIBUTING.md)).
+Scope and acceptance criteria live in [`proofline.json`](proofline.json), a [Proofline](https://github.com/Optitransfer/proofline)
+contract. It's signed with my owner key: the signature is in `proofline.json.sig` and the public key is pinned in
+[`guard/owner.pub`](guard/owner.pub). On every push to `main` and on every pull request, CI checks that signature and then runs `tools/vv.py`, which checks
+every acceptance criterion and uploads a receipt ([docs/VV.md](docs/VV.md)). Any change to the contract has to be
+re-signed before CI passes again. You can check the signature yourself from a clone:
+
+```
+node tools/verify-sig.mjs                                       # no dependencies; exits 0 when the signature matches
+npx -y @optitransfer/proofline@next contract verify-sig         # the Proofline CLI (Node 22+), same check
+```
+
+The Lean 4 models in [`lean/`](lean) cover the credit rule, nonces, timeouts, `settlement_pending` reconciliation and
+concurrent settles. They use only standard axioms and contain no `sorry`. They model the rule the suite checks, not any
+facilitator's code.
+
+## Add the badge
+
+If your project runs the suite in CI, add this to your README:
+
+```markdown
+[![Tested with x402-conformance](https://img.shields.io/badge/tested%20with-x402--conformance-2ea44f)](https://github.com/atsp-protocol/x402-conformance)
+```
+
+## Who uses it
+
+No public users yet. I only list a user once they've said so publicly. If you run it, open an issue and I'll add you
+here and to [docs/ADOPTION.md](docs/ADOPTION.md).
+
+**Free run for your project.** Open an issue with your repo or facilitator URL and I'll run the suite against it,
+post the results, and send a tests-only pull request with the Action and badge. It's free, with no conditions.
 
 ## Managed services
-If you'd rather not run it yourself, or you need more than the open suite, I offer:
+
+The core is free and stays free. If you'd rather not run it yourself, or you need more than the open suite, I offer:
 - **Hosted continuous monitoring** of your live endpoints, with alerts on regressions
 - **Signed conformance reports** for each release, with a public verify link
 - **Custom checks** for your scheme, chain or extensions
 - **Priority support** with an agreed response time
 
-The first three customers get design-partner pricing. Details are in [docs/MANAGED.md](docs/MANAGED.md). To get in touch, open a
-[Managed services enquiry](https://github.com/atsp-protocol/x402-conformance/issues/new?template=managed-services.yml)
+The first three customers get design-partner pricing. Monitoring is a monthly subscription, reports are priced per
+release, and custom checks are fixed-scope work quoted up front. Details are in [docs/MANAGED.md](docs/MANAGED.md). To get
+in touch, open a [Managed services enquiry](https://github.com/atsp-protocol/x402-conformance/issues/new?template=managed-services.yml)
 or email data@optitransfer.ch.
 
-**How I charge.** The core is free. Monitoring is a monthly subscription, reports are priced per release, and custom
-checks are fixed-scope work quoted up front. I take payment in USDC on Solana or Base, or through x402 itself.
-
 ## Safety
+
 The suite holds no keys of yours and never signs or pays. Live mode is GET-only, and that's tested. The devnet
-runner refuses mainnet and any third-party facilitator without written permission. To report a vulnerability, see
-[SECURITY.md](SECURITY.md).
+runner refuses mainnet and any third-party facilitator without written permission.
+
+## Security
+
+Please report vulnerabilities through GitHub private vulnerability reporting
+([Security → Report a vulnerability](https://github.com/atsp-protocol/x402-conformance/security/advisories/new)), not in
+a public issue. When the suite finds a failing safety check in someone else's facilitator, I tell the operator
+privately first. The full policy is in [SECURITY.md](SECURITY.md).
+
+## Contributing
+
+Issues and pull requests are welcome, and new checks especially. Propose one with the check-proposal issue template,
+quoting the x402 spec text it rests on. Every check needs a test that fails against a faulty double and passes against
+the reference. [CONTRIBUTING.md](CONTRIBUTING.md) lists the local checks to run before you push, and everyone taking
+part follows the [Code of Conduct](CODE_OF_CONDUCT.md). Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Licence
+
 Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE) (Ryan Gillespie / Optitransfer).

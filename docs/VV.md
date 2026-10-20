@@ -1,12 +1,13 @@
 # Verification and validation: traceability matrix
 
-Each requirement maps to a Proofline task in `proofline.json`. Each acceptance criterion is bound to one verifiable artefact,
+Each requirement maps to a [Proofline](https://github.com/Optitransfer/proofline) task in `proofline.json`. Each acceptance criterion is bound to one verifiable artefact,
 such as a test id, a CI job, a Lean theorem with its axioms check, or a file hash. `tools/vv.py verify` checks every criterion and writes
 a receipt, which the `vv` CI job uploads. A task counts as done only when it is listed in `vv/claims.json` and all its mandatory
 criteria pass. A claimed task that fails, or any tracked file that no task owns, fails CI.
 
 Contract state: **signed by the owner key** (`guard/owner.pub`). The owner signs on his own machine (`proofline contract sign`), and CI
-verifies `proofline.json.sig` against `guard/owner.pub`.
+verifies `proofline.json.sig` against `guard/owner.pub`. Anyone can repeat that check from a clone with
+`node tools/verify-sig.mjs` or `npx -y @optitransfer/proofline@next contract verify-sig`.
 
 | task | requirement | criterion | artefact | evidence |
 |---|---|---|---|---|
