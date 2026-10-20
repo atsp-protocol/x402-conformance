@@ -22,13 +22,11 @@ Project page with the checks and the latest results: https://atsp-protocol.githu
 | how | command | needs |
 |---|---|---|
 | GitHub Action | `uses: atsp-protocol/x402-conformance@v1` (see [below](#github-action)) | nothing |
-| Python CLI, one-off | `pipx run --spec "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf offline` | [pipx](https://pipx.pypa.io) or [uv](https://docs.astral.sh/uv/) |
-| Python CLI, installed | `pip install "git+https://github.com/atsp-protocol/x402-conformance@v1"` | Python 3.10+, no dependencies |
-| TypeScript runner | `git clone` this repo, then `cd ts && npm ci && npm run build` | Node 20+ |
+| Python CLI, one-off | `pipx run x402-conformance x402conf offline` | [pipx](https://pipx.pypa.io) or [uv](https://docs.astral.sh/uv/) |
+| Python CLI, installed | `pip install x402-conformance` | Python 3.10+, no dependencies |
+| TypeScript runner | `npx -y x402-conformance-svm` (installs the `x402conf-svm` bin) | Node 20+ |
 
-The packages aren't on PyPI (`x402-conformance`) or npm (`x402-conformance-svm`) yet, so `pip install x402-conformance`
-and `npx x402conf-svm` don't work today. Install from the release tag as shown. `@v1` follows the latest 1.x release;
-pin `@v1.2.0` if you want a fixed version.
+From source instead: `pipx run --spec "git+https://github.com/atsp-protocol/x402-conformance@v1" x402conf offline`, `pip install "git+https://github.com/atsp-protocol/x402-conformance@v1"`, or clone this repo and `cd ts && npm ci && npm run build`. `@v1` follows the latest 1.x release; pin `@v1.2.1` if you want a fixed version.
 
 ## Quickstart
 
