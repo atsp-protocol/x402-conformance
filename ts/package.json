@@ -1,6 +1,6 @@
 {
   "name": "x402-conformance-svm",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Resource-server checks for x402 V2 servers built on @x402/svm: a facilitator double with fault modes and a probe that proves your paid route never serves content on a timeout, a broken /settle answer, settlement_pending or a duplicate.",
   "license": "Apache-2.0",
   "repository": {

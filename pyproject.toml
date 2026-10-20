@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "x402-conformance"
-version = "1.2.0"
+version = "1.2.1"
 description = "Experimental conformance and safety checks for x402 V2 facilitators and resource servers, Solana first"
 readme = "README.md"
 license = { text = "Apache-2.0" }

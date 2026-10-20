@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.1
 - README for public use: an install table that says plainly the PyPI and npm packages aren't published yet, CLI
   exit codes, Action outputs, how to verify the signed Proofline contract yourself, and security and contributing
   sections. Proofline links point to its new home, github.com/Optitransfer/proofline.
