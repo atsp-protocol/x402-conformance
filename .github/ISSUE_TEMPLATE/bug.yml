@@ -4,7 +4,7 @@ labels: [bug]
 body:
   - type: input
     id: check
-    attributes: { label: Check id (S1 to S4, F1 to F6), placeholder: F3 }
+    attributes: { label: Check id (S0-S4, P1-P5, F1-F9, R0-R10), placeholder: F3 }
     validations: { required: true }
   - type: textarea
     id: what

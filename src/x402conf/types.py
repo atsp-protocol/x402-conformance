@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Literal, Protocol, TypedDict
 
 Json = dict[str, Any]
-Severity = Literal["error", "info"]
+Severity = Literal["error", "warning", "info"]
 
 
 # "pass" is a Python keyword, so the functional TypedDict form is used.

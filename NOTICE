@@ -3,5 +3,5 @@ Copyright 2026 Ryan Gillespie / Optitransfer
 
 Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-This project tests implementations of the x402 protocol (https://github.com/coinbase/x402). It contains no code
+This project tests implementations of the x402 protocol (https://github.com/x402-foundation/x402). It contains no code
 from that project; check identifiers and error codes are quoted from its public specification for reference.

@@ -1,5 +1,50 @@
 # Changelog
 
+## 1.3.0 (2026-10-20)
+Fixes from an end-to-end review of 1.2.1, plus the EVM probe and 402 validation.
+
+**Fixed**
+- R3 no longer fails correct servers. The facilitator double used to answer success after 30 s, so a stock
+  `@x402/express` server (whose facilitator client waits up to 90 s) was reported as serving on a timeout. The double
+  now never answers, and a server passes if it serves nothing by the probe's 60 s deadline. A stock `@x402/express`
+  server is tested in CI and passes.
+- The Action fails closed. A requested check that crashes or leaves no results file now fails the job instead of
+  passing, and so does a run that requested nothing. The probe refuses to run when something else already answers on
+  your server's port or the double's port is taken, stops when a `--start` server exits, and always writes `--out`.
+  The probe also stops at R1 if your server serves without calling the double, instead of grading another
+  facilitator.
+- S1 is version-aware: a facilitator that advertises only `x402Version: 1` kinds is graded against V1 §7.3 instead of
+  failing for missing V2 fields.
+- S4 splits by evidence: a missing or invalid `extra.feePayer` is an error; a fee payer not listed in `signers` is now
+  a warning, because the spec doesn't require it. Warnings show in the summary and SARIF and never fail a run.
+- S0 is a real check: an unreachable `/supported`, a non-200 or a non-JSON body is reported as S0 with the reason, and
+  a 401 or 403 says how to pass credentials.
+- The Action no longer replaces your Node: it runs the probe on a pinned, checksum-verified Node 24 kept out of your
+  PATH, and no longer runs `setup-python` or `setup-node`.
+
+**Added**
+- The probe grades **Base Sepolia** (`eip155:84532`, `exact` with EIP-3009) as well as Solana devnet, picked from
+  your 402 automatically or with `--network`. A server that offers neither is reported as **unsupported** (exit code
+  3), not failed.
+- R10: the served response must carry a `PAYMENT-RESPONSE` header that decodes to `success: true`.
+- `x402conf resource URL...` (and the Action's `resources` input): P1-P5 validate any paid URL's 402 answer on any
+  network, V1 or V2, with one unpaid GET.
+- Facilitators that need credentials: set `X402C_FACILITATOR_AUTHORIZATION` and `X402C_FACILITATOR_AUTH_HOST`. The
+  credential is read only from the environment, sent only to that host and never printed.
+- `--version` on `x402conf` and `x402conf-svm`; `--help` lists every subcommand and exits 0.
+- `--fail-on-error` on `live`, `resource` and `report`. Without it they exit 0 after writing results, as before.
+- `ts/example/express-server.ts`, a stock `@x402/express` server, and EVM support in `ts/example/server.ts`.
+- README: a 60-second quickstart, who it is for, a badge ("tested with", not certification) and the current results.
+  Issue forms for adding a facilitator to the results and for false positives; Discussions are open.
+- The npm package ships its licence.
+
+**Changed**
+- Documented exit codes now match the code. `x402conf`: 0 ok, 1 failed (with `--fail-on-error`, or `offline`/`devnet`),
+  2 usage error. `x402conf-svm`: 0 pass, 1 fail, 2 usage or run error, 3 unsupported.
+- Spec links point to the canonical x402-foundation/x402 repository.
+- `tools/vv.py` on a pull request (or with `--pre-merge`) reports the "pushed to main" criterion as pending instead of
+  failing; every other criterion still fails, and the run on main stays strict. The receipt records the mode.
+
 ## 1.2.1 (2026-10-20)
 - Published to PyPI as `x402-conformance` and to npm as `x402-conformance-svm`; the README and project page now
   install from them.

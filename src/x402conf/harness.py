@@ -1,6 +1,6 @@
 """The checks.
 
-Live checks (S1-S4) read a facilitator's public GET /supported and nothing else: no signing, no payment, no POST.
+Live checks (S0-S4) read a facilitator's public GET /supported and nothing else: no signing, no payment, no POST.
 Offline checks (F1-F9) drive a facilitator implementation in-process through /verify and /settle semantics and test
 the safety properties a resource server depends on. F7 and F8 advance the double's simulated chain between retries of
 the same /settle body; F9 puts a broken transport (a 503, a non-JSON page, a truncated body) between the resource
@@ -9,19 +9,34 @@ points the suite at."""
 
 from __future__ import annotations
 
+import base64
+import binascii
 import json
+import os
+import re
 import time
+import urllib.error
+import urllib.parse
 import urllib.request
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
+from . import __version__
 from . import spec as S
 from .mock import Chain, Vectors
 from .types import CheckResult, Facilitator, Json, Severity
 
 MAX_BYTES = 1 << 20
-UA = "x402-conformance/1.2.1 (+https://github.com/atsp-protocol/x402-conformance)"
+UA = f"x402-conformance/{__version__} (+https://github.com/atsp-protocol/x402-conformance)"
 Opener = Callable[..., Any]
+# Optional facilitator credentials, from the environment only. The value is sent as the Authorization header to targets
+# whose host is exactly AUTH_HOST_ENV, never to any other host, and is never written to output, evidence or errors.
+AUTH_ENV = "X402C_FACILITATOR_AUTHORIZATION"
+AUTH_HOST_ENV = "X402C_FACILITATOR_AUTH_HOST"
+
+
+class UsageError(ValueError):
+    """A configuration error the CLI reports with exit code 2."""
 
 
 def result(check: str, ok: bool, detail: Any, severity: Severity = "error") -> CheckResult:
@@ -29,9 +44,29 @@ def result(check: str, ok: bool, detail: Any, severity: Severity = "error") -> C
 
 
 # ---------------- live, GET only ----------------
-def fetch_supported(base: str, timeout: float = 10, opener: Opener | None = None) -> Json:
+def auth_header(url: str, env: Mapping[str, str] | None = None) -> dict[str, str]:
+    """The Authorization header for url, or nothing. Raises UsageError when a credential is set without a host to scope
+    it to, so a key meant for one facilitator is never sent to the others."""
+    e = os.environ if env is None else env
+    value, host = e.get(AUTH_ENV, ""), e.get(AUTH_HOST_ENV, "").strip().lower()
+    if not value:
+        return {}
+    if not host:
+        raise UsageError(f"{AUTH_ENV} is set but {AUTH_HOST_ENV} is not; set it to the one facilitator host the "
+                         "credential belongs to")
+    return {"authorization": value} if (urllib.parse.urlsplit(url).hostname or "").lower() == host else {}
+
+
+def _redact(text: str, env: Mapping[str, str] | None = None) -> str:
+    v = (os.environ if env is None else env).get(AUTH_ENV, "")
+    return text.replace(v, "[redacted]") if len(v) >= 4 else text
+
+
+def fetch_supported(base: str, timeout: float = 10, opener: Opener | None = None,
+                    env: Mapping[str, str] | None = None) -> Json:
     url = base.rstrip("/") + "/supported"
-    req = urllib.request.Request(url, method="GET", headers={"accept": "application/json", "user-agent": UA})
+    headers = {"accept": "application/json", "user-agent": UA, **auth_header(url, env)}
+    req = urllib.request.Request(url, method="GET", headers=headers)
     t0 = time.time()
     with (opener or urllib.request.urlopen)(req, timeout=timeout) as r:
         body: bytes = r.read(MAX_BYTES + 1)
@@ -41,15 +76,28 @@ def fetch_supported(base: str, timeout: float = 10, opener: Opener | None = None
     return {"url": url, "status": status, "ms": int((time.time() - t0) * 1000), "raw": body, "json": json.loads(body)}
 
 
+S0 = "S0 GET /supported answers HTTP 200 with a JSON object"
+S1 = "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])"
+S4 = "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)"
+
+
 def check_supported(doc: Json) -> list[CheckResult]:
     out: list[CheckResult] = []
     kinds, ext, signers = doc.get("kinds"), doc.get("extensions"), doc.get("signers")
-    shape = isinstance(kinds, list) and isinstance(ext, list) and isinstance(signers, dict)
-    out.append(result("S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1)", shape,
-                      {"kinds": type(kinds).__name__, "extensions": type(ext).__name__, "signers": type(signers).__name__}))
     klist: list[Json] = [k for k in kinds if isinstance(k, dict)] if isinstance(kinds, list) else []
     v2 = [k for k in klist if k.get("x402Version") == S.X402_VERSION]
     v1 = [k for k in klist if k.get("x402Version") == 1]
+    # V1 (7.3) defines /supported as kinds[] only; extensions and signers arrived with V2 (7.3.1). A facilitator that
+    # advertises only V1 kinds is graded as V1. One V2 kind makes the whole response a V2 response.
+    v1_only = isinstance(kinds, list) and bool(klist) and not v2 and len(v1) == len(klist)
+    if v1_only:
+        shape = all(isinstance(k.get("scheme"), str) and isinstance(k.get("network"), str) for k in klist)
+        graded = "v1"
+    else:
+        shape = isinstance(kinds, list) and isinstance(ext, list) and isinstance(signers, dict)
+        graded = "v2"
+    out.append(result(S1, shape, {"graded_as": graded, "kinds": type(kinds).__name__,
+                                  "extensions": type(ext).__name__, "signers": type(signers).__name__}))
     bad_net = [k.get("network") for k in v2 if not S.CAIP2.match(str(k.get("network", "")))]
     out.append(result("S2 every V2 kind names its network in CAIP-2 (V2 11.1)", not bad_net,
                       {"v2_kinds": len(v2), "v1_kinds": len(v1), "non_caip2": bad_net[:10]}))
@@ -59,6 +107,7 @@ def check_supported(doc: Json) -> list[CheckResult]:
     out.append(result("S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names", not v1names and not unknown,
                       {"solana_v2_kinds": [[k.get("scheme"), k.get("network")] for k in sol],
                        "v1_names_in_v2": v1names, "unrecognised_solana_ids": unknown}))
+
     def signers_for(network: str) -> list[Any]:
         """Signers whose CAIP-2 pattern (V2 7.3.1) matches network: the exact ID or a namespace wildcard such as solana:*."""
         found: list[Any] = []
@@ -72,25 +121,171 @@ def check_supported(doc: Json) -> list[CheckResult]:
     for k in exact:
         fp = (k.get("extra") or {}).get("feePayer")
         if not S.is_solana_pubkey(fp):
-            probs.append({"network": k.get("network"), "problem": "extra.feePayer missing or not a 32-byte base58 key"})
+            probs.append({"network": k.get("network"), "basis": "spec",
+                          "problem": "extra.feePayer missing or not a 32-byte base58 key"})
         elif fp not in signers_for(str(k.get("network", ""))):
-            probs.append({"network": k.get("network"), "feePayer": fp,
+            probs.append({"network": k.get("network"), "feePayer": fp, "basis": "inferred",
                           "problem": "feePayer not listed under any signers pattern matching the network"})
-    out.append(result("S4 Solana exact kinds advertise a valid extra.feePayer that is a listed signer (SVM exact)",
-                      not probs, {"solana_exact_kinds": len(exact), "problems": probs},
-                      severity="error" if exact else "info"))
+    # A missing or malformed feePayer breaks the SVM exact scheme ("extra.feePayer: The sponsor's public key"), so it is an
+    # error. The spec does not say the fee payer must appear in signers; that rule is inferred from V2 7.3.1 ("public
+    # signer addresses"), so on its own it is a warning.
+    spec_probs = [p for p in probs if p["basis"] == "spec"]
+    sev: Severity = "info" if not exact else ("error" if spec_probs else "warning")
+    out.append(result(S4, not probs, {"solana_exact_kinds": len(exact), "problems": probs}, severity=sev))
     return out
 
 
-def run_live(base: str, *, timeout: float = 10, opener: Opener | None = None) -> Json:
+def run_live(base: str, *, timeout: float = 10, opener: Opener | None = None,
+             env: Mapping[str, str] | None = None) -> Json:
+    auth_header(base, env)  # a credential without a host is a usage error, before any request is made
     try:
-        r = fetch_supported(base, timeout=timeout, opener=opener)
+        r = fetch_supported(base, timeout=timeout, opener=opener, env=env)
     except Exception as e:  # noqa: BLE001  a network or JSON failure is itself a result
-        return {"target": base, "mode": "live-GET-only", "error": repr(e)[:200], "checks": []}
-    ok_body = r["status"] == 200 and isinstance(r["json"], dict)
+        status = getattr(e, "code", None)
+        err = _redact(repr(e)[:200], env)
+        detail: Json = {"error": err, "http": status}
+        if status in (401, 403):
+            detail["hint"] = f"the facilitator wants credentials; see {AUTH_ENV} and {AUTH_HOST_ENV} in the README"
+        return {"target": base, "mode": "live-GET-only", "error": err, "http": status,
+                "checks": [result(S0, False, detail)]}
+    if r["status"] != 200 or not isinstance(r["json"], dict):
+        return {"target": base, "mode": "live-GET-only", "http": r["status"], "ms": r["ms"], "raw": r["raw"],
+                "checks": [result(S0, False, {"http": r["status"], "body_type": type(r["json"]).__name__})]}
     return {"target": base, "mode": "live-GET-only", "http": r["status"], "ms": r["ms"],
-            "checks": check_supported(r["json"]) if ok_body else [],
-            "kinds_total": len(r["json"].get("kinds") or []) if ok_body else None, "raw": r["raw"]}
+            "checks": check_supported(r["json"]), "kinds_total": len(r["json"].get("kinds") or []), "raw": r["raw"]}
+
+
+# ---------------- resource servers, GET only: the 402 answer ----------------
+P1 = "P1 an unpaid GET answers HTTP 402 (V2 HTTP transport)"
+P2 = "P2 the PaymentRequired object is present and decodes (V2: base64 JSON in PAYMENT-REQUIRED; V1: JSON body)"
+P3 = "P3 PaymentRequired has x402Version, resource and a non-empty accepts[] (V2 5.1.2; V1 5.1)"
+P4 = "P4 every accepts[] entry has the required fields with valid types (V2 5.1.2; V1 5.1)"
+P5 = "P5 scheme-specific extra fields are present (EVM exact: name and version; SVM exact: feePayer)"
+_DIGITS = re.compile(r"^[0-9]+$")
+
+
+def fetch_402(url: str, timeout: float = 15, opener: Opener | None = None) -> Json:
+    """One unpaid GET. A 402 arrives as an HTTPError from urllib; its status, headers and body are the result."""
+    req = urllib.request.Request(url, method="GET", headers={"accept": "application/json", "user-agent": UA})
+    t0 = time.time()
+    try:
+        with (opener or urllib.request.urlopen)(req, timeout=timeout) as r:
+            status, headers, body = int(r.status), dict(r.headers.items()), r.read(MAX_BYTES + 1)
+    except urllib.error.HTTPError as e:
+        status, headers, body = int(e.code), dict(e.headers.items()) if e.headers else {}, e.read(MAX_BYTES + 1)
+    return {"status": status, "headers": {k.lower(): v for k, v in headers.items()}, "body": body[:MAX_BYTES],
+            "ms": int((time.time() - t0) * 1000)}
+
+
+def _decode_header(v: str) -> Any:
+    pad = "=" * (-len(v) % 4)
+    try:
+        raw = base64.b64decode(v + pad, validate=True)
+    except (binascii.Error, ValueError):
+        raw = base64.urlsafe_b64decode(v + pad)
+    return json.loads(raw)
+
+
+def _accept_problems(a: Any, version: int) -> list[str]:
+    if not isinstance(a, dict):
+        return ["entry is not an object"]
+    p: list[str] = []
+    amount_key = "amount" if version == 2 else "maxAmountRequired"
+    for k in ("scheme", "network", "asset", "payTo"):
+        if not isinstance(a.get(k), str) or not a.get(k):
+            p.append(f"{k} missing or not a non-empty string")
+    amt = a.get(amount_key)
+    if not (isinstance(amt, str) and _DIGITS.match(amt) and int(amt) > 0):
+        p.append(f"{amount_key} must be a string of atomic units greater than 0")
+    mts = a.get("maxTimeoutSeconds")
+    if not (isinstance(mts, int) and not isinstance(mts, bool) and mts > 0):
+        p.append("maxTimeoutSeconds must be a positive integer")
+    if "extra" in a and a["extra"] is not None and not isinstance(a["extra"], dict):
+        p.append("extra must be an object")
+    if version == 2 and isinstance(a.get("network"), str) and not S.CAIP2.match(a["network"]):
+        p.append("network is not CAIP-2")
+    if version == 1:
+        for k in ("resource", "description"):
+            if not isinstance(a.get(k), str):
+                p.append(f"{k} missing (required in V1)")
+    return p
+
+
+def _extra_problems(a: Json) -> list[str]:
+    scheme, net, extra = a.get("scheme"), str(a.get("network", "")), a.get("extra") or {}
+    if scheme != "exact" or not isinstance(extra, dict):
+        return []
+    if net.startswith("eip155:") or net in S.EVM_V1_NAMES:
+        method = extra.get("assetTransferMethod", "eip3009")
+        if method == "eip3009" and not (isinstance(extra.get("name"), str) and isinstance(extra.get("version"), str)):
+            return ["EVM exact (eip3009) needs extra.name and extra.version, the token's EIP-712 domain"]
+        if method not in ("eip3009", "permit2", "erc7710"):
+            return [f"EVM exact extra.assetTransferMethod {method!r} is not eip3009, permit2 or erc7710"]
+    if net.startswith("solana:") or net in S.SOLANA_V1_NAMES:
+        if not S.is_solana_pubkey(extra.get("feePayer")):
+            return ["SVM exact needs extra.feePayer, a 32-byte base58 key"]
+    return []
+
+
+def check_402(resp: Json) -> list[CheckResult]:
+    out: list[CheckResult] = []
+    status = resp["status"]
+    out.append(result(P1, status == 402, {"http": status}))
+    if status != 402:
+        return out
+    pr: Any = None
+    where, err = None, None
+    hv = resp["headers"].get("payment-required")
+    if hv:
+        where = "PAYMENT-REQUIRED header"
+        try:
+            pr = _decode_header(hv.strip())
+        except Exception as e:  # noqa: BLE001
+            err = f"header does not decode as base64 JSON: {type(e).__name__}"
+    else:
+        try:
+            body = json.loads(resp["body"] or b"null")
+        except ValueError:
+            body = None
+        if isinstance(body, dict) and body.get("x402Version") == 1:
+            where, pr = "JSON body (V1)", body
+        else:
+            err = "no PAYMENT-REQUIRED header, and the body is not a V1 PaymentRequired"
+    out.append(result(P2, isinstance(pr, dict), {"found_in": where, "error": err}))
+    if not isinstance(pr, dict):
+        return out
+    version = pr.get("x402Version")
+    accepts = pr.get("accepts")
+    probs: list[str] = []
+    if version not in (1, 2):
+        probs.append(f"x402Version is {version!r}, not 1 or 2")
+    if version == 2 and not (isinstance(pr.get("resource"), dict) and isinstance(pr["resource"].get("url"), str)):
+        probs.append("resource.url missing (V2 ResourceInfo)")
+    if version == 2 and where != "PAYMENT-REQUIRED header":
+        probs.append("V2 carries PaymentRequired in the PAYMENT-REQUIRED header")
+    if not (isinstance(accepts, list) and accepts):
+        probs.append("accepts[] missing or empty")
+    out.append(result(P3, not probs, {"x402Version": version, "problems": probs}))
+    if version not in (1, 2) or not (isinstance(accepts, list) and accepts):
+        return out
+    entries = [{"index": i, "scheme": a.get("scheme") if isinstance(a, dict) else None,
+                "network": a.get("network") if isinstance(a, dict) else None,
+                "problems": _accept_problems(a, int(version))} for i, a in enumerate(accepts)]
+    bad = [e for e in entries if e["problems"]]
+    out.append(result(P4, not bad, {"accepts": len(entries), "problems": bad[:10]}))
+    xb = [{"index": i, "network": a.get("network"), "problems": pp} for i, a in enumerate(accepts)
+          if isinstance(a, dict) and (pp := _extra_problems(a))]
+    out.append(result(P5, not xb, {"problems": xb[:10]}))
+    return out
+
+
+def run_resource(url: str, *, timeout: float = 15, opener: Opener | None = None) -> Json:
+    try:
+        r = fetch_402(url, timeout=timeout, opener=opener)
+    except Exception as e:  # noqa: BLE001
+        return {"target": url, "mode": "resource-GET-only", "error": repr(e)[:200],
+                "checks": [result(P1, False, {"error": repr(e)[:200]})]}
+    return {"target": url, "mode": "resource-GET-only", "http": r["status"], "ms": r["ms"], "checks": check_402(r)}
 
 
 # ---------------- offline safety checks ----------------

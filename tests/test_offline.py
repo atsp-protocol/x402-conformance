@@ -159,5 +159,36 @@ class Report(unittest.TestCase):
         self.assertEqual(cli.main(["report", "--dir", tempfile.mkdtemp()]), 2)
 
 
+class VVPreMerge(unittest.TestCase):
+    """tools/vv.py: on a pull request only the "pushed" criterion may be pending; everything else stays strict."""
+
+    def setUp(self):
+        import importlib.util
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        spec = importlib.util.spec_from_file_location("vv_under_test", os.path.join(root, "tools", "vv.py"))
+        assert spec and spec.loader
+        self.vv = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.vv)
+        self.vv.sh = lambda cmd, timeout: (0, "  origin/release-x\n")  # HEAD only on a PR branch
+
+    def test_pushed_is_pending_before_the_merge(self):
+        self.vv.PRE_MERGE = True
+        ok, detail = self.vv.check({"type": "pushed"}, {})
+        self.assertTrue(ok)
+        self.assertTrue(detail.startswith(self.vv.PENDING))
+
+    def test_pushed_is_strict_on_main(self):
+        self.vv.PRE_MERGE = False
+        self.assertEqual(self.vv.check({"type": "pushed"}, {}), (False, "HEAD is not on origin/main yet"))
+
+    def test_other_criteria_still_fail_before_the_merge(self):
+        self.vv.PRE_MERGE = True
+        ok, _ = self.vv.check({"type": "file_exists", "path": "no/such/file"}, {})
+        self.assertFalse(ok)
+        self.vv.sh = lambda cmd, timeout: (1, "boom")
+        ok, _ = self.vv.check({"type": "command", "cmd": "false", "expect_exit": "0"}, {})
+        self.assertFalse(ok)
+
+
 if __name__ == "__main__":
     unittest.main()

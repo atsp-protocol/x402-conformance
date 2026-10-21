@@ -1,8 +1,9 @@
 # Check specification
 
-Each check below quotes the spec text it tests. Sources were read on 2026-10-20 at coinbase/x402 commit
-`0e6e8c55d86b4f14234fb6e49a4052074fb93e57`: `specs/x402-specification-v2.md` (V2) and
-`specs/schemes/exact/scheme_exact_svm.md` (SVM exact). The Solana guide is
+Each check below quotes the spec text it tests. Sources were read on 2026-10-20 at x402-foundation/x402 commit
+`0e6e8c55d86b4f14234fb6e49a4052074fb93e57`: `specs/x402-specification-v2.md` (V2), `specs/x402-specification-v1.md`
+(V1), `specs/transports-v2/http.md` (V2 HTTP transport), `specs/schemes/exact/scheme_exact_svm.md` (SVM exact) and
+`specs/schemes/exact/scheme_exact_evm.md` (EVM exact). The Solana guide is
 https://solana.com/docs/payments/agentic-payments/x402.
 
 [FIXES.md](FIXES.md) explains, for each check, what a failure means and how to fix it.
@@ -12,10 +13,11 @@ certification of conformance to x402.
 
 | id | property | spec text | test |
 |---|---|---|---|
-| S1 | `GET /supported` returns `kinds[]`, `extensions[]` and `signers{}` | V2 §7.3.1 SupportedResponse fields: `kinds` array (required), `extensions` array (required), `signers` object (required), "Map of CAIP-2 patterns ... to public signer addresses" | `tests.test_live.Live.test_s1_shape` |
+| S0 | `GET /supported` answers HTTP 200 with a JSON object | V2 §7.3 "Returns the list of payment schemes, networks, and extensions supported by the facilitator" | `tests.test_live.Live.test_s0_unreachable_is_a_check`, `test_s0_401_hints_at_credentials` |
+| S1 | `GET /supported` returns `kinds[]`, `extensions[]` and `signers{}` | V2 §7.3.1 SupportedResponse fields: `kinds` array (required), `extensions` array (required), `signers` object (required), "Map of CAIP-2 patterns ... to public signer addresses". A V1-only response is graded against V1 §7.3 (`kinds` only) | `tests.test_live.Live.test_s1_shape`, `test_s1_v1_only_response_graded_as_v1`, `test_s1_mixed_versions_need_v2_shape` |
 | S2 | Every `x402Version: 2` kind names its network in CAIP-2 | V2 §11.1 "Networks in x402 v2 use CAIP-2 ... format: `namespace:reference`" | `tests.test_live.Live.test_s2_non_caip2` |
 | S3 | Solana V2 kinds use the published IDs | Solana guide: Mainnet `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`, Devnet `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`; "V1 integrations used ... network names such as `solana-devnet`. Do not use those V1 fields in a new integration." | `tests.test_live.Live.test_s3_v1_name_in_v2` |
-| S4 | Solana `exact` kinds advertise a valid `extra.feePayer` that is a listed signer | SVM exact: "`extra.feePayer`: The sponsor's public key"; V2 §7.3.1 `signers` | `tests.test_live.Live.test_s4_bad_fee_payer`, `test_s4_fee_payer_not_signer` |
+| S4 | Solana `exact` kinds advertise a valid `extra.feePayer` (error); it is listed as a signer (warning, inferred) | SVM exact: "`extra.feePayer`: The sponsor's public key"; V2 §7.3.1 `signers` | `tests.test_live.Live.test_s4_bad_fee_payer`, `test_s4_fee_payer_not_signer`, `test_s4_not_signer_is_a_warning_and_missing_fee_payer_an_error` |
 | F1 | Malformed input fails closed | V2 §9 `invalid_payload`; SVM exact §2.1.2 "A transient failure ... MUST fail closed (reject / retryable), never open" | `tests.test_offline.Offline.test_f1_open_on_malformed_caught` |
 | F2 | Dust and underpayment are rejected | SVM exact §1.1 "A transfer of at least `PaymentRequirements.amount`"; §1.4 "it MUST NOT be less" | `tests.test_offline.Offline.test_f2_accept_dust_caught` |
 | F3 | The same payload settled twice succeeds at most once | SVM exact, Duplicate Settlement Mitigation: "if the key is already present in the cache, reject the settlement with a `\"duplicate_settlement\"` error" | `tests.test_offline.Offline.test_f3_no_dup_cache_caught` |
@@ -25,6 +27,12 @@ certification of conformance to x402.
 | F7 | A `settlement_pending` settle retried with the same body reaches its final result, the same transaction on success, and is credited exactly once | V2 §9 `settlement_pending`: "Facilitators MAY return this **non-terminal** code — the transaction may still confirm on chain" and the caller can "reconcile on chain before deciding whether to retry"; Solana guide "A retry cannot settle or fulfill the same purchase twice" | `tests.test_offline.Offline.test_f7_burn_on_pending_caught`, `test_reference_pending_retry_reaches_final_and_credits_once` |
 | F8 | A failure confirmed on chain after `settlement_pending` is terminal and is never reported as pending again | V2 §9 `invalid_transaction_state`: "Blockchain transaction failed or was rejected"; `settlement_pending` is for when "confirmation could not be established" | `tests.test_offline.Offline.test_f8_stuck_pending_caught`, `test_reference_failure_after_pending_is_terminal` |
 | F9 | A 503, a non-JSON page or a truncated `/settle` body never becomes a credit, and the payment stays retryable until a well-formed answer credits it once | SVM exact §2.1.2 "A transient failure ... MUST fail closed (reject / retryable), never open"; Solana guide "A retry cannot settle or fulfill the same purchase twice" | `tests.test_offline.Offline.test_f9_guard_trusting_a_503_caught`, `test_f9_guard_that_never_retries_caught`, `test_guard_never_credits_503_non_json_or_truncated_and_retries` |
+| P1 | An unpaid request to a paid URL answers HTTP 402 | V2 HTTP transport: "The server indicates payment is required using the HTTP 402 \"Payment Required\" status code" | `tests.test_live.Live.test_p1_served_without_payment` |
+| P2 | The `PaymentRequired` object is present and decodes | V2 HTTP transport: "`PAYMENT-REQUIRED` header containing base64-encoded JSON"; V1 §5.1: the 402 body is the `PaymentRequired` JSON | `test_p2_missing_header`, `test_p_v1_body_graded_as_v1` |
+| P3 | `x402Version`, `resource` and a non-empty `accepts` | V2 §5.1.2: `x402Version` "must be 2", `resource` Required, `accepts` Required | `test_p3_p4_p5_field_problems` |
+| P4 | Each `accepts` entry has its required fields and types | V2 §5.1.2: `scheme`, `network` (CAIP-2), `amount` ("atomic token units"), `asset`, `payTo`, `maxTimeoutSeconds` all Required; V1 §5.1 the same with `maxAmountRequired`, `resource`, `description` | `test_p3_p4_p5_field_problems`, `test_p_all_pass_on_spec_example` |
+| P5 | Scheme-specific `extra` | EVM exact: "`extra.name` (required)", "`extra.version` (required)" for EIP-3009; SVM exact: "`extra.feePayer`: The sponsor's public key" | `test_p3_p4_p5_field_problems`, `test_p_svm_needs_fee_payer` |
+| R0-R10 | Your resource server serves only on a final, well-formed, first-time settlement, and returns `PAYMENT-RESPONSE` | F3, F5, F6, F8 and F9 above; V2 HTTP transport: "Servers communicate payment settlement results using the `PAYMENT-RESPONSE` header" | `ts/test/probe.test.ts` (including a stock `@x402/express` server on Solana devnet and Base Sepolia) |
 
 ## Lean models
 | theorem | statement | file |

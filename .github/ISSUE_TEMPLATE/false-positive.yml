@@ -1,0 +1,30 @@
+name: False positive report
+description: A check failed, but you believe your facilitator or server is right
+title: "False positive: <check id> on <target>"
+labels: [false-positive]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Thank you. A false positive is the bug I most want to know about. Quote the spec text that says your behaviour is
+        right, and I'll fix the check or explain the finding. Don't paste credentials or keys.
+  - type: input
+    id: check
+    attributes: { label: Check id, placeholder: "S4, P5, R3 ..." }
+    validations: { required: true }
+  - type: input
+    id: target
+    attributes: { label: Facilitator or resource URL (or "local") }
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes: { label: Version (x402conf --version / x402conf-svm --version / Action ref), placeholder: "1.3.0" }
+    validations: { required: true }
+  - type: textarea
+    id: output
+    attributes: { label: The failing check's JSON (check, pass, severity, detail), render: json }
+    validations: { required: true }
+  - type: textarea
+    id: spec
+    attributes: { label: Why it's correct, with the x402 spec text and section }
+    validations: { required: true }

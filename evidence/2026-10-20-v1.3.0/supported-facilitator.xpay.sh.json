@@ -1,0 +1,1 @@
+{"kinds":[{"x402Version":2,"scheme":"exact","network":"eip155:8453"},{"x402Version":2,"scheme":"exact","network":"eip155:84532"},{"x402Version":1,"scheme":"exact","network":"base"},{"x402Version":1,"scheme":"exact","network":"base-sepolia"}],"extensions":[],"signers":{"eip155:*":["0x2772F7F74ac0aCA38C6238aA5EcE72B27bEB8C17"]}}

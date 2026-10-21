@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Proofline V&V: verify every acceptance criterion in proofline.json against this repository and emit receipts.
 
-    python3 tools/vv.py verify [TASK ...] [--receipts DIR] [--json]
+    python3 tools/vv.py verify [TASK ...] [--receipts DIR] [--json] [--pre-merge]
     python3 tools/vv.py hygiene        secret and attribution scan of the tracked tree
 
 Implements the proofline/1 verifier types this contract uses: command (expect_exit, min_tests, max_skipped),
@@ -10,7 +10,12 @@ metric (JSON key, op, value), grep (file, pattern, must present|absent), file_ex
 Exit status. 1 if a task listed as done in vv/claims.json fails any mandatory criterion, if any tracked file lies
 outside every task's scope, or if a proofline.json.sig is present but does not verify. Otherwise 0. A task that is
 not claimed is reported as open and does not fail the run. Unsigned contracts are reported as
-"unsigned: awaiting owner signature"."""
+"unsigned: awaiting owner signature".
+
+Pre-merge mode. A pull request is checked on a merge commit that cannot be on origin/main yet, so in pre-merge mode
+(--pre-merge, or GITHUB_EVENT_NAME=pull_request) a "pushed" criterion that is not met yet is reported as
+"pending (pre-merge)" and does not fail the run. Every other criterion still does. The run on main after the merge is
+strict, and the receipt records which mode produced it."""
 
 from __future__ import annotations
 
@@ -27,6 +32,8 @@ from typing import Any
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT: dict[str, Any] = json.load(open(os.path.join(ROOT, "proofline.json")))
+PRE_MERGE = False  # set by main() from --pre-merge or GITHUB_EVENT_NAME=pull_request
+PENDING = "pending (pre-merge)"
 OPS = {">=": operator.ge, "<=": operator.le, "==": operator.eq, ">": operator.gt, "<": operator.lt}
 
 
@@ -96,6 +103,8 @@ def check(v: dict[str, Any], task: dict[str, Any]) -> tuple[bool, str]:
     if t == "pushed":
         rc, out = sh("git branch -r --contains HEAD", 60)
         ok = rc == 0 and "origin/main" in out
+        if not ok and PRE_MERGE:
+            return True, f"{PENDING}: HEAD is not on origin/main yet; the strict run on main after the merge decides"
         return ok, "HEAD is on origin/main" if ok else "HEAD is not on origin/main yet"
     return False, f"unknown verifier type {t}"
 
@@ -154,6 +163,9 @@ def main(argv: list[str]) -> int:
     if argv[1:2] != ["verify"]:
         print(__doc__)
         return 2
+    global PRE_MERGE
+    PRE_MERGE = "--pre-merge" in argv or os.environ.get("GITHUB_EVENT_NAME") == "pull_request"
+    mode = "pre-merge" if PRE_MERGE else "strict"
     as_json = "--json" in argv
     rdir = None
     if "--receipts" in argv:
@@ -171,7 +183,7 @@ def main(argv: list[str]) -> int:
         for c in t["criteria"]:
             ok, detail = check(c["verifier"], t)
             rows.append({"id": c["id"], "mandatory": c.get("mandatory", True), "pass": ok, "detail": detail,
-                         "statement": c["statement"]})
+                         "statement": c["statement"], "pending": detail.startswith(PENDING)})
         passed = all(r["pass"] for r in rows if r["mandatory"])
         state = ("done" if passed else "FAILED") if t["id"] in claims else ("met (unclaimed)" if passed else "open")
         if t["id"] in claims and not passed:
@@ -181,7 +193,9 @@ def main(argv: list[str]) -> int:
     out_of_scope = [f for f in tracked() if not in_scope(f, allow_all)]
     unknown_claims = [c for c in claims if c not in {t["id"] for t in contract["tasks"]}]
     ok = not failed and not out_of_scope and not unknown_claims and sig_rc in (0, 3)
+    pending = [c["id"] for r in report for c in r["criteria"] if c["pending"]]
     receipt = {"v": "x402conf.vv-receipt/1", "t": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "head": head,
+               "mode": mode, "pending": pending,
                "contract_sha256": chash, "signature": sig.get("status"), "ok": ok, "claimed_failed": failed,
                "out_of_scope": out_of_scope, "unknown_claims": unknown_claims,
                "tasks": [{"task": r["task"], "state": r["state"],
@@ -194,12 +208,14 @@ def main(argv: list[str]) -> int:
     if as_json:
         print(json.dumps({"receipt": receipt, "report": report}, indent=1))
     else:
-        print(f"contract {chash[:16]}  {sig.get('status')}")
+        print(f"contract {chash[:16]}  {sig.get('status')}  mode={mode}")
         for r in report:
             n = sum(c["pass"] for c in r["criteria"])
             print(f"{r['task']:7} {r['state']:16} {n}/{len(r['criteria'])}  {r['title']}")
             claimed = r["state"] in ("done", "FAILED")
             for c in r["criteria"]:
+                if c["pending"]:
+                    print(f"         pending {c['id']}: {c['detail'][:160]}")
                 if not c["pass"]:
                     tag = "FAIL" if claimed and c["mandatory"] else "todo"
                     print(f"         {tag} {c['id']}: {c['detail'][:160]}")

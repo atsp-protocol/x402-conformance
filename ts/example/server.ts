@@ -1,4 +1,5 @@
-// An example resource server on @x402/core's x402HTTPResourceServer with the @x402/svm exact scheme, Solana devnet.
+// An example resource server on @x402/core's x402HTTPResourceServer with the exact scheme on Solana devnet (@x402/svm)
+// or, with EXAMPLE_NETWORK=eip155:84532, Base Sepolia (@x402/evm).
 // It serves GET /paid only after processSettlement reports success. X402_FACILITATOR_URL names its facilitator.
 // EXAMPLE_FAULT shows what the probe catches:
 //   serve_after_verify   serves once /verify passes and settles afterwards, ignoring the outcome
@@ -8,17 +9,27 @@ import type { AddressInfo } from "node:net";
 import { HTTPFacilitatorClient, x402HTTPResourceServer, x402ResourceServer } from "@x402/core/server";
 import type { HTTPAdapter } from "@x402/core/server";
 import { ExactSvmScheme } from "@x402/svm/exact/server";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
 
 export const DEVNET = "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1";
+export const BASE_SEPOLIA = "eip155:84532";
 const DEVNET_USDC = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
+const BASE_SEPOLIA_USDC = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
 const PAY_TO = "11111111111111111111111111111112";
+const EVM_PAY_TO = "0x209693Bc6afc0C5328bA36FaF03C514EF312287C";
 
-export async function startExample(facilitatorUrl: string, fault = "", port = 0): Promise<{ url: string; close(): Promise<void> }> {
+export async function startExample(facilitatorUrl: string, fault = "", port = 0, network = DEVNET):
+    Promise<{ url: string; close(): Promise<void> }> {
   const rs = new x402ResourceServer(new HTTPFacilitatorClient({ url: facilitatorUrl, timeoutMs: 3000 }));
-  rs.register(DEVNET, new ExactSvmScheme());
+  const evm = network === BASE_SEPOLIA;
+  if (evm) rs.register(BASE_SEPOLIA, new ExactEvmScheme());
+  else rs.register(network as `${string}:${string}`, new ExactSvmScheme());
+  const accepts = evm
+    ? { scheme: "exact", network: BASE_SEPOLIA, payTo: EVM_PAY_TO,
+      price: { asset: BASE_SEPOLIA_USDC, amount: "10000", extra: { name: "USDC", version: "2" } } }
+    : { scheme: "exact", network, payTo: PAY_TO, price: { asset: DEVNET_USDC, amount: "10000" } };
   const app = new x402HTTPResourceServer(rs, {
-    "GET /paid": { accepts: { scheme: "exact", network: DEVNET, payTo: PAY_TO, price: { asset: DEVNET_USDC, amount: "10000" } },
-      description: "example paid route" },
+    "GET /paid": { accepts: accepts as any, description: "example paid route" },
   });
   await app.initialize();
   const server = http.createServer(async (rq, res) => {
@@ -67,6 +78,7 @@ export async function startExample(facilitatorUrl: string, fault = "", port = 0)
 
 const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/").split("/").pop() ?? "");
 if (isMain && process.env.X402_FACILITATOR_URL) {
-  startExample(process.env.X402_FACILITATOR_URL, process.env.EXAMPLE_FAULT ?? "", Number(process.env.PORT ?? 4020))
+  startExample(process.env.X402_FACILITATOR_URL, process.env.EXAMPLE_FAULT ?? "", Number(process.env.PORT ?? 4020),
+    process.env.EXAMPLE_NETWORK ?? DEVNET)
     .then((s) => console.log(JSON.stringify({ listening: s.url })));
 }

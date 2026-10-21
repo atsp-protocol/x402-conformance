@@ -1,5 +1,5 @@
 name: x402 Conformance
-description: Safety checks for x402 V2 on Solana. No double credit, no credit on timeouts or settlement_pending. Never pays.
+description: Safety and conformance checks for x402. No double credit, no credit on timeouts or settlement_pending. Never pays.
 author: mgillr
 branding:
   icon: shield
@@ -7,13 +7,28 @@ branding:
 inputs:
   facilitators:
     description: >-
-      Space-separated facilitator base URLs to check with GET /supported only (S1-S4). Nothing is signed, paid or POSTed.
+      Space-separated facilitator base URLs to check with GET /supported only (S0-S4). Nothing is signed, paid or POSTed.
+      For a facilitator that needs credentials, set X402C_FACILITATOR_AUTHORIZATION in the step's env from a secret and
+      name its host in facilitator-auth-host.
+    required: false
+    default: ""
+  facilitator-auth-host:
+    description: >-
+      The one facilitator host that receives X402C_FACILITATOR_AUTHORIZATION as its Authorization header. No other host
+      ever receives it, and it is never printed.
+    required: false
+    default: ""
+  resources:
+    description: >-
+      Space-separated paid URLs to check with one unpaid GET each (P1-P5): the 402 answer and its PaymentRequired, on
+      any network, V1 or V2. Nothing is paid.
     required: false
     default: ""
   resource-url:
     description: >-
       Your paid route, for example http://127.0.0.1:4020/paid. The action points your server at a facilitator double
-      and checks R0-R9: no content on a /settle timeout, broken answer, settlement_pending, failure or duplicate.
+      and checks R0-R10 on Solana devnet or Base Sepolia: no content on a /settle timeout, broken answer,
+      settlement_pending, failure or duplicate.
     required: false
     default: ""
   start:
@@ -22,12 +37,19 @@ inputs:
       facilitator URL. Leave empty if the server is already running against the double's port.
     required: false
     default: ""
+  network:
+    description: >-
+      Which offered network the probe pays on - auto, solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1 or eip155:84532.
+    required: false
+    default: auto
   port:
     description: Loopback port for the facilitator double.
     required: false
     default: "4402"
   offline:
-    description: Also run the F1-F9 safety suite against the reference and fault-injected facilitator doubles.
+    description: >-
+      Also run the F1-F9 self-test of the suite against its reference and fault-injected doubles. It checks the suite,
+      not your code. On by default in 1.x for compatibility; set "false" to skip it.
     required: false
     default: "true"
   results-dir:
@@ -35,15 +57,17 @@ inputs:
     required: false
     default: x402-conformance
   fail-on-error:
-    description: Fail the job when any error-severity check fails.
+    description: >-
+      Fail the job when any error-severity check fails, a requested run produced no results, or the probe found
+      nothing it could grade.
     required: false
     default: "true"
 outputs:
   result:
-    description: '"pass" when every requested check passed, otherwise "fail".'
+    description: '"pass" when every requested check passed, "unsupported" when the probe found nothing it could grade, otherwise "fail".'
     value: ${{ steps.summary.outputs.result }}
   results-dir:
-    description: Directory holding live.json, resource-server.json and offline.json.
+    description: Directory holding live.json, resource-402.json, resource-server.json and offline.json.
     value: ${{ inputs.results-dir }}
   sarif:
     description: SARIF 2.1.0 file of failed checks, for github/codeql-action/upload-sarif (GitHub code scanning).
@@ -54,39 +78,79 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
-    - uses: actions/setup-node@v4
-      if: inputs.resource-url != ''
-      with:
-        node-version: "20"
-    - name: Live checks S1-S4 (GET /supported only)
+    # No setup-python or setup-node: they would change the Python and Node on PATH for the rest of the caller's job.
+    # The Python part needs only the standard library of the runner's python3 (3.10+). The TypeScript probe runs on a
+    # pinned, checksum-verified Node in RUNNER_TEMP, called by absolute path; the server under test keeps the caller's.
+    - name: Python 3.10+ is available
+      shell: bash
+      run: |
+        python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' \
+          || { echo "::error title=x402 Conformance::python3 3.10 or newer is required on the runner"; exit 1; }
+    - name: Live checks S0-S4 (GET /supported only)
       if: inputs.facilitators != ''
       shell: bash
       env:
         PYTHONPATH: ${{ github.action_path }}/src
         X402C_TARGETS: ${{ inputs.facilitators }}
         X402C_DIR: ${{ inputs.results-dir }}
+        X402C_FACILITATOR_AUTH_HOST: ${{ inputs.facilitator-auth-host }}
       run: |
         mkdir -p "$X402C_DIR"
         # shellcheck disable=SC2086
-        python -m x402conf live $X402C_TARGETS --evidence "$X402C_DIR/evidence" > "$X402C_DIR/live.json"
-    - name: Resource-server checks R0-R9 (facilitator double on loopback)
+        python3 -m x402conf live $X402C_TARGETS --evidence "$X402C_DIR/evidence" > "$X402C_DIR/live.json" \
+          || rm -f "$X402C_DIR/live.json"
+    - name: Resource 402 checks P1-P5 (one unpaid GET per URL)
+      if: inputs.resources != ''
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}/src
+        X402C_TARGETS: ${{ inputs.resources }}
+        X402C_DIR: ${{ inputs.results-dir }}
+      run: |
+        mkdir -p "$X402C_DIR"
+        # shellcheck disable=SC2086
+        python3 -m x402conf resource $X402C_TARGETS > "$X402C_DIR/resource-402.json" || rm -f "$X402C_DIR/resource-402.json"
+    - name: Pinned Node for the probe (not added to PATH)
+      if: inputs.resource-url != ''
+      shell: bash
+      run: |
+        set -euo pipefail
+        v=v24.22.0
+        case "$(uname -s)-$(uname -m)" in
+          Linux-x86_64)  p=linux-x64;    sum=28ea0a438de9a13bd7891fd758eee6c7819ee8af5442dfd8d45bd65e56d4228c ;;
+          Linux-aarch64) p=linux-arm64;  sum=b7e7991d5407815adfa74a2a9cd4db683552c8ce32ff4a295c22e972849c3f5d ;;
+          Darwin-x86_64) p=darwin-x64;   sum=495e3f273c645f3c4677d438304cdfc701729ea5dec5728f5c8e76a2dece4b91 ;;
+          Darwin-arm64)  p=darwin-arm64; sum=6a9724d9b50a5f22b4816cded441b5a8d9ddae546191a5e5b7efa5a5e2ee26d5 ;;
+          *) echo "::error title=x402 Conformance::unsupported runner $(uname -s)-$(uname -m)"; exit 1 ;;
+        esac
+        dir="$RUNNER_TEMP/x402c-node"
+        mkdir -p "$dir"
+        curl -fsSL "https://nodejs.org/dist/$v/node-$v-$p.tar.gz" -o "$dir/node.tgz"
+        echo "$sum  $dir/node.tgz" | (sha256sum -c - 2>/dev/null || shasum -a 256 -c -)
+        tar -xzf "$dir/node.tgz" -C "$dir" --strip-components=1
+        rm "$dir/node.tgz"
+    - name: Resource-server checks R0-R10 (facilitator double on loopback)
       if: inputs.resource-url != ''
       shell: bash
       env:
         X402C_RESOURCE: ${{ inputs.resource-url }}
         X402C_START: ${{ inputs.start }}
         X402C_PORT: ${{ inputs.port }}
+        X402C_NETWORK: ${{ inputs.network }}
         X402C_DIR: ${{ inputs.results-dir }}
       run: |
         mkdir -p "$X402C_DIR"
-        (cd "$GITHUB_ACTION_PATH/ts" && npm ci --no-audit --no-fund --silent && npm run --silent build)
-        args=(probe --resource "$X402C_RESOURCE" --port "$X402C_PORT" --out "$X402C_DIR/resource-server.json")
+        node_dir="$RUNNER_TEMP/x402c-node"
+        # PATH is changed for npm's own processes in this subshell only.
+        (cd "$GITHUB_ACTION_PATH/ts" && PATH="$node_dir/bin:$PATH" npm ci --no-audit --no-fund --silent \
+          && PATH="$node_dir/bin:$PATH" npm run --silent build) \
+          || { echo "::error title=x402 Conformance::building the probe failed"; exit 0; }
+        args=(probe --resource "$X402C_RESOURCE" --port "$X402C_PORT" --network "$X402C_NETWORK"
+              --out "$X402C_DIR/resource-server.json")
         if [ -n "$X402C_START" ]; then args+=(--start "$X402C_START"); fi
-        node "$GITHUB_ACTION_PATH/ts/dist/src/cli.js" "${args[@]}" > /dev/null || true
-    - name: Offline safety suite F1-F9
+        # The exit code is read from the results file by the summary step; a missing file is a failure there.
+        "$node_dir/bin/node" "$GITHUB_ACTION_PATH/ts/dist/src/cli.js" "${args[@]}" > /dev/null || true
+    - name: Offline self-test F1-F9
       if: inputs.offline == 'true'
       shell: bash
       env:
@@ -94,61 +158,26 @@ runs:
         X402C_DIR: ${{ inputs.results-dir }}
       run: |
         mkdir -p "$X402C_DIR"
-        python -m x402conf offline > "$X402C_DIR/offline.json" || true
+        python3 -m x402conf offline > "$X402C_DIR/offline.json" || true
     - name: SARIF and JUnit reports
       shell: bash
       env:
         PYTHONPATH: ${{ github.action_path }}/src
         X402C_DIR: ${{ inputs.results-dir }}
       run: |
-        python -m x402conf report --dir "$X402C_DIR" --sarif "$X402C_DIR/x402-conformance.sarif" \
+        mkdir -p "$X402C_DIR"
+        python3 -m x402conf report --dir "$X402C_DIR" --sarif "$X402C_DIR/x402-conformance.sarif" \
           --junit "$X402C_DIR/junit.xml" || true
     - name: Summary
       id: summary
       shell: bash
       env:
+        PYTHONPATH: ${{ github.action_path }}/src
         X402C_DIR: ${{ inputs.results-dir }}
         X402C_FAIL: ${{ inputs.fail-on-error }}
-      run: |
-        python3 - <<'PY'
-        import json, os
-        d = os.environ["X402C_DIR"]
-        rows, bad = [], []
-        def load(name):
-            p = os.path.join(d, name)
-            return json.load(open(p)) if os.path.exists(p) else None
-        live = load("live.json")
-        for r in (live or {}).get("results", []):
-            if r.get("error"):
-                rows.append((r["target"], "GET /supported", False, r["error"][:80])); bad.append(r["target"])
-            for c in r.get("checks", []):
-                err = not c["pass"] and c.get("severity") == "error"
-                rows.append((r["target"], c["check"], c["pass"] or c.get("severity") != "error", ""))
-                if err: bad.append(f'{r["target"]}: {c["check"]}')
-        rsv = load("resource-server.json")
-        if rsv is not None:
-            for c in rsv.get("results", []):
-                rows.append((rsv["resource"], c["check"], c["pass"], ""))
-                if not c["pass"]: bad.append(f'{rsv["resource"]}: {c["check"]}')
-            if len(rsv.get("results", [])) < 10: bad.append(f'{rsv["resource"]}: probe stopped early')
-        off = load("offline.json")
-        if off is not None:
-            ref = off["results"]["reference"]
-            caught = all(any(not c["pass"] for c in v) for k, v in off["results"].items() if k != "reference")
-            for c in ref:
-                rows.append(("reference double", c["check"], c["pass"], ""))
-                if not c["pass"]: bad.append(f'reference double: {c["check"]}')
-            rows.append(("fault-injected doubles", "every fault caught by at least one check", caught, ""))
-            if not caught: bad.append("a fault-injected double was not caught")
-        result = "fail" if bad else "pass"
-        out = [f"## x402 Conformance: {result}", "", "| target | check | result |", "|---|---|---|"]
-        out += [f"| {t} | {c} | {'pass' if ok else 'FAIL'} {n} |" for t, c, ok, n in rows]
-        out += ["", "How to fix a failed check: "
-                "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md"]
-        out += ["", "Checks map to spec text; they are not a certification of x402 conformance. "
-                "Docs: https://github.com/atsp-protocol/x402-conformance"]
-        with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f: f.write("\n".join(out) + "\n")
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f: f.write(f"result={result}\n")
-        for b in bad: print(f"::error title=x402 Conformance::{b}")
-        if bad and os.environ["X402C_FAIL"] == "true": raise SystemExit(1)
-        PY
+        X402C_WANT_LIVE: ${{ inputs.facilitators != '' }}
+        X402C_WANT_402: ${{ inputs.resources != '' }}
+        X402C_WANT_PROBE: ${{ inputs.resource-url != '' }}
+        X402C_WANT_OFFLINE: ${{ inputs.offline == 'true' }}
+        X402C_RESOURCE: ${{ inputs.resource-url }}
+      run: python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_summary())'

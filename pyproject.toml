@@ -4,16 +4,38 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "x402-conformance"
-version = "1.2.1"
-description = "Experimental conformance and safety checks for x402 V2 facilitators and resource servers, Solana first"
+version = "1.3.0"
+description = "Experimental conformance and safety checks for x402 facilitators and resource servers: GET /supported checks, 402 answer checks and fault injection"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Ryan Gillespie / Optitransfer" }]
 requires-python = ">=3.10"
 dependencies = []
+keywords = ["x402", "http-402", "agentic-payments", "ai-agents", "micropayments", "stablecoin", "usdc", "solana", "evm",
+            "conformance", "fault-injection", "ci", "sarif"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Office/Business :: Financial",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
+  "Typing :: Typed",
+]
 
 [project.urls]
-Homepage = "https://github.com/atsp-protocol/x402-conformance"
+Homepage = "https://atsp-protocol.github.io/x402-conformance/"
+Repository = "https://github.com/atsp-protocol/x402-conformance"
 Documentation = "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/SPEC.md"
 Changelog = "https://github.com/atsp-protocol/x402-conformance/blob/main/CHANGELOG.md"
 Issues = "https://github.com/atsp-protocol/x402-conformance/issues"

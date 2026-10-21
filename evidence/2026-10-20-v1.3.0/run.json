@@ -1,0 +1,755 @@
+{
+ "mode": "live-GET-only",
+ "results": [
+  {
+   "body_sha256": "ff310d048728e7e5feadb6ec3a7859ce0432cbfbcfc6eb67c9540dac066f5d3e",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 2,
+      "v2_kinds": 9
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [
+       [
+        "exact",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+       ]
+      ],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 1
+     },
+     "pass": true,
+     "severity": "warning"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 11,
+   "mode": "live-GET-only",
+   "ms": 178,
+   "target": "https://x402.org/facilitator"
+  },
+  {
+   "body_sha256": "49309f2eabb410dd6e75a25151e6c20f9367bd57384b40f0ed2bfe5cfc2da84f",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 16,
+      "v2_kinds": 20
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [
+       [
+        "exact",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+       ],
+       [
+        "batch-settlement",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+       ],
+       [
+        "exact",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+       ],
+       [
+        "batch-settlement",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+       ]
+      ],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 2
+     },
+     "pass": true,
+     "severity": "warning"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 36,
+   "mode": "live-GET-only",
+   "ms": 392,
+   "target": "https://facilitator.payai.network"
+  },
+  {
+   "body_sha256": "7d943c2bb829eca945362c0d8f1de0b9242e9f60adb10be11166999005beccbd",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 14,
+      "v2_kinds": 30
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [
+       [
+        "exact",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+       ],
+       [
+        "tab",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+       ],
+       [
+        "exact",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+       ],
+       [
+        "bridge",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+       ]
+      ],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 2
+     },
+     "pass": true,
+     "severity": "warning"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 44,
+   "mode": "live-GET-only",
+   "ms": 113,
+   "target": "https://x402.dexter.cash"
+  },
+  {
+   "body_sha256": "fc4976d34b552122226337561e107d58d48f64db8a6b27fe413a8d4f00a2d8cc",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 79,
+      "v2_kinds": 81
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [
+       [
+        "exact",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+       ],
+       [
+        "exact",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+       ]
+      ],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [
+       {
+        "basis": "inferred",
+        "feePayer": "6xNPewUdKRbEZDReQdpyfNUdgNg8QRc8Mt263T5GZSRv",
+        "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "problem": "feePayer not listed under any signers pattern matching the network"
+       },
+       {
+        "basis": "inferred",
+        "feePayer": "F742C4VfFLQ9zRQyithoj5229ZgtX2WqKCSFKgH2EThq",
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "problem": "feePayer not listed under any signers pattern matching the network"
+       }
+      ],
+      "solana_exact_kinds": 2
+     },
+     "pass": false,
+     "severity": "warning"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 160,
+   "mode": "live-GET-only",
+   "ms": 133,
+   "target": "https://facilitator.ultravioletadao.xyz"
+  },
+  {
+   "body_sha256": "8603aeda27e4fbd689e80c4de976153fe5fa0e3dda0fd56c1564380d8dd20411",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 5,
+      "v2_kinds": 5
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [
+       [
+        "exact",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+       ],
+       [
+        "exact",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+       ]
+      ],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 2
+     },
+     "pass": true,
+     "severity": "warning"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 10,
+   "mode": "live-GET-only",
+   "ms": 102,
+   "target": "https://pay.openfacilitator.io"
+  },
+  {
+   "body_sha256": "46b988bad96111531a673f0985cb62ad8b8cf7fa1309954ed61518f8135c0c2b",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 2,
+      "v2_kinds": 2
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 0
+     },
+     "pass": true,
+     "severity": "info"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 4,
+   "mode": "live-GET-only",
+   "ms": 369,
+   "target": "https://facilitator.xpay.sh"
+  },
+  {
+   "body_sha256": "db5b07162d4f29e0dc99282f8c1278a80ff1c3e2aef22a0aab6e60e406a0aea4",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 1,
+      "v2_kinds": 1
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 0
+     },
+     "pass": true,
+     "severity": "info"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 2,
+   "mode": "live-GET-only",
+   "ms": 307,
+   "target": "https://x402.polygon.technology"
+  },
+  {
+   "body_sha256": "8a1ed5057b857df4a8ad95d0c9d6b77c6d91cfebfc9f5ae0c927d23b373d8b30",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [
+       "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+       "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI="
+      ],
+      "v1_kinds": 0,
+      "v2_kinds": 6
+     },
+     "pass": false,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [
+       [
+        "exact",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+       ],
+       [
+        "exact",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+       ]
+      ],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 2
+     },
+     "pass": true,
+     "severity": "warning"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 6,
+   "mode": "live-GET-only",
+   "ms": 105,
+   "target": "https://facilitator.goplausible.xyz"
+  },
+  {
+   "body_sha256": "da6175489b727f3672de2270ff408d74923eea98e5b0178e40e3f832f46249c3",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 0,
+      "v2_kinds": 8
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 0
+     },
+     "pass": true,
+     "severity": "info"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 8,
+   "mode": "live-GET-only",
+   "ms": 265,
+   "target": "https://facilitator.pieverse.io"
+  },
+  {
+   "checks": [
+    {
+     "check": "S0 GET /supported answers HTTP 200 with a JSON object",
+     "detail": {
+      "error": "URLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)'))",
+      "http": null
+     },
+     "pass": false,
+     "severity": "error"
+    }
+   ],
+   "error": "URLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)'))",
+   "http": null,
+   "mode": "live-GET-only",
+   "target": "https://facilitator.cascade.fyi"
+  },
+  {
+   "body_sha256": "9dde3dbac7abb467fe24ecb8d220d0391af3d8fafafc8987b9fec33240bd464c",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 5,
+      "v2_kinds": 26
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [
+       [
+        "exact",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+       ]
+      ],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 1
+     },
+     "pass": true,
+     "severity": "warning"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 31,
+   "mode": "live-GET-only",
+   "ms": 534,
+   "target": "https://facilitator.x402.rs"
+  },
+  {
+   "body_sha256": "fab25035ff564d770be586b233de693a9bfa3ab8ccb8b1daaac953094ddb8f2e",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "list",
+      "graded_as": "v2",
+      "kinds": "list",
+      "signers": "dict"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 8,
+      "v2_kinds": 8
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [
+       [
+        "exact",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+       ],
+       [
+        "exact",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+       ]
+      ],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 2
+     },
+     "pass": true,
+     "severity": "warning"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 16,
+   "mode": "live-GET-only",
+   "ms": 114,
+   "target": "https://facilitator.daydreams.systems"
+  },
+  {
+   "body_sha256": "43d75a683801f12b12517357e9b24806ec9646109e28146bc87cbb9ca0f9393e",
+   "checks": [
+    {
+     "check": "S1 SupportedResponse shape: kinds[], extensions[], signers{} (V2 7.3.1; V1 7.3: kinds[])",
+     "detail": {
+      "extensions": "NoneType",
+      "graded_as": "v1",
+      "kinds": "list",
+      "signers": "NoneType"
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S2 every V2 kind names its network in CAIP-2 (V2 11.1)",
+     "detail": {
+      "non_caip2": [],
+      "v1_kinds": 2,
+      "v2_kinds": 0
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S3 Solana V2 kinds use the published CAIP-2 IDs, not V1 names",
+     "detail": {
+      "solana_v2_kinds": [],
+      "unrecognised_solana_ids": [],
+      "v1_names_in_v2": []
+     },
+     "pass": true,
+     "severity": "error"
+    },
+    {
+     "check": "S4 Solana exact kinds advertise a valid extra.feePayer, listed as a signer (SVM exact; V2 7.3.1)",
+     "detail": {
+      "problems": [],
+      "solana_exact_kinds": 0
+     },
+     "pass": true,
+     "severity": "info"
+    }
+   ],
+   "http": 200,
+   "kinds_total": 2,
+   "mode": "live-GET-only",
+   "ms": 91,
+   "target": "https://facilitator.mogami.tech"
+  },
+  {
+   "checks": [
+    {
+     "check": "S0 GET /supported answers HTTP 200 with a JSON object",
+     "detail": {
+      "error": "<HTTPError 401: 'Unauthorized'>",
+      "hint": "the facilitator wants credentials; see X402C_FACILITATOR_AUTHORIZATION and X402C_FACILITATOR_AUTH_HOST in the README",
+      "http": 401
+     },
+     "pass": false,
+     "severity": "error"
+    }
+   ],
+   "error": "<HTTPError 401: 'Unauthorized'>",
+   "http": 401,
+   "mode": "live-GET-only",
+   "target": "https://api.cdp.coinbase.com/platform/v2/x402"
+  },
+  {
+   "checks": [
+    {
+     "check": "S0 GET /supported answers HTTP 200 with a JSON object",
+     "detail": {
+      "error": "URLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)'))",
+      "http": null
+     },
+     "pass": false,
+     "severity": "error"
+    }
+   ],
+   "error": "URLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)'))",
+   "http": null,
+   "mode": "live-GET-only",
+   "target": "https://facilitator.corbits.dev"
+  }
+ ],
+ "run_at": "2026-10-20T23:46:34Z",
+ "tool": "x402-conformance 1.3.0"
+}

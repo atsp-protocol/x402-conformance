@@ -22,10 +22,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        python: ["3.10", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
+        with: { python-version: "${{ matrix.python }}" }
       - run: PYTHONPATH=src python -m unittest discover -s tests -v
       - run: PYTHONPATH=src python -m x402conf offline > /dev/null
       - run: cd evidence/2026-10-20 && sha256sum -c SHA256SUMS
@@ -48,30 +51,48 @@ jobs:
   ts:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        node: ["20", "22", "24"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ matrix.node }}" }
+      - run: cd ts && npm ci --no-audit --no-fund && npm test
+  action:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
-      - run: cd ts && npm ci --no-audit --no-fund && npm test
-  action:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build the example resource server (@x402/core + @x402/svm)
+      - name: Build the example resource servers (@x402/core, @x402/svm, @x402/evm, @x402/express)
         run: cd ts && npm ci --no-audit --no-fund && npm run build
-      - name: The action itself, against the example server, with the offline suite
+      - run: node --version > node-before.txt
+      - name: The action itself, against the example server, with the offline self-test
         id: probe
         uses: ./
         with:
           resource-url: http://127.0.0.1:4020/paid
           start: PORT=4020 node ts/dist/example/server.js
       - run: test "${{ steps.probe.outputs.result }}" = pass
+      - name: The action does not change the caller's Node
+        run: node --version | diff - node-before.txt
       - name: SARIF and JUnit reports are written and well formed
         run: |
           python3 -c "import json,sys;d=json.load(open('${{ steps.probe.outputs.sarif }}'));sys.exit(0 if d['version']=='2.1.0' and d['runs'][0]['results']==[] else 1)"
-          python3 -c "import sys,xml.etree.ElementTree as E;r=E.parse('${{ steps.probe.outputs.junit }}').getroot();sys.exit(0 if int(r.get('tests'))>=20 and r.get('failures')=='0' else 1)"
-      - run: python3 -c "import json,sys;d=json.load(open('x402-conformance/resource-server.json'));sys.exit(0 if len(d['results'])==10 and all(r['pass'] for r in d['results']) else 1)"
+          python3 -c "import sys,xml.etree.ElementTree as E;r=E.parse('${{ steps.probe.outputs.junit }}').getroot();sys.exit(0 if int(r.get('tests'))>=21 and r.get('failures')=='0' else 1)"
+      - run: python3 -c "import json,sys;d=json.load(open('x402-conformance/resource-server.json'));sys.exit(0 if len(d['results'])==11 and all(r['pass'] for r in d['results']) else 1)"
+      - name: A stock @x402/express server on Base Sepolia passes, R3 included
+        id: stock
+        uses: ./
+        with:
+          resource-url: http://127.0.0.1:4022/paid
+          start: PORT=4022 EXAMPLE_NETWORK=eip155:84532 node ts/dist/example/express-server.js
+          port: "4404"
+          offline: "false"
+          results-dir: stock
+      - run: test "${{ steps.stock.outputs.result }}" = pass
       - name: The action must fail a resource server that serves before settlement
         id: faulty
         uses: ./
@@ -85,6 +106,18 @@ jobs:
       - run: test "${{ steps.faulty.outputs.result }}" = fail
       - name: The faulty server's failures reach the SARIF file
         run: python3 -c "import json,sys;d=json.load(open('faulty/x402-conformance.sarif'));sys.exit(0 if d['runs'][0]['results'] else 1)"
+      - name: Fail closed - the double's port is taken, so the probe cannot run
+        run: python3 -m http.server 4405 --bind 127.0.0.1 > /dev/null 2>&1 &
+      - id: closed
+        uses: ./
+        continue-on-error: true
+        with:
+          resource-url: http://127.0.0.1:4023/paid
+          start: PORT=4023 node ts/dist/example/server.js
+          port: "4405"
+          offline: "false"
+          results-dir: closed
+      - run: test "${{ steps.closed.outputs.result }}" = fail && test "${{ steps.closed.outcome }}" = failure
   vv:
     needs: [lint, test, lean, ts, action]
     runs-on: ubuntu-latest
@@ -107,7 +140,7 @@ jobs:
       - name: Owner signature state
         run: node tools/verify-sig.mjs || [ $? -eq 3 ]
       - name: Proofline V&V (fails on a claimed-but-unmet task, out-of-scope files or a bad signature)
-        run: python3 tools/vv.py verify --receipts vv/receipts
+        run: python3 tools/vv.py verify --receipts vv/receipts ${{ github.event_name == 'pull_request' && '--pre-merge' || '' }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:

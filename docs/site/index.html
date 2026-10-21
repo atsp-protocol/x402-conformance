@@ -4,7 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>x402 Conformance: safety checks for x402 V2 facilitators and resource servers</title>
-<meta name="description" content="Open-source (Apache-2.0) GitHub Action and CLI that checks x402 V2 facilitators and resource servers, Solana first, for double settlement, memo replay, early credit and credit on broken /settle answers.">
+<meta name="description" content="Open-source (Apache-2.0) GitHub Action and CLI that checks x402 facilitators and resource servers on Solana and Base for double settlement, memo replay, early credit, credit on broken /settle answers and malformed 402 answers.">
+<link rel="canonical" href="https://atsp-protocol.github.io/x402-conformance/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="x402-conformance">
+<meta property="og:title" content="x402-conformance: safety checks for x402 facilitators and resource servers">
+<meta property="og:description" content="Open-source CLI and GitHub Action that catches double settlement, early credit and credit on broken /settle answers in x402 payments, on Solana and Base. Apache-2.0.">
+<meta property="og:url" content="https://atsp-protocol.github.io/x402-conformance/">
+<meta property="og:image" content="https://atsp-protocol.github.io/x402-conformance/og.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="x402-conformance: safety checks for x402 payments, in one CI step">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="x402-conformance: safety checks for x402 facilitators and resource servers">
+<meta name="twitter:description" content="Open-source CLI and GitHub Action that catches double settlement, early credit and credit on broken /settle answers in x402 payments, on Solana and Base.">
+<meta name="twitter:image" content="https://atsp-protocol.github.io/x402-conformance/og.png">
+<meta name="twitter:image:alt" content="x402-conformance: safety checks for x402 payments, in one CI step">
+
 <style>
   :root { --fg:#1f2328; --muted:#59636e; --bg:#fff; --code:#f6f8fa; --line:#d1d9e0; --pass:#1a7f37; --fail:#cf222e; --link:#0969da; }
   @media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --bg:#0d1117; --code:#161b22; --line:#30363d; --pass:#3fb950; --fail:#f85149; --link:#4493f8; } }
@@ -16,7 +32,7 @@
   pre { background: var(--code); border: 1px solid var(--line); border-radius: 6px; padding: .9rem; overflow-x: auto; }
   code { background: var(--code); padding: .1em .3em; border-radius: 4px; } pre code { background: none; padding: 0; }
   table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .95rem; } th, td { border: 1px solid var(--line); padding: .4rem .6rem; text-align: left; vertical-align: top; }
-  .pass { color: var(--pass); font-weight: 600; } .fail { color: var(--fail); font-weight: 700; }
+  .pass { color: var(--pass); font-weight: 600; } .warn { color: #9a6700; font-weight: 600; } .fail { color: var(--fail); font-weight: 700; }
   .note { border-left: 4px solid var(--line); padding: .2rem .9rem; color: var(--muted); }
   .links a { margin-right: 1rem; white-space: nowrap; } footer { margin-top: 3rem; color: var(--muted); font-size: .9rem; }
 </style>
@@ -33,9 +49,9 @@
   <a href="https://github.com/atsp-protocol/x402-conformance/blob/main/CHANGELOG.md">Changelog</a>
 </p>
 <p class="note"><strong>Experimental.</strong> An open, Apache-2.0 set of conformance and safety checks for
-<a href="https://github.com/coinbase/x402">x402</a> V2 facilitators and resource servers, starting with Solana. It complements
-x402 and its facilitators and doesn't replace them. It never signs, pays or touches mainnet, and live mode only sends
-<code>GET /supported</code>. Passing a check is evidence about one property; it doesn't certify conformance to x402.</p>
+<a href="https://github.com/x402-foundation/x402">x402</a> facilitators and resource servers, on Solana and Base (EVM). It complements
+x402 and its facilitators and doesn't replace them. It never signs, pays or touches mainnet, and live and resource modes only send
+<code>GET</code> requests. Passing a check is evidence about one property; it doesn't certify conformance to x402.</p>
 
 <h2>Run it</h2>
 <p><strong>GitHub Action.</strong> Save as <code>.github/workflows/x402-conformance.yml</code>:</p>
@@ -51,14 +67,18 @@ jobs:
           facilitators: https://x402.org/facilitator   # GET /supported only</code></pre>
 <p>With no inputs it runs only the F1-F9 safety suite. To test your own resource server, add
 <code>resource-url</code> (your paid route) and <code>start</code> (the command that starts your server, which receives
-<code>X402_FACILITATOR_URL</code>). The Action writes JSON results, a SARIF 2.1.0 file for GitHub code scanning and a
+<code>X402_FACILITATOR_URL</code>); servers on Solana devnet and Base Sepolia are graded. To check any paid URL's 402
+answer, on any network, add <code>resources</code>. The Action fails closed: a requested check that can't run fails the
+job. It doesn't touch your job's Node. The Action writes JSON results, a SARIF 2.1.0 file for GitHub code scanning and a
 JUnit XML report; every failure links to its fix in <a href="https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md">docs/FIXES.md</a>.</p>
 <p><strong>One command, nothing to install</strong> (with pipx or uv):</p>
-<pre><code>pipx run --spec x402-conformance x402conf offline
-uvx --from x402-conformance x402conf live https://x402.org/facilitator</code></pre>
+<pre><code>pipx run --spec x402-conformance x402conf live https://x402.org/facilitator
+uvx --from x402-conformance x402conf resource https://your.api/paid
+npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start "node server.js"</code></pre>
 <p><strong>CLI</strong> (Python 3.10+, no dependencies):</p>
 <pre><code>pip install x402-conformance
-x402conf live https://x402.org/facilitator   # S1-S4, GET /supported only
+x402conf live https://x402.org/facilitator   # S0-S4, GET /supported only
+x402conf resource https://your.api/paid      # P1-P5, one unpaid GET
 x402conf offline                             # F1-F9 against reference and fault-injected doubles
 x402conf report --dir DIR --sarif out.sarif --junit junit.xml</code></pre>
 
@@ -66,10 +86,13 @@ x402conf report --dir DIR --sarif out.sarif --junit junit.xml</code></pre>
 <table>
 <tr><th>id</th><th>fails when</th></tr>
 <tr><td colspan="2"><em>Live, read-only (<code>GET /supported</code>)</em></td></tr>
-<tr><td>S1</td><td>the response is missing <code>kinds</code>, <code>extensions</code> or <code>signers</code></td></tr>
+<tr><td>S0</td><td><code>/supported</code> doesn't answer HTTP 200 with JSON</td></tr>
+<tr><td>S1</td><td>the response is missing <code>kinds</code>, <code>extensions</code> or <code>signers</code> (V1-only facilitators are graded against V1)</td></tr>
 <tr><td>S2</td><td>a V2 network isn't written as a CAIP-2 ID</td></tr>
 <tr><td>S3</td><td>a Solana kind uses an old V1 name such as <code>solana-devnet</code></td></tr>
-<tr><td>S4</td><td>a Solana <code>exact</code> kind has no valid fee payer, or one that isn't a listed signer</td></tr>
+<tr><td>S4</td><td>a Solana <code>exact</code> kind has no valid fee payer (a fee payer that isn't a listed signer is a warning)</td></tr>
+<tr><td colspan="2"><em>402 answers of any paid URL, one unpaid <code>GET</code></em></td></tr>
+<tr><td>P1-P5</td><td>an unpaid request isn't answered 402, the <code>PaymentRequired</code> object is missing or doesn't decode, or <code>accepts</code> lacks a required field or the scheme's <code>extra</code> (EVM <code>name</code>/<code>version</code>, Solana <code>feePayer</code>)</td></tr>
 <tr><td colspan="2"><em>Safety: against doubles, on devnet and in your resource server</em></td></tr>
 <tr><td>F1</td><td>a malformed payment is accepted instead of rejected</td></tr>
 <tr><td>F2</td><td>an underpayment or dust amount is accepted</td></tr>
@@ -80,18 +103,33 @@ x402conf report --dir DIR --sarif out.sarif --junit junit.xml</code></pre>
 <tr><td>F7</td><td>a pending payment retried with the same body never reaches its final result, or is credited more than once</td></tr>
 <tr><td>F8</td><td>a payment that failed on chain stays "pending" instead of failing</td></tr>
 <tr><td>F9</td><td>a 503, an HTML page or a truncated <code>/settle</code> answer is credited, or the payment can't be retried</td></tr>
-<tr><td>R0-R9</td><td>your resource server serves paid content under any of these faults (TypeScript runner in <code>ts/</code>, for servers on <code>@x402/core</code> and <code>@x402/svm</code>)</td></tr>
+<tr><td>R0-R10</td><td>your resource server serves paid content under any of these faults, or omits <code>PAYMENT-RESPONSE</code> (probe in <code>ts/</code>, for servers on Solana devnet or Base Sepolia; a stock <code>@x402/express</code> server passes)</td></tr>
 </table>
 
-<h2>Results</h2>
-<h3>Live, 2026-10-20 (<code>GET /supported</code> only)</h3>
+<h2 id="results">Results</h2>
+<h3>Live, 2026-10-20 (<code>GET /supported</code> only, 1.3.0)</h3>
 <table>
-<tr><th>facilitator</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th></tr>
-<tr><td>x402.dexter.cash</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td></tr>
-<tr><td>facilitator.payai.network</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td></tr>
-<tr><td>x402.org/facilitator</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td></tr>
+<tr><th>facilitator</th><th>HTTP</th><th>S0</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>note</th></tr>
+<tr><td>x402.org/facilitator</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td></td></tr>
+<tr><td>facilitator.payai.network</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td></td></tr>
+<tr><td>x402.dexter.cash</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td></td></tr>
+<tr><td>facilitator.ultravioletadao.xyz</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="warn">warning</td><td>devnet fee payer not listed under <code>signers</code> (inferred rule)</td></tr>
+<tr><td>pay.openfacilitator.io</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td></td></tr>
+<tr><td>facilitator.xpay.sh</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td></td></tr>
+<tr><td>x402.polygon.technology</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td></td></tr>
+<tr><td>facilitator.goplausible.xyz</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="fail">fail</td><td class="pass">pass</td><td class="pass">pass</td><td>Algorand IDs use the full 44-character genesis hash; the x402 Algorand spec uses <code>algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k</code></td></tr>
+<tr><td>facilitator.pieverse.io</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td></td></tr>
+<tr><td>facilitator.x402.rs</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td></td></tr>
+<tr><td>facilitator.daydreams.systems</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td></td></tr>
+<tr><td>facilitator.mogami.tech</td><td>200</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td>V1-only, graded against V1</td></tr>
+<tr><td>api.cdp.coinbase.com/platform/v2/x402</td><td>401</td><td class="fail">fail</td><td>–</td><td>–</td><td>–</td><td>–</td><td>needs credentials; not run with any</td></tr>
+<tr><td>facilitator.cascade.fyi</td><td>–</td><td class="fail">fail</td><td>–</td><td>–</td><td>–</td><td>–</td><td>TLS handshake failed</td></tr>
+<tr><td>facilitator.corbits.dev</td><td>–</td><td class="fail">fail</td><td>–</td><td>–</td><td>–</td><td>–</td><td>TLS handshake failed</td></tr>
 </table>
-<p>Raw bodies and hashes: <a href="https://github.com/atsp-protocol/x402-conformance/tree/main/evidence/2026-10-20">evidence/2026-10-20</a>.</p>
+<p>Raw bodies and hashes: <a href="https://github.com/atsp-protocol/x402-conformance/tree/main/evidence/2026-10-20-v1.3.0">evidence/2026-10-20-v1.3.0</a>.
+A failed check is evidence about one property on one day, not a verdict on a facilitator. Operators can
+<a href="https://github.com/atsp-protocol/x402-conformance/issues/new?template=false-positive.yml">report a false positive</a>
+or <a href="https://github.com/atsp-protocol/x402-conformance/issues/new?template=add-facilitator.yml">ask to be listed</a>.</p>
 
 <h3>Devnet, 2026-10-20 (F1-F6 over real <code>/verify</code> and <code>/settle</code>)</h3>
 <p>Against my self-hosted reference facilitator (<code>@x402/core</code> 2.28.0 with the <code>@x402/svm</code> 2.28.0
@@ -116,7 +154,8 @@ Full results and hashes: <a href="https://github.com/atsp-protocol/x402-conforma
 <h2>Free and open core</h2>
 <p>Apache-2.0. Every check, the Action, the devnet runner and the Lean 4 models of the credit rule are free, forever.
 <strong>Free run for your project:</strong> open an issue with your repo or facilitator URL and I'll run the suite, post the
-results and send a tests-only pull request with the Action and badge.</p>
+results and send a tests-only pull request with the Action and badge. Questions and ideas:
+<a href="https://github.com/atsp-protocol/x402-conformance/discussions">Discussions</a>.</p>
 
 <h2>Managed services</h2>
 <p>Optional, on top of the free suite: hosted continuous monitoring of your live endpoints, signed conformance reports per

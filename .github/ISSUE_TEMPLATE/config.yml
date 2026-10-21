@@ -3,3 +3,6 @@ contact_links:
   - name: Report a vulnerability (private)
     url: https://github.com/atsp-protocol/x402-conformance/security/advisories/new
     about: Please report security issues privately.
+  - name: Questions and ideas (Discussions)
+    url: https://github.com/atsp-protocol/x402-conformance/discussions
+    about: Ask how to run it, share results, or float an idea before opening an issue.

@@ -4,23 +4,31 @@ One section per check. Each failed check in the job summary, in SARIF (GitHub co
 its section here. [SPEC.md](SPEC.md) quotes the spec text behind each check. These are fixes for the property a check
 tests. Passing a check is evidence about that property only, not certification of conformance to x402.
 
-Checks run in three places: **S** checks read a facilitator's `GET /supported`; **F** checks drive a facilitator (a
-double offline, or a facilitator you run on devnet) and the resource-server guard in front of it; **R** checks put a
-facilitator double in front of your resource server and request your paid route.
+Checks run in four places: **S** checks read a facilitator's `GET /supported`; **P** checks read the 402 answer of a
+paid URL; **F** checks drive a facilitator (a double offline, or a facilitator you run on devnet) and the
+resource-server guard in front of it; **R** checks put a facilitator double in front of your resource server and
+request your paid route.
+
+Severity: an **error** fails the run (with `--fail-on-error` or in the Action); a **warning** is reported and never
+fails it. A probe result of **unsupported** means nothing was graded.
 
 ## S0
-**What failed.** `GET <facilitator>/supported` didn't answer with JSON: a timeout, DNS or TLS error, a non-2xx status,
-a body over 1 MiB or a body that isn't JSON. No other S check could run.
+**What failed.** `GET <facilitator>/supported` didn't answer HTTP 200 with a JSON object: a timeout, DNS or TLS error,
+a non-2xx status, a body over 1 MiB or a body that isn't a JSON object. No other S check could run.
 **How to fix it.** Check the URL is the facilitator's base URL (the suite appends `/supported`). Serve `/supported`
-without authentication, with `content-type: application/json`. If the endpoint needs a key (as some hosted
-facilitators do), leave it out of `facilitators` and test it on devnet instead.
+with `content-type: application/json`. If the endpoint answers 401 or 403 because it needs credentials (Coinbase CDP,
+for example), set `X402C_FACILITATOR_AUTHORIZATION` to the full `Authorization` header value and
+`X402C_FACILITATOR_AUTH_HOST` to the facilitator's host name. The credential goes to that host only and is never
+printed.
 
 ## S1
-**What failed.** The `SupportedResponse` is missing `kinds` (array), `extensions` (array) or `signers` (object).
+**What failed.** A response with any `x402Version: 2` kind is missing `kinds` (array), `extensions` (array) or
+`signers` (object). A response whose kinds are all `x402Version: 1` is graded against V1 §7.3, which defines `kinds`
+only; it fails S1 only if a kind lacks `scheme` or `network`.
 **Why it matters.** V2 §7.3.1 makes all three required. Clients and resource servers read `signers` to check who will
 pay fees and sign; without it they can't verify a fee payer.
-**How to fix it.** Return all three, even when empty: `{"kinds": [...], "extensions": [], "signers": {}}`. A V1-only
-facilitator fails S1 by design; add V2 kinds or don't advertise V2.
+**How to fix it.** Return all three, even when empty: `{"kinds": [...], "extensions": [], "signers": {}}`. A
+facilitator that adds V2 kinds has to return the V2 shape.
 
 ## S2
 **What failed.** A kind with `x402Version: 2` names its network without CAIP-2, for example `base-sepolia`.
@@ -34,8 +42,10 @@ Keep V1 names only on `x402Version: 1` kinds.
 networks exactly skip your facilitator.
 
 ## S4
-**What failed.** A Solana `exact` kind has no `extra.feePayer`, the value isn't a 32-byte base58 key, or it isn't listed
-in `signers` under a pattern that matches the kind's network (the exact CAIP-2 ID or `solana:*`).
+**What failed.** Error: a Solana `exact` kind has no `extra.feePayer`, or the value isn't a 32-byte base58 key.
+Warning: the fee payer isn't listed in `signers` under a pattern that matches the kind's network (the exact CAIP-2 ID
+or `solana:*`). The spec doesn't say the fee payer must be listed; I infer it from V2 §7.3.1, which describes `signers`
+as the facilitator's public signer addresses, so on its own it is a warning.
 **Why it matters.** The client builds the transaction with this fee payer. A wrong or unlisted key means payments that
 fail to settle, or a fee payer clients can't verify.
 **How to fix it.** Set `extra.feePayer` to the key that will sign as fee payer and list it in `signers` under
@@ -102,16 +112,56 @@ exactly once.
 This is a bug in the suite, not in your code.
 **How to fix it.** Open an issue with the `offline.json` output. Don't rely on that run's other results.
 
+## P1
+**What failed.** An unpaid `GET` of your paid URL wasn't answered with HTTP 402. A 200 means content is served without
+payment; a 404 or 5xx means the probe didn't reach a paid route.
+**How to fix it.** Put the payment middleware in front of the route and check the URL.
+
+## P2
+**What failed.** The 402 carried no `PAYMENT-REQUIRED` header (V2) and no V1 `PaymentRequired` JSON body, or the header
+isn't base64-encoded JSON.
+**How to fix it.** V2 servers send the `PaymentRequired` object base64-encoded in `PAYMENT-REQUIRED` (V2 HTTP
+transport). If a proxy strips custom headers, allow it, and expose it to browsers with
+`Access-Control-Expose-Headers: PAYMENT-REQUIRED`.
+
+## P3
+**What failed.** The `PaymentRequired` object has no `x402Version` of 1 or 2, no `resource.url` (V2), or an empty
+`accepts`; or a V2 object was found in the body instead of the header.
+**How to fix it.** Follow V2 §5.1.2: `{"x402Version": 2, "resource": {"url": ...}, "accepts": [...]}`.
+
+## P4
+**What failed.** An `accepts` entry lacks `scheme`, `network`, `asset`, `payTo`, `amount` (V2; `maxAmountRequired` in
+V1) or `maxTimeoutSeconds`, or has the wrong type: the amount must be a string of atomic units above 0 (`"10000"`, not
+`"0.01"`), the network a CAIP-2 ID in V2, the timeout a positive integer.
+**How to fix it.** Let your x402 SDK build the requirements from a route config rather than writing them by hand.
+
+## P5
+**What failed.** A scheme-specific field is missing. EVM `exact` with EIP-3009 (the default transfer method) needs
+`extra.name` and `extra.version`, the token's EIP-712 domain; Solana `exact` needs `extra.feePayer`.
+**Why it matters.** Without them a client can't build a payment that verifies.
+**How to fix it.** For USDC on Base Sepolia, `"extra": {"name": "USDC", "version": "2"}`. For Solana, take the fee
+payer from your facilitator's `GET /supported`.
+
 ## R0
-**What failed.** An unpaid request to your paid route didn't get a 402 with a decodable `PAYMENT-REQUIRED` header naming
-Solana devnet.
-**How to fix it.** Make sure the probe reaches the paid route, the server is configured for Solana devnet while
-testing, and the middleware sets the header. Fix this first: the R1-R9 results depend on it.
+**What failed.** An unpaid request to your paid route didn't get a 402 with a decodable `PAYMENT-REQUIRED` header.
+If the header decoded but offered no `exact` payment on Solana devnet or Base Sepolia, the result is **unsupported**
+(exit code 3), not failed: nothing was graded.
+**How to fix it.** Make sure the probe reaches the paid route and the middleware sets the header. For an unsupported
+result, offer `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` or `eip155:84532` on a test build of the route. Fix this
+first: the other results depend on it.
 
 ## R1
-**What failed.** A request with a payment the double settled successfully wasn't served.
-**How to fix it.** Your server must use `X402_FACILITATOR_URL` as its facilitator so the probe's double answers.
-Without a served success, R2-R9 prove nothing.
+**What failed.** A request with a payment the double settled successfully wasn't served, or it was served but your
+server never called the double's `/verify` or `/settle`.
+**How to fix it.** Your server must use `X402_FACILITATOR_URL` as its facilitator so the probe's double answers. If it
+serves without calling the double, it is talking to another facilitator, and the probe stops there instead of
+reporting results that would mean nothing.
+
+## RX
+**What failed.** The probe couldn't run to completion: the facilitator double's port was taken, something else was
+already answering on your server's port, your `--start` server exited or never answered within 60 s, or the probe
+crashed. The error is in `resource-server.json` and the job log.
+**How to fix it.** Free the port or pick another with `port`, and check your server's start command and logs.
 
 ## R2
 **What failed.** The same payment presented twice was served twice (F3).
@@ -119,7 +169,10 @@ Without a served success, R2-R9 prove nothing.
 `duplicate_settlement` answer and never serve on it.
 
 ## R3
-**What failed.** Your route served content when `/settle` timed out (F6).
+**What failed.** Your route served content while `/settle` never answered (F6). The double holds the request open
+and never answers; your server passes if it serves nothing until the probe's 60 s deadline, whatever its own
+facilitator timeout. (Before 1.3.0 the double answered success after 30 s, which wrongly failed servers that waited
+longer than that for a real answer.)
 **How to fix it.** Serve only after a well-formed `success: true`. On a timeout, answer 402 or 5xx and let the client
 retry.
 
@@ -147,3 +200,11 @@ retry.
 ## R9
 **What failed.** Your route served content when `/settle` answered `invalid_transaction_state` (F8).
 **How to fix it.** Treat every `success: false` answer as not paid, whatever its error code.
+
+## R10
+**What failed.** The served response to a settled payment carried no `PAYMENT-RESPONSE` header, or it didn't decode to
+a settlement response with `success: true`.
+**Why it matters.** The V2 HTTP transport returns the settlement result in `PAYMENT-RESPONSE`; clients and agents read
+it for the transaction and payer.
+**How to fix it.** Send the settle result base64-encoded in `PAYMENT-RESPONSE` with the content. The x402 middleware
+does this for you; a hand-written server has to set it.
