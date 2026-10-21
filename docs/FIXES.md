@@ -112,6 +112,12 @@ exactly once.
 This is a bug in the suite, not in your code.
 **How to fix it.** Open an issue with the `offline.json` output. Don't rely on that run's other results.
 
+## F10
+
+The verifier accepted a payload it had already settled under a different PaymentRequirements set — the payment was treated as authorising a request it was never made for.
+
+Fix: record a requirements hash (canonical JSON of the requirements) for every transaction at first verification, and refuse the same transaction against any different hash. Fail closed when the requirements are missing or malformed. Keep the existing duplicate-settlement and memo checks: a legitimate retry of the same request keeps its idempotency contract, and a fresh payment for the new requirements settles normally.
+
 ## P1
 **What failed.** An unpaid `GET` of your paid URL wasn't answered with HTTP 402. A 200 means content is served without
 payment; a 404 or 5xx means the probe didn't reach a paid route.

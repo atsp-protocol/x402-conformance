@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from collections.abc import Callable
 from importlib import resources
@@ -19,6 +20,13 @@ def load_fixture(name: str = "devnet") -> Json:
     return data
 
 
+def requirements_hash(req: Json) -> str:
+    """The binding a verifier can actually enforce: a stable hash of the exact PaymentRequirements a payload was
+    verified against. The exact scheme binds amount, asset and payTo on chain and the memo binds nonce uniqueness;
+    no scheme field binds the protected resource, so the resource binding lives at the verifier boundary."""
+    return hashlib.sha256(json.dumps(req, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
 def vectors(fixture: Json | None = None) -> Vectors:
     fx = fixture or load_fixture()
     req: Json = fx["requirements"]
@@ -29,7 +37,7 @@ def vectors(fixture: Json | None = None) -> Vectors:
 
 
 def _fail(reason: str, req: Json, tx: str = "") -> Json:
-    return {"success": False, "errorReason": reason, "transaction": tx, "network": req["network"]}
+    return {"success": False, "errorReason": reason, "transaction": tx, "network": req.get("network")}
 
 
 class Chain:
@@ -61,14 +69,28 @@ class Reference:
         self.settled: set[str] = set()       # transactions whose success was final and reported
         self.failed: set[str] = set()        # transactions the chain reported as failed
         self.memo_tx: dict[str, str] = {}    # memo -> the transaction that holds it, in flight or settled
+        self.req_hash: dict[str, str] = {}   # transaction -> the requirements hash it was verified under
 
-    def verify(self, p: Any, req: Json) -> Json:
+    def _payment_matches(self, p: Any, req: Json) -> Json | None:
+        """Fail-closed conformance of the payload to the CURRENT requirements. None means it matches."""
+        if not isinstance(req, dict) or any(k not in req for k in ("asset", "payTo", "amount", "network")):
+            return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
         if not isinstance(p, dict) or not p.get("tx") or not p.get("memo"):
             return {"isValid": False, "invalidReason": "invalid_payload"}
         if p.get("mint") != req["asset"] or p.get("dest") != req["payTo"]:
             return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
         if int(p.get("amount", 0)) < int(req["amount"]):
             return {"isValid": False, "invalidReason": "insufficient_funds"}
+        return None
+
+    def verify(self, p: Any, req: Json) -> Json:
+        mismatch = self._payment_matches(p, req)
+        if mismatch is not None:
+            return mismatch
+        prev = self.req_hash.get(p["tx"])
+        if prev is not None and prev != requirements_hash(req):
+            # the transaction was already verified against a different requirements set: cross-request replay
+            return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
         return {"isValid": True}
 
     def _dup(self, p: Json) -> bool:
@@ -84,6 +106,7 @@ class Reference:
         v = self.verify(p, req)
         if not v["isValid"]:
             return _fail(v["invalidReason"], req)
+        self.req_hash.setdefault(p["tx"], requirements_hash(req))
         if self._dup(p):
             return _fail(S.DUPLICATE_SETTLEMENT, req)
         if p["tx"] in self.failed:
@@ -110,12 +133,13 @@ class Faulty(Reference):
 
     def __init__(self, *, open_on_malformed: bool = False, accept_dust: bool = False, no_dup_cache: bool = False,
                  no_memo_check: bool = False, success_before_final: bool = False, burn_on_pending: bool = False,
-                 stuck_pending: bool = False) -> None:
+                 stuck_pending: bool = False, cross_request_replay: bool = False) -> None:
         super().__init__()
         self.open_on_malformed, self.accept_dust = open_on_malformed, accept_dust
         self.no_dup_cache, self.no_memo_check = no_dup_cache, no_memo_check
         self.success_before_final = success_before_final
         self.burn_on_pending, self.stuck_pending = burn_on_pending, stuck_pending
+        self.cross_request_replay = cross_request_replay
         self.burned: set[str] = set()
 
     def verify(self, p: Any, req: Json) -> Json:
@@ -123,7 +147,15 @@ class Faulty(Reference):
             return {"isValid": True}
         if self.accept_dust and isinstance(p, dict) and p.get("tx"):
             return {"isValid": True}
-        return super().verify(p, req)
+        mismatch = self._payment_matches(p, req)
+        if mismatch is not None:
+            return mismatch
+        if self.cross_request_replay:
+            return {"isValid": True}   # the fault: no requirements binding at the verifier boundary
+        prev = self.req_hash.get(p["tx"])
+        if prev is not None and prev != requirements_hash(req):
+            return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
+        return {"isValid": True}
 
     def settle(self, p: Any, req: Json) -> Json:
         if self.open_on_malformed and (not isinstance(p, dict) or not p.get("tx")):
@@ -161,4 +193,5 @@ FAULTS: dict[str, Callable[[], Reference]] = {
     "success_before_final": lambda: Faulty(success_before_final=True),
     "burn_on_pending": lambda: Faulty(burn_on_pending=True),
     "stuck_pending": lambda: Faulty(stuck_pending=True),
+    "cross_request_replay": lambda: Faulty(cross_request_replay=True),
 }

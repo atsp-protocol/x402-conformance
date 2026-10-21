@@ -306,6 +306,25 @@ def _chain(fac: Facilitator) -> Chain | None:
     return ch if isinstance(ch, Chain) else None
 
 
+F10 = ("F10 a payload settled against one PaymentRequirements set is rejected when re-verified or re-settled "
+       "against different requirements (cross-request replay)")
+
+
+def _f10(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
+    # A fresh transaction, settled honestly against the quoted requirements, then offered to the same verifier
+    # under DIFFERENT requirements at the same price: only a requirements binding at the verifier boundary rejects it.
+    p = dict(mk("good"), tx="tx-f10", memo="m-f10")
+    first = fac.settle(p, req)
+    if not _success(first):
+        return result(F10, False, {"note": "first settle failed; nothing settled to replay", "got": first})
+    other = dict(req, resource=str(req.get("resource") or "https://paid.example/resource") + "#substituted")
+    v_against_other = fac.verify(p, other)
+    s_against_other = fac.settle(p, other)
+    rejected = (isinstance(v_against_other, dict) and v_against_other.get("isValid") is False
+                and not _success(s_against_other))
+    return result(F10, rejected, {"verify_against_other": v_against_other, "settle_against_other": s_against_other})
+
+
 def check_safety(fac: Facilitator, mk: Vectors,
                  guard: Callable[[Facilitator], ResourceServerGuard] | None = None) -> list[CheckResult]:
     make_guard = guard or ResourceServerGuard
@@ -338,6 +357,7 @@ def check_safety(fac: Facilitator, mk: Vectors,
     out.append(_f7(fac, mk, req))
     out.append(_f8(fac, mk, req))
     out.append(_f9(fac, mk, req, make_guard))
+    out.append(_f10(fac, mk, req))
     return out
 
 

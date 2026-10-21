@@ -99,6 +99,54 @@ class Offline(unittest.TestCase):
         fx = M.load_fixture("devnet")
         self.assertEqual(fx["requirements"]["network"], "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1")
 
+    def test_f10_cross_request_replay_caught(self):
+        self.assertIn("F10", fails(H.check_safety(M.Faulty(cross_request_replay=True), M.vectors())))
+
+    def test_f10_reference_binding_passes(self):
+        self.assertNotIn("F10", fails(H.check_safety(M.Reference(), M.vectors())))
+
+    def test_reference_rejects_amount_escalation(self):
+        fac, v = M.Reference(), M.vectors()
+        p, req = v("good"), v("req")
+        self.assertTrue(fac.settle(p, req)["success"])
+        higher = dict(req, amount=str(int(req["amount"]) * 2))
+        self.assertFalse(fac.verify(p, higher)["isValid"])
+
+    def test_reference_rejects_recipient_substitution(self):
+        fac, v = M.Reference(), M.vectors()
+        p, req = v("good"), v("req")
+        self.assertTrue(fac.settle(p, req)["success"])
+        other_dest = dict(req, payTo="AnotherRecipie111111111111111111111111111111")
+        self.assertFalse(fac.verify(p, other_dest)["isValid"])
+
+    def test_reference_rejects_resource_substitution(self):
+        fac, v = M.Reference(), M.vectors()
+        p, req = v("good"), v("req")
+        self.assertTrue(fac.settle(p, req)["success"])
+        same_price_other_resource = dict(req, resource="https://other.example/protected")
+        self.assertFalse(fac.verify(p, same_price_other_resource)["isValid"])
+        self.assertFalse(fac.settle(p, same_price_other_resource)["success"])
+
+    def test_verify_fails_closed_on_malformed_requirements(self):
+        fac, v = M.Reference(), M.vectors()
+        p = v("good")
+        for bad in ({}, {"asset": "A"}, {"asset": "A", "payTo": "B", "network": "n"}):
+            self.assertFalse(fac.verify(p, bad)["isValid"])
+        self.assertFalse(fac.settle(p, {"asset": "A"})["success"])
+
+    def test_same_request_retry_preserves_idempotency(self):
+        fac, v = M.Reference(), M.vectors()
+        p, req = v("good"), v("req")
+        self.assertTrue(fac.settle(p, req)["success"])
+        self.assertEqual(fac.settle(p, req)["errorReason"], S.DUPLICATE_SETTLEMENT)
+        self.assertTrue(fac.verify(p, req)["isValid"])
+
+    def test_new_payment_for_higher_request_settles(self):
+        fac, v = M.Reference(), M.vectors()
+        req_b = dict(v("req"), amount="20000")
+        p2 = dict(v("good"), tx="tx-higher", memo="m-higher", amount=20000)
+        self.assertTrue(fac.settle(p2, req_b)["success"])
+
 
 class Report(unittest.TestCase):
     """x402conf report: SARIF for code scanning and JUnit for test viewers, built from the Action's results files."""
