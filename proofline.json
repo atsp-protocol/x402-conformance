@@ -1113,6 +1113,142 @@
    ]
   },
   {
+   "id": "XC-08",
+   "title": "Cross-request payment replay and requirement substitution are rejected",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-02"
+   ],
+   "requirements": [
+    "R-F10"
+   ],
+   "description": "Threat model: settled payment evidence quoted against one PaymentRequirements set (price, recipient, asset, network, resource) must never authorise a different, more expensive or otherwise unauthorised request. The exact scheme binds amount, asset and payTo on chain, and the memo binds nonce uniqueness, but no scheme field cryptographically binds the protected resource; the verifier therefore enforces the binding at the trust boundary by recording the requirements hash a transaction was verified under and refusing the same transaction against any different requirements set. Fail closed on missing or malformed requirements. Acceptance criteria AC01-AC08 below are the required security outcomes; the formal core each sandbox check runs is deliberately small and does not bound the natural-language claim.",
+   "scope": {
+    "allow": [
+     "src/x402conf/mock.py",
+     "src/x402conf/harness.py",
+     "tests/test_offline.py",
+     "docs/SPEC.md",
+     "docs/FIXES.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-08-AC01",
+     "mandatory": true,
+     "statement": "F10 catches a verifier that accepts a settled payload against a different requirements set (cross-request replay)",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f10_cross_request_replay_caught",
+      "expect_exit": 0,
+      "min_tests": 1,
+      "max_skipped": 0,
+      "timeout_s": 300,
+      "test_file": "tests/test_offline.py"
+     }
+    },
+    {
+     "id": "XC-08-AC02",
+     "mandatory": true,
+     "statement": "A settled payment is rejected when re-verified against a higher-priced requirements set (amount escalation)",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_reference_rejects_amount_escalation",
+      "expect_exit": 0,
+      "min_tests": 1,
+      "max_skipped": 0,
+      "timeout_s": 300,
+      "test_file": "tests/test_offline.py"
+     }
+    },
+    {
+     "id": "XC-08-AC03",
+     "mandatory": true,
+     "statement": "Evidence quoted for recipient A is rejected against requirements naming recipient B",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_reference_rejects_recipient_substitution",
+      "expect_exit": 0,
+      "min_tests": 1,
+      "max_skipped": 0,
+      "timeout_s": 300,
+      "test_file": "tests/test_offline.py"
+     }
+    },
+    {
+     "id": "XC-08-AC04",
+     "mandatory": true,
+     "statement": "Payment evidence bound to one resource's requirements is rejected against another resource's requirements even when amount and recipient match",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_reference_rejects_resource_substitution",
+      "expect_exit": 0,
+      "min_tests": 1,
+      "max_skipped": 0,
+      "timeout_s": 300,
+      "test_file": "tests/test_offline.py"
+     }
+    },
+    {
+     "id": "XC-08-AC05",
+     "mandatory": true,
+     "statement": "Verification fails closed on missing or malformed requirements fields",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_verify_fails_closed_on_malformed_requirements",
+      "expect_exit": 0,
+      "min_tests": 1,
+      "max_skipped": 0,
+      "timeout_s": 300,
+      "test_file": "tests/test_offline.py"
+     }
+    },
+    {
+     "id": "XC-08-AC06",
+     "mandatory": true,
+     "statement": "A legitimate retry of the same request against the same requirements keeps the existing idempotency and duplicate-settlement contract",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_same_request_retry_preserves_idempotency",
+      "expect_exit": 0,
+      "min_tests": 1,
+      "max_skipped": 0,
+      "timeout_s": 300,
+      "test_file": "tests/test_offline.py"
+     }
+    },
+    {
+     "id": "XC-08-AC07",
+     "mandatory": true,
+     "statement": "A valid new payment for the higher-priced request settles normally (no false positive against honest traffic)",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_new_payment_for_higher_request_settles",
+      "expect_exit": 0,
+      "min_tests": 1,
+      "max_skipped": 0,
+      "timeout_s": 300,
+      "test_file": "tests/test_offline.py"
+     }
+    },
+    {
+     "id": "XC-08-AC08",
+     "mandatory": true,
+     "statement": "The full offline suite, including every F1-F9 case, passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "min_tests": 20,
+      "max_skipped": 0,
+      "timeout_s": 600,
+      "test_file": "tests/test_offline.py"
+     }
+    }
+   ]
+  },
+  {
    "id": "XC-M1",
    "title": "M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet",
    "phase": "implement",
