@@ -86,6 +86,14 @@ verifies `proofline.json.sig` against `guard/owner.pub`. Anyone can repeat that 
 | XC-07 | R-HYG | XC-07-AC01: Hygiene scan finds nothing | `python3 tools/vv.py hygiene` → `hits == 0` | CI `vv` receipt |
 | XC-07 | R-HYG | XC-07-AC02: Every changed file is inside this task's scope | changed files ⊆ scope.allow | CI `vv` receipt |
 | XC-07 | R-HYG | XC-07-AC03: Committed and pushed to main | HEAD on origin/main | CI `vv` receipt |
+| XC-08 | R-F10 | XC-08-AC01: F10 catches a verifier that accepts a settled payload against a different requirements set (cross-request replay) | `PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_f10_cross_request_replay_caught` | CI `vv` receipt |
+| XC-08 | R-F10 | XC-08-AC02: a settled payment is rejected when re-verified against a higher-priced requirements set | amount escalation check in `tests/test_offline.py` | CI `vv` receipt |
+| XC-08 | R-F10 | XC-08-AC03: evidence quoted for recipient A is rejected against requirements naming recipient B | recipient substitution check in `tests/test_offline.py` | CI `vv` receipt |
+| XC-08 | R-F10 | XC-08-AC04: payment evidence bound to one resource's requirements is rejected against another resource's requirements | resource substitution check in `tests/test_offline.py` | CI `vv` receipt |
+| XC-08 | R-F10 | XC-08-AC05: verification fails closed on missing or malformed requirements fields | malformed-requirements checks in `tests/test_offline.py` | CI `vv` receipt |
+| XC-08 | R-F10 | XC-08-AC06: a legitimate retry of the same request keeps idempotency and duplicate settlement | same-request retry check in `tests/test_offline.py` | CI `vv` receipt |
+| XC-08 | R-F10 | XC-08-AC07: a valid new payment for the higher-priced request settles normally | higher-request check in `tests/test_offline.py` | CI `vv` receipt |
+| XC-08 | R-F10 | XC-08-AC08: the full offline suite, including every F1-F9 case, passes unchanged | `PYTHONPATH=src python3 -m unittest discover -s tests` | CI `vv` receipt |
 | XC-M1 | R-GRANT | XC-M1-AC01: Devnet runner module exists | `src/x402conf/devnet/runner.py` | CI `vv` receipt |
 | XC-M1 | R-GRANT | XC-M1-AC02: Devnet evidence with SHA256SUMS committed | `cd evidence/devnet && sha256sum -c SHA256SUMS` | CI `vv` receipt |
 | XC-M1 | R-GRANT | XC-M1-AC03: Devnet run uses the devnet CAIP-2 ID only | `evidence/devnet/run.json` must be present for `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | CI `vv` receipt |
