@@ -53,7 +53,7 @@
   ],
   "scripts": {
     "build": "tsc -p .",
-    "test": "tsc -p . && node --test --test-reporter=spec dist/test/",
+    "test": "tsc -p . && node --test --test-reporter=spec dist/test/*.test.js",
     "prepack": "tsc -p ."
   },
   "dependencies": {
