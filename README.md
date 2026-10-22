@@ -284,19 +284,6 @@ No public users yet. I only list a user once they've said so publicly. If you ru
 **Free run for your project.** Open an issue with your repo or facilitator URL and I'll run the suite against it,
 post the results, and send a tests-only pull request with the Action and badge. It's free, with no conditions.
 
-## Managed services
-
-The core is free and stays free. If you'd rather not run it yourself, or you need more than the open suite, I offer:
-- **Hosted continuous monitoring** of your live endpoints, with alerts on regressions
-- **Signed conformance reports** for each release, with a public verify link
-- **Custom checks** for your scheme, chain or extensions
-- **Priority support** with an agreed response time
-
-The first three customers get design-partner pricing. Monitoring is a monthly subscription, reports are priced per
-release, and custom checks are fixed-scope work quoted up front. Details are in [docs/MANAGED.md](docs/MANAGED.md). To get
-in touch, open a [Managed services enquiry](https://github.com/atsp-protocol/x402-conformance/issues/new?template=managed-services.yml)
-or email data@optitransfer.ch.
-
 ## Safety
 
 The suite holds no keys of yours and never signs or pays. `live` and `resource` are GET-only, and that's tested. The
