@@ -319,7 +319,7 @@
    "kinds_total": 10,
    "mode": "live-GET-only",
    "ms": 102,
-   "target": "https://pay.openfacilitator.io"
+   "target": "withheld://facilitator-A"
   },
   {
    "body_sha256": "46b988bad96111531a673f0985cb62ad8b8cf7fa1309954ed61518f8135c0c2b",

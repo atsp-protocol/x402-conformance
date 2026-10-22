@@ -213,7 +213,7 @@ The full results, with raw bodies and hashes, are on the [project page](https://
 | facilitator.payai.network | 200 | pass | pass | pass | pass | pass | |
 | x402.dexter.cash | 200 | pass | pass | pass | pass | pass | |
 | facilitator.ultravioletadao.xyz | 200 | pass | pass | pass | pass | warning | devnet fee payer not listed under `signers` (inferred rule) |
-| pay.openfacilitator.io | 200 | pass | pass | pass | pass | pass | |
+| facilitator-A (name withheld) | 200 | pass | pass | pass | pass | pass | |
 | facilitator.xpay.sh | 200 | pass | pass | pass | pass | pass | |
 | x402.polygon.technology | 200 | pass | pass | pass | pass | pass | |
 | facilitator.goplausible.xyz | 200 | pass | pass | **fail** | pass | pass | Algorand IDs use the full 44-character genesis hash; the x402 Algorand spec uses `algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k` |
