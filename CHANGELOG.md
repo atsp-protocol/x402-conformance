@@ -8,7 +8,6 @@
   for its network and capped with spend controls, passes; a client that signs the first offer and one that ignores its
   maximum are caught, on Solana devnet and Base Sepolia (`ts/test/client-offers.test.ts`). A fix section is in
   [docs/FIXES.md](docs/FIXES.md#c2).
-
 - C1, a client never hands a 402 to its caller as a success. `checkClientHandles402` runs a client once through a
   recording proxy in front of a paid route behind the facilitator double. It passes when the client pays and gets a
   2xx, or rejects with an error, and fails when the client resolves with the 402. The stock `@x402/fetch` client, the
@@ -22,7 +21,6 @@
   server with an idempotency record written when `/settle` succeeds passes; a server that writes its record only once
   the response is delivered, and one with no record, fail (`ts/test/abort.test.ts`, on Solana devnet and Base
   Sepolia). A fix section is in [docs/FIXES.md](docs/FIXES.md#r23).
-
 - R15, no settlement when the paid handler fails (`probeDelivery`): the probe pays a route that answers 5xx, one that
   redirects and one that throws, and fails a server that calls `/settle` for any of them or sends a
   `PAYMENT-RESPONSE`. The control is `ts/example/delivery-server.ts`, which settles only after a 2xx; the
