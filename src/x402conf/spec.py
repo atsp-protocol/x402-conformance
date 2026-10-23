@@ -160,6 +160,11 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
             "controls": ["ts:R15 control: a server that settles only after a 2xx charges nothing"],
             "faulty": ["ts:R15 catches a server that settles before the handler runs (settle_first)",
                        "ts:R15 catches a server that settles anything below 400"]},
+    "R16": {"profile": "security-profile",
+            "basis": "RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to "
+                     "deliver and is not settled",
+            "controls": ["ts:R16 control: a server that refuses a paid HEAD with a 402 and settles nothing passes"],
+            "faulty": ["ts:R16 catches a server that settles a paid HEAD as if it were a GET (head_settles)"]},
     "R20": {"profile": "security-profile", "basis": "control: the route answers 402 with an exact offer the probe can pay",
             "controls": [_TS_RETRY], "faulty": ["ts:R20 control: a URL that is not a paid route fails the control"]},
     "R20a": {"profile": "security-profile",

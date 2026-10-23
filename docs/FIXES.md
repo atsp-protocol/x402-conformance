@@ -316,6 +316,15 @@ success, charges the client for an error page, a redirect it still has to follow
 4xx or 5xx, or when it throws, cancel the settlement and send the handler's response with no `PAYMENT-RESPONSE`.
 `ts/example/delivery-server.ts` shows one way to do it.
 
+## R16
+**What failed.** The probe sent `HEAD` to your paid `GET` route with a valid-looking payment, and your server
+answered it 2xx, called `/settle` for it, or sent a `PAYMENT-RESPONSE`.
+**Why it matters.** A `HEAD` response carries no content (RFC 9110 §9.3.2). A server that settles one charges the
+client for headers only, and a client or crawler that probes with `HEAD` pays for nothing.
+**How to fix it.** Match `HEAD` against the `GET` route so the paywall applies, and when a `HEAD` carries a payment
+answer 402 asking the client to retry as `GET`, without calling `/verify` or `/settle`.
+`ts/example/head-server.ts` shows one way to do it.
+
 ## R20
 **What failed.** The route did not answer 402 with an `exact` offer the probe could pay, so R20 graded nothing.
 **Why it matters.** R20a and R20b need one paid attempt to time out and be retried.
