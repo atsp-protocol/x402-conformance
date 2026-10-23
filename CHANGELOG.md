@@ -1,5 +1,12 @@
 # Changelog
 ## Unreleased
+- R12, parallel requests with one payment identifier (`probeParallel`): the probe sends eight requests at once with the
+  same payment-identifier id and a fresh payment each, and fails a server that settles more than one of them or serves
+  one that doesn't name the settlement. R13, two replicas (`probeReplicas`): the same id goes to one replica, then the
+  other, then both at once, and the service must settle it once in all. The control is `ts/example/replica-server.ts`
+  (an idempotency record that reserves the key before it awaits, shared by both replicas); the `check_then_set` build
+  and a per-process record each fail, on Solana devnet and Base Sepolia (`ts/test/concurrency.test.ts`). The contract
+  task is XC-17 (AC01, AC02).
 - C3, a client offered V2 never falls back to V1 (`checkClientKeepsV2`). A recording proxy in front of a paid route
   adds a V1 body for the same offer to the route's 402, next to its V2 `PAYMENT-REQUIRED` header. The client must pay
   with `PAYMENT-SIGNATURE` at `x402Version` 2; a payment with `X-PAYMENT` or at `x402Version` 1 fails, and so does a

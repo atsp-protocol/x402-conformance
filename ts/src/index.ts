@@ -16,4 +16,5 @@ export { probeAbort, type AbortOptions } from "./abort.js";
 export { probeDelivery, R15, type FailingRoutes, type DeliveryOptions } from "./delivery.js";
 export { probeHead, R16 } from "./head.js";
 export { probeUnpaidHead, R16A } from "./head-unpaid.js";
+export { probeParallel, probeReplicas, R12, R13, type ConcurrencyOptions } from "./concurrency.js";
 export { probeMalformedHeader, MALFORMED_HEADERS } from "./header.js";

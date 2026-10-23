@@ -295,6 +295,25 @@ hook's transport context), never `paymentPayload.resource.url`. Until a fixed `@
 `createSIWxResourceServerExtension` and replace its `onAfterSettle` hook (see `ts/example/binding-server.ts`).
 
 
+## R12
+**What failed.** Parallel requests that carried the same payment-identifier id, each with a fresh payment, were settled
+more than once, or a served answer did not name the one settlement.
+**Why it matters.** A client that retries in parallel, or fans one request out, pays once per request it sent. The id
+is the client's promise that these are one payment; a server that reads its record before settling and writes it only
+after misses every request that arrives in between, and charges each of them.
+**How to fix it.** Make the read and the write of the idempotency record one step: reserve the key (route and payment
+id, bound to the payer) before anything is awaited, then let a request that finds a reservation wait for it and serve
+the result with the original `PAYMENT-RESPONSE`. Drop the reservation if the request ends without a settlement, so the
+next one can pay (see `ts/example/replica-server.ts`).
+
+## R13
+**What failed.** The same payment-identifier id sent to two replicas of the service, one after the other and then to
+both at once, was settled more than once, or a served answer did not name the one settlement.
+**Why it matters.** Behind a load balancer a retry can reach any replica. A record held in each process's memory knows
+only what that replica settled, so a retry that reaches the other one is charged again.
+**How to fix it.** Keep the idempotency record in a store every replica shares, with an atomic reserve as in R12, so
+any replica can serve a key another one settled.
+
 ## R14
 **What failed.** The probe killed your server after `/settle` succeeded and before the client got the response, started
 it again and presented the same payment. Your server called `/settle` again for a payment that had already settled,
