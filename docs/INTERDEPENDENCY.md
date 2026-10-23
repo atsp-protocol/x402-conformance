@@ -55,6 +55,7 @@ graph LR
   XC_45["XC-45<br/>C3: a client pays V2 and never falls back to V1..."]
   XC_46["XC-46<br/>F12: /verify rejects an unsupported network or a..."]
   XC_47("XC-47<br/>S5: every kind /supported advertises gets a verd...")
+  XC_48["XC-48<br/>Release 1.6.0: the rest of the v1.5 build list"]
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -118,16 +119,18 @@ graph LR
   XC_23 --> XC_30
   XC_25 --> XC_30
   XC_17 --> XC_31
-  XC_18 --> XC_31
-  XC_19 --> XC_31
   XC_21 --> XC_31
-  XC_22 --> XC_31
-  XC_24 --> XC_31
-  XC_26 --> XC_31
-  XC_27 --> XC_31
-  XC_28 --> XC_31
-  XC_29 --> XC_31
+  XC_23 --> XC_31
+  XC_25 --> XC_31
   XC_30 --> XC_31
+  XC_39 --> XC_31
+  XC_40 --> XC_31
+  XC_41 --> XC_31
+  XC_42 --> XC_31
+  XC_43 --> XC_31
+  XC_44 --> XC_31
+  XC_45 --> XC_31
+  XC_46 --> XC_31
   XC_31 --> XC_32
   XC_M6 --> XC_32
   XC_12 --> XC_33
@@ -146,6 +149,15 @@ graph LR
   XC_15 --> XC_46
   XC_01 --> XC_47
   XC_02 --> XC_47
+  XC_18 --> XC_48
+  XC_19 --> XC_48
+  XC_22 --> XC_48
+  XC_24 --> XC_48
+  XC_26 --> XC_48
+  XC_27 --> XC_48
+  XC_28 --> XC_48
+  XC_29 --> XC_48
+  XC_31 --> XC_48
   XC_05 --> XC_M1
   XC_05 --> XC_M2
   XC_05 --> XC_M3
@@ -154,7 +166,7 @@ graph LR
   XC_05 --> XC_M6
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
-  class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_21,XC_23,XC_25,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_M3,XC_M4 done
+  class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_21,XC_23,XC_25,XC_30,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_M3,XC_M4 done
   class XC_47 proposed
 ```
 
@@ -182,35 +194,36 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-15 Normative additions: F5 extended, F11, P6, P7 | implement | done | XC-02, XC-01 | XC-16, XC-30, XC-46 | R-F5X, R-F11, R-P6, R-P7 | 6 (command 4, pushed 1, scope 1) | `src/x402conf/**`; `tests/**`; `ts/**`; `docs/SPEC.md`; `docs/FIXES.md`; `README.md` |
 | XC-16 Evidence v2 and the test-credibility gate | integrate | done | XC-09, XC-10, XC-15 | XC-20, XC-25, XC-29, XC-30, XC-33, XC-35, XC-36 | R-CRED | 4 (command 2, pushed 1, scope 1) | `src/x402conf/**`; `ts/**`; `tests/**`; `tools/vv.py`; `.github/workflows/**`; `docs/**` |
 | XC-17 Concurrency and idempotency: R12, R13, R14 | implement | done | XC-10 | XC-19, XC-22, XC-31, XC-34 | R-CONC | 6 (command 4, pushed 1, scope 1) | `ts/**`; `lean/X402Conformance/**`; `docs/**` |
-| XC-18 Payment versus delivery: R15 to R19 | implement | signed | XC-10 | XC-19, XC-31, XC-39, XC-40 | R-DELIV | 7 (command 5, pushed 1, scope 1) | `ts/**`; `docs/**` |
-| XC-19 Implementation matrix: stock servers at pinned versions | verify | signed | XC-10, XC-17, XC-18 | XC-28, XC-31 | R-MATRIX | 3 (command 1, pushed 1, scope 1) | `evidence/impl-matrix/**`; `docs/MATRIX.md`; `.github/workflows/**`; `ts/**` |
+| XC-18 Payment versus delivery: R15 to R19 | implement | signed | XC-10 | XC-19, XC-39, XC-40, XC-48 | R-DELIV | 7 (command 5, pushed 1, scope 1) | `ts/**`; `docs/**` |
+| XC-19 Implementation matrix: stock servers at pinned versions | verify | signed | XC-10, XC-17, XC-18 | XC-28, XC-48 | R-MATRIX | 3 (command 1, pushed 1, scope 1) | `evidence/impl-matrix/**`; `docs/MATRIX.md`; `.github/workflows/**`; `ts/**` |
 | XC-20 Adoption track A1-A8, built into the code | integrate | signed | XC-10, XC-16 | XC-26, XC-30 | R-ADOPT | 8 (command 5, file_exists 1, pushed 1, scope 1) | `corpus/**`; `examples/**`; `ts/**`; `src/x402conf/**`; `tests/**`; `action.yml`; `.github/**`; `docs/**`; `README.md` |
 | XC-21 R14: a crash between a successful /settle and the response | implement | done | XC-05, XC-M4 | XC-22, XC-31 | R-CONC | 8 (command 3, file_exists 1, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `src/x402conf/cli.py`; `tests/test_offline.py`; `tests/test_live.py`; `action.yml`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
-| XC-22 R20: a client retry never pays twice for one request | implement | signed | XC-17, XC-21 | XC-31, XC-41 | R-CONC | 8 (command 4, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `tests/test_live.py`; `action.yml`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
-| XC-23 Docs in sync with the build, and a generated interdependency map | integrate | done | XC-04, XC-05 | XC-27, XC-30 | R-DOCS | 7 (command 3, grep 2, pushed 1, scope 1) | `README.md`; `CHANGELOG.md`; `CONTRIBUTING.md`; `docs/**`; `ts/README.md`; `ts/mcp/README.md`; `tools/interdeps.py`; `tests/test_interdeps.py`; `.github/workflows/ci.yml` |
-| XC-24 Lean: n replicas, shared atomic check-and-set versus partitioned caches | verify | signed | XC-03, XC-M3 | XC-31 | R-LEAN | 4 (command 2, pushed 1, scope 1) | `lean/X402Conformance/Replicas.lean`; `lean/X402Conformance.lean`; `lean/Axioms.lean`; `docs/SPEC.md` |
-| XC-25 A2 and A5: the PR summary comment and the results badge | integrate | done | XC-M4, XC-16 | XC-30 | R-ADOPT | 6 (command 3, grep 1, pushed 1, scope 1) | `action.yml`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `README.md`; `docs/**` |
-| XC-26 A4: framework quickstarts, clone to first result, run in CI | integrate | signed | XC-20, XC-14 | XC-31 | R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `examples/**`; `tools/quickstart.sh`; `.github/workflows/ci.yml`; `docs/USING.md`; `README.md` |
-| XC-27 A8: every docs example is run by CI | integrate | signed | XC-23 | XC-31 | R-ADOPT | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/doc_examples.py`; `tests/test_doc_examples.py`; `.github/workflows/ci.yml`; `README.md`; `docs/**`; `examples/**`; `Makefile.example` |
-| XC-28 A7: the compatibility matrix is generated from runs, on a schedule | verify | signed | XC-19 | XC-31 | R-MATRIX | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `.github/workflows/compat-matrix.yml`; `evidence/impl-matrix/**` |
-| XC-29 Credibility: the mutation matrix and false-positive handling, published | verify | signed | XC-16 | XC-31 | R-CRED | 6 (command 2, grep 2, pushed 1, scope 1) | `tools/mutation_matrix.py`; `tests/test_mutation_matrix.py`; `docs/site/**`; `docs/FALSE-POSITIVES.md`; `.github/workflows/**` |
-| XC-30 Release 1.4.0: versions, changelog and the corpus tag | release | signed | XC-09, XC-10, XC-11, XC-12, XC-13, XC-14, XC-15, XC-16, XC-20, XC-23, XC-25 | XC-31 | R-RELEASE | 6 (command 2, grep 2, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**` |
-| XC-31 Release 1.5.0 | release | signed | XC-17, XC-18, XC-19, XC-21, XC-22, XC-24, XC-26, XC-27, XC-28, XC-29, XC-30 | XC-32 | R-RELEASE | 5 (command 2, grep 1, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**` |
+| XC-22 R20: a client retry never pays twice for one request | implement | signed | XC-17, XC-21 | XC-41, XC-48 | R-CONC | 8 (command 4, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `tests/test_live.py`; `action.yml`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
+| XC-23 Docs in sync with the build, and a generated interdependency map | integrate | done | XC-04, XC-05 | XC-27, XC-30, XC-31 | R-DOCS | 7 (command 3, grep 2, pushed 1, scope 1) | `README.md`; `CHANGELOG.md`; `CONTRIBUTING.md`; `docs/**`; `ts/README.md`; `ts/mcp/README.md`; `tools/interdeps.py`; `tests/test_interdeps.py`; `.github/workflows/ci.yml` |
+| XC-24 Lean: n replicas, shared atomic check-and-set versus partitioned caches | verify | signed | XC-03, XC-M3 | XC-48 | R-LEAN | 4 (command 2, pushed 1, scope 1) | `lean/X402Conformance/Replicas.lean`; `lean/X402Conformance.lean`; `lean/Axioms.lean`; `docs/SPEC.md` |
+| XC-25 A2 and A5: the PR summary comment and the results badge | integrate | done | XC-M4, XC-16 | XC-30, XC-31 | R-ADOPT | 6 (command 3, grep 1, pushed 1, scope 1) | `action.yml`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `README.md`; `docs/**` |
+| XC-26 A4: framework quickstarts, clone to first result, run in CI | integrate | signed | XC-20, XC-14 | XC-48 | R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `examples/**`; `tools/quickstart.sh`; `.github/workflows/ci.yml`; `docs/USING.md`; `README.md` |
+| XC-27 A8: every docs example is run by CI | integrate | signed | XC-23 | XC-48 | R-ADOPT | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/doc_examples.py`; `tests/test_doc_examples.py`; `.github/workflows/ci.yml`; `README.md`; `docs/**`; `examples/**`; `Makefile.example` |
+| XC-28 A7: the compatibility matrix is generated from runs, on a schedule | verify | signed | XC-19 | XC-48 | R-MATRIX | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `.github/workflows/compat-matrix.yml`; `evidence/impl-matrix/**` |
+| XC-29 Credibility: the mutation matrix and false-positive handling, published | verify | signed | XC-16 | XC-48 | R-CRED | 6 (command 2, grep 2, pushed 1, scope 1) | `tools/mutation_matrix.py`; `tests/test_mutation_matrix.py`; `docs/site/**`; `docs/FALSE-POSITIVES.md`; `.github/workflows/**` |
+| XC-30 Release 1.4.0: versions, changelog and the corpus tag | release | done | XC-09, XC-10, XC-11, XC-12, XC-13, XC-14, XC-15, XC-16, XC-20, XC-23, XC-25 | XC-31 | R-RELEASE | 6 (command 2, grep 2, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**` |
+| XC-31 Release 1.5.0 | release | signed | XC-17, XC-21, XC-23, XC-25, XC-30, XC-39, XC-40, XC-41, XC-42, XC-43, XC-44, XC-45, XC-46 | XC-32, XC-48 | R-RELEASE | 9 (command 6, grep 1, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**` |
 | XC-32 The release gate: dropping the experimental label | monitor | signed | XC-31, XC-M6 | - | R-GATE | 5 (command 1, grep 2, pushed 1, scope 1) | `docs/ROADMAP.md`; `docs/ADOPTION.md`; `README.md`; `docs/site/**` |
 | XC-33 MCP transport: X1 and X2 for paid MCP tools | implement | signed | XC-12, XC-16 | - | R-MCP | 6 (command 3, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-34 R21: settlement preemption for caller-unbound settlement (Permit2 on EVM) | implement | signed | XC-17 | - | R-PREEMPT | 5 (command 2, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-35 Schemes: upto (U1-U3) and batch-settlement (B1-B3) | implement | signed | XC-16 | - | R-SCHEMES | 10 (command 7, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-36 Discovery and A2A: D1 (Bazaar) and G1 (A2A) | implement | signed | XC-16 | - | R-DISCOVERY | 6 (command 3, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-37 SIWX normative: W1-W3 | implement | signed | XC-10 | - | R-SIWX | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
-| XC-39 R16a: an unpaid HEAD on a paid GET route gets the same 402 as GET | implement | done | XC-18 | - | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-40 R22: the paid response keeps the handler's 2xx status and headers | implement | done | XC-18 | - | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-41 R23: a client abort during settle is recoverable | implement | done | XC-22 | - | R-CONC | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-42 R24: a malformed payment header is a 4xx | implement | done | XC-10 | - | R-R24 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-43 C1: a client never treats 402 as success | implement | done | XC-M4 | - | R-C1 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-44 C2: a client pays an offer within its own policy | implement | done | XC-M4 | - | R-C2 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-45 C3: a client pays V2 and never falls back to V1 when a V2 offer is present | implement | done | XC-M4 | - | R-C3 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-46 F12: /verify rejects an unsupported network or an asset with no token contract | implement | done | XC-15 | - | R-F12 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
+| XC-39 R16a: an unpaid HEAD on a paid GET route gets the same 402 as GET | implement | done | XC-18 | XC-31 | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-40 R22: the paid response keeps the handler's 2xx status and headers | implement | done | XC-18 | XC-31 | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-41 R23: a client abort during settle is recoverable | implement | done | XC-22 | XC-31 | R-CONC | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-42 R24: a malformed payment header is a 4xx | implement | done | XC-10 | XC-31 | R-R24 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-43 C1: a client never treats 402 as success | implement | done | XC-M4 | XC-31 | R-C1 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-44 C2: a client pays an offer within its own policy | implement | done | XC-M4 | XC-31 | R-C2 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-45 C3: a client pays V2 and never falls back to V1 when a V2 offer is present | implement | done | XC-M4 | XC-31 | R-C3 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-46 F12: /verify rejects an unsupported network or an asset with no token contract | implement | done | XC-15 | XC-31 | R-F12 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
 | XC-47 S5: every kind /supported advertises gets a verdict from /verify | implement | proposed | XC-01, XC-02 | - | R-S5 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
+| XC-48 Release 1.6.0: the rest of the v1.5 build list | release | signed | XC-18, XC-19, XC-22, XC-24, XC-26, XC-27, XC-28, XC-29, XC-31 | - | R-RELEASE | 9 (command 6, grep 1, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | signed | XC-05 | - | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |
@@ -229,7 +242,7 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | S2 | built | normative | V2 11.1: networks are CAIP-2 | - | XC-01 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_live.py, tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md |
 | S3 | built | normative | V2 11.1 and SVM exact: Solana networks use the published CAIP-2 IDs | - | XC-01 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_live.py, tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md |
 | S4 | built | normative | SVM exact: extra.feePayer is the sponsor's public key | - | XC-01 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_live.py, tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md |
-| S5 | built | normative | V2 7.3: /supported lists the payment kinds the facilitator supports; V2 7.1: /verify answers isValid, with invalidReason when it is false | - | XC-47 | src/x402conf/harness.py, src/x402conf/mock.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | docs/FIXES.md, docs/SPEC.md |
+| S5 | built | normative | V2 7.3: /supported lists the payment kinds the facilitator supports; V2 7.1: /verify answers isValid, with invalidReason when it is false | - | XC-47 | src/x402conf/harness.py, src/x402conf/mock.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | docs/FIXES.md, docs/SPEC.md, docs/VV.md |
 | P1 | built | normative | V2 HTTP transport: payment required is signalled with HTTP 402 | - | - | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/index.ts, ts/src/resource.ts, ts/src/testing.ts | tests/test_live.py, tests/test_offline.py, ts/test/resource.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/mcp/README.md |
 | P2 | built | normative | V2 HTTP transport: PAYMENT-REQUIRED carries base64 JSON; V1 5.1 body | - | - | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/index.ts, ts/src/resource.ts, ts/src/testing.ts | tests/test_live.py, tests/test_offline.py, ts/test/resource.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/mcp/README.md |
 | P3 | built | normative | V2 5.1.2: x402Version, resource and accepts are required | - | - | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/index.ts, ts/src/resource.ts, ts/src/testing.ts | tests/test_live.py, tests/test_offline.py, ts/test/resource.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/mcp/README.md |
