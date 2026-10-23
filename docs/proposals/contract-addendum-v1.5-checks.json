@@ -1,0 +1,723 @@
+{
+ "about": "PROPOSED, UNSIGNED. Eight Proofline tasks, XC-39 to XC-46, one per check built after the v1.5 addendum that no signed task covers: R16a, R22, R23, R24, C1, C2, C3 and F12. Nothing here is binding and vv does not read this file. A task becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. XC-38 is left for R20c, which is proposed on its own. Each task has the shape of XC-21: the TypeScript criteria use the signed name guard from XC-17-AC01, with the name anchored to the check id and a minimum equal to the passing tests at the commit that adds the check, so a control or a faulty build can't be dropped later without failing the task. Requirement ids reuse R-DELIV and R-CONC where a signed task already has them, and are R-<check id> for a new kind of check, as R-F11 and R-R11 are.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[]",
+ "tasks": [
+  {
+   "id": "XC-39",
+   "title": "R16a: an unpaid HEAD on a paid GET route gets the same 402 as GET",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-18"
+   ],
+   "requirements": [
+    "R-DELIV"
+   ],
+   "description": "An unpaid HEAD request on a paid GET route is answered 402: the paywall covers every method that reaches the protected handler, so a paywall that matches only GET does not let HEAD through. RFC 9110 9.3.2: HEAD is GET without the content.",
+   "scope": {
+    "allow": [
+     "ts/**",
+     "src/x402conf/spec.py",
+     "tests/test_offline.py",
+     "docs/**",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-39-AC01",
+     "mandatory": true,
+     "statement": "R16a passes a paywall that covers HEAD and catches one that matches only GET, on Solana devnet and Base Sepolia (6 passing tests named R16a)",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^R16a ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^R16a ' 6",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-39-AC02",
+     "mandatory": true,
+     "statement": "R16a is in the check catalog with its profile, spec basis, control and faulty build, the TypeScript catalog matches it, and it has a fix section",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-39-AC03",
+     "mandatory": true,
+     "statement": "docs/SPEC.md has the R16a row",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/SPEC.md",
+      "pattern": "^\\| R16a \\|",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-39-AC04",
+     "mandatory": true,
+     "statement": "docs/FIXES.md has the R16a section",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/FIXES.md",
+      "pattern": "^## R16a$",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-39-AC05",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-39-AC06",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  },
+  {
+   "id": "XC-40",
+   "title": "R22: the paid response keeps the handler's 2xx status and headers",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-18"
+   ],
+   "requirements": [
+    "R-DELIV"
+   ],
+   "description": "After a successful settle the client receives the handler's own 2xx status and headers: a 201 stays a 201 with its Location and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15).",
+   "scope": {
+    "allow": [
+     "ts/**",
+     "src/x402conf/spec.py",
+     "tests/test_offline.py",
+     "docs/**",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-40-AC01",
+     "mandatory": true,
+     "statement": "R22 passes a server that keeps the handler status and catches one that rewrites it to 200, on Solana devnet and Base Sepolia (6 passing tests named R22)",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^R22 ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^R22 ' 6",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-40-AC02",
+     "mandatory": true,
+     "statement": "R22 is in the check catalog with its profile, spec basis, control and faulty build, the TypeScript catalog matches it, and it has a fix section",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-40-AC03",
+     "mandatory": true,
+     "statement": "docs/SPEC.md has the R22 row",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/SPEC.md",
+      "pattern": "^\\| R22 \\|",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-40-AC04",
+     "mandatory": true,
+     "statement": "docs/FIXES.md has the R22 section",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/FIXES.md",
+      "pattern": "^## R22$",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-40-AC05",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-40-AC06",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  },
+  {
+   "id": "XC-41",
+   "title": "R23: a client abort during settle is recoverable",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-22"
+   ],
+   "requirements": [
+    "R-CONC"
+   ],
+   "description": "A client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again.",
+   "scope": {
+    "allow": [
+     "ts/**",
+     "src/x402conf/spec.py",
+     "tests/test_offline.py",
+     "docs/**",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-41-AC01",
+     "mandatory": true,
+     "statement": "R23 passes a server with an idempotency record and catches one that settles twice or loses the result, on Solana devnet and Base Sepolia (8 passing tests named R23)",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^R23 ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^R23 ' 8",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-41-AC02",
+     "mandatory": true,
+     "statement": "R23 is in the check catalog with its profile, spec basis, control and faulty build, the TypeScript catalog matches it, and it has a fix section",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-41-AC03",
+     "mandatory": true,
+     "statement": "docs/SPEC.md has the R23 row",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/SPEC.md",
+      "pattern": "^\\| R23 \\|",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-41-AC04",
+     "mandatory": true,
+     "statement": "docs/FIXES.md has the R23 section",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/FIXES.md",
+      "pattern": "^## R23$",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-41-AC05",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-41-AC06",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  },
+  {
+   "id": "XC-42",
+   "title": "R24: a malformed payment header is a 4xx",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-10"
+   ],
+   "requirements": [
+    "R-R24"
+   ],
+   "description": "A payment header that is not base64, not JSON or not an object gets 402 or 400 with a structured error, never a 5xx, a dropped connection or the content. V2 HTTP transport, Error Handling: a malformed payment payload is 400, Payment Required and Payment Failed are 402, and 500 is for the server's own failures.",
+   "scope": {
+    "allow": [
+     "ts/**",
+     "src/x402conf/spec.py",
+     "tests/test_offline.py",
+     "docs/**",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-42-AC01",
+     "mandatory": true,
+     "statement": "R24 passes the stock middleware and catches a server that answers 500 or drops the connection, on Solana devnet and Base Sepolia (8 passing tests named R24)",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^R24 ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^R24 ' 8",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-42-AC02",
+     "mandatory": true,
+     "statement": "R24 is in the check catalog with its profile, spec basis, control and faulty build, the TypeScript catalog matches it, and it has a fix section",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-42-AC03",
+     "mandatory": true,
+     "statement": "docs/SPEC.md has the R24 row",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/SPEC.md",
+      "pattern": "^\\| R24 \\|",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-42-AC04",
+     "mandatory": true,
+     "statement": "docs/FIXES.md has the R24 section",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/FIXES.md",
+      "pattern": "^## R24$",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-42-AC05",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-42-AC06",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  },
+  {
+   "id": "XC-43",
+   "title": "C1: a client never treats 402 as success",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-M4"
+   ],
+   "requirements": [
+    "R-C1"
+   ],
+   "description": "A 402 is Payment Required or Payment Failed, not success, so a client that receives one pays and retries or raises an error; it never hands the 402 to its caller as a successful response.",
+   "scope": {
+    "allow": [
+     "ts/**",
+     "src/x402conf/spec.py",
+     "tests/test_offline.py",
+     "docs/**",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-43-AC01",
+     "mandatory": true,
+     "statement": "C1 passes the stock fetch client and catches a client that passes 402 through as success, on Solana devnet and Base Sepolia (12 passing tests named C1)",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^C1 ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^C1 ' 12",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-43-AC02",
+     "mandatory": true,
+     "statement": "C1 is in the check catalog with its profile, spec basis, control and faulty build, the TypeScript catalog matches it, and it has a fix section",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-43-AC03",
+     "mandatory": true,
+     "statement": "docs/SPEC.md has the C1 row",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/SPEC.md",
+      "pattern": "^\\| C1 \\|",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-43-AC04",
+     "mandatory": true,
+     "statement": "docs/FIXES.md has the C1 section",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/FIXES.md",
+      "pattern": "^## C1$",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-43-AC05",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-43-AC06",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  },
+  {
+   "id": "XC-44",
+   "title": "C2: a client pays an offer within its own policy",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-M4"
+   ],
+   "requirements": [
+    "R-C2"
+   ],
+   "description": "Given several offers, a client pays one within its own networks and maximum amount, not simply the first one.",
+   "scope": {
+    "allow": [
+     "ts/**",
+     "src/x402conf/spec.py",
+     "tests/test_offline.py",
+     "docs/**",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-44-AC01",
+     "mandatory": true,
+     "statement": "C2 passes the stock client and catches a client that signs the first offer or ignores its maximum, on Solana devnet and Base Sepolia (6 passing tests named C2)",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^C2 ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^C2 ' 6",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-44-AC02",
+     "mandatory": true,
+     "statement": "C2 is in the check catalog with its profile, spec basis, control and faulty build, the TypeScript catalog matches it, and it has a fix section",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-44-AC03",
+     "mandatory": true,
+     "statement": "docs/SPEC.md has the C2 row",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/SPEC.md",
+      "pattern": "^\\| C2 \\|",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-44-AC04",
+     "mandatory": true,
+     "statement": "docs/FIXES.md has the C2 section",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/FIXES.md",
+      "pattern": "^## C2$",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-44-AC05",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-44-AC06",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  },
+  {
+   "id": "XC-45",
+   "title": "C3: a client pays V2 and never falls back to V1 when a V2 offer is present",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-M4"
+   ],
+   "requirements": [
+    "R-C3"
+   ],
+   "description": "When a 402 carries a V2 PAYMENT-REQUIRED and also a V1 body, a client pays with V2.",
+   "scope": {
+    "allow": [
+     "ts/**",
+     "src/x402conf/spec.py",
+     "tests/test_offline.py",
+     "docs/**",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-45-AC01",
+     "mandatory": true,
+     "statement": "C3 passes the stock fetch client and catches a client that falls back to V1, on Solana devnet and Base Sepolia (4 passing tests named C3)",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^C3 ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^C3 ' 4",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-45-AC02",
+     "mandatory": true,
+     "statement": "C3 is in the check catalog with its profile, spec basis, control and faulty build, the TypeScript catalog matches it, and it has a fix section",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-45-AC03",
+     "mandatory": true,
+     "statement": "docs/SPEC.md has the C3 row",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/SPEC.md",
+      "pattern": "^\\| C3 \\|",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-45-AC04",
+     "mandatory": true,
+     "statement": "docs/FIXES.md has the C3 section",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/FIXES.md",
+      "pattern": "^## C3$",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-45-AC05",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-45-AC06",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  },
+  {
+   "id": "XC-46",
+   "title": "F12: /verify rejects an unsupported network or an asset with no token contract",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-15"
+   ],
+   "requirements": [
+    "R-F12"
+   ],
+   "description": "/verify checks a payment against the kinds /supported advertises: requirements that name a network the facilitator does not support, or an asset that is not a token contract on the network, are answered invalid. V2 7.1 and 7.3.",
+   "scope": {
+    "allow": [
+     "src/x402conf/**",
+     "tests/test_offline.py",
+     "ts/src/catalog.ts",
+     "docs/**",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-46-AC01",
+     "mandatory": true,
+     "statement": "F12 passes the reference double and catches a facilitator that trusts the requirements it is given",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f12_reference_rejects_unsupported_network_and_asset tests.test_offline.Offline.test_f12_trusting_the_requirements_caught",
+      "expect_exit": 0,
+      "min_tests": 2,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-46-AC02",
+     "mandatory": true,
+     "statement": "F12 is in the check catalog with its profile, spec basis, control and faulty build, the TypeScript catalog matches it, and it has a fix section",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-46-AC03",
+     "mandatory": true,
+     "statement": "docs/SPEC.md has the F12 row",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/SPEC.md",
+      "pattern": "^\\| F12 \\|",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-46-AC04",
+     "mandatory": true,
+     "statement": "docs/FIXES.md has the F12 section",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/FIXES.md",
+      "pattern": "^## F12$",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-46-AC05",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-46-AC06",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  }
+ ]
+}
