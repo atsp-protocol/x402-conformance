@@ -1,0 +1,3 @@
+x402[flask,clients,evm,svm]==2.25.0
+flask==3.1.3
+httpx==0.28.1

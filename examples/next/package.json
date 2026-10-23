@@ -1,0 +1,15 @@
+{
+  "name": "x402-conformance-quickstart-next",
+  "private": true,
+  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
+  "dependencies": {
+    "@x402/core": "2.28.0",
+    "@x402/evm": "2.28.0",
+    "@x402/next": "2.28.0",
+    "@x402/paywall": "2.28.0",
+    "@x402/svm": "2.28.0",
+    "next": "16.4.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  }
+}

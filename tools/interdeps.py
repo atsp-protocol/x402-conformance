@@ -255,6 +255,10 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
      "the devnet runner, its node helpers and fixtures"),
     ("py-suite", "code", ("src/x402conf/**", "pyproject.toml"), "the Python suite: CLI, harness, mock and package"),
     ("py-tests", "test", ("tests/**",), "the Python tests"),
+    ("quickstarts", "code", ("tools/quickstart.sh", "examples/.gitignore", "examples/express/**", "examples/hono/**",
+                            "examples/next/**", "examples/fastapi/**", "examples/flask/**", "examples/go/**"),
+     "the framework quickstarts: one minimal paid route per stack at a pinned SDK version, and the script that goes "
+     "from a clean checkout to a first result"),
     ("py-examples", "code", ("examples/**",), "the Python example server"),
     ("ts-catalog", "code", ("ts/src/catalog.ts",), "the TypeScript catalogue, kept identical to the Python one"),
     ("ts-cli", "code", ("ts/src/cli.ts",), "the x402conf-svm CLI"),
@@ -293,6 +297,7 @@ EDGES: list[tuple[str, str, str]] = [
     ("interdeps-tests", "ci", R), ("contract", "interdeps-map", U), ("contract", "vv", R), ("contract", "vv-doc", R),
     ("contract", "claims", R), ("proposals", "interdeps-map", U), ("proposals", "contract", R),
     ("claims", "interdeps-map", U), ("claims", "vv", R), ("vv", "ci", R), ("vv", "vv-doc", R),
+    ("ts-cli", "quickstarts", R), ("quickstarts", "docs", R), ("quickstarts", "ci", R),
     ("catalog", "interdeps-map", U), ("catalog", "ts-catalog", U), ("catalog", "docs", R), ("catalog", "readme", R),
     ("catalog", "py-tests", R), ("catalog", "py-suite", R), ("catalog", "vv-doc", R), ("catalog", "changelog", R),
     ("ts-catalog", "ts-tests", R), ("ts-catalog", "catalog", R), ("py-suite", "py-tests", R),

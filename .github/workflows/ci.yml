@@ -189,6 +189,27 @@ jobs:
           set +e
           out=$(pipx run --spec "$PWD/$(ls x402_conformance-*.whl)" x402conf demo --fault no_fee_payer); code=$?
           echo "$out"; test "$code" = 1 && echo "$out" | grep -q "fix: https://"
+  quickstarts:
+    # A4: clone to a first result for each framework quickstart, in under 300 s each, nothing leaving loopback.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [express, hono, next, fastapi, flask, go]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-go@v5
+        if: matrix.framework == 'go'
+        with: { go-version: "1.24", cache-dependency-path: examples/go/go.sum }
+      - name: Clone to a first result
+        run: sh tools/quickstart.sh ${{ matrix.framework }}
+      - name: The result is a pass on every check
+        run: python3 -c "import json,sys;d=json.load(open('examples/${{ matrix.framework }}/quickstart-result.json'));sys.exit(0 if len(d['results'])>=11 and all(r['pass'] for r in d['results']) else 1)"
   action:
     runs-on: ubuntu-latest
     timeout-minutes: 15
