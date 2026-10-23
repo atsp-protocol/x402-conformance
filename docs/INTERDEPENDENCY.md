@@ -46,6 +46,7 @@ graph LR
   XC_35["XC-35<br/>Schemes: upto (U1-U3) and batch-settlement (B1-B..."]
   XC_36["XC-36<br/>Discovery and A2A: D1 (Bazaar) and G1 (A2A)"]
   XC_37["XC-37<br/>SIWX normative: W1-W3"]
+  XC_47("XC-47<br/>S5: every kind /supported advertises gets a verd...")
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -127,6 +128,8 @@ graph LR
   XC_16 --> XC_35
   XC_16 --> XC_36
   XC_10 --> XC_37
+  XC_01 --> XC_47
+  XC_02 --> XC_47
   XC_05 --> XC_M1
   XC_05 --> XC_M2
   XC_05 --> XC_M3
@@ -136,6 +139,7 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_21,XC_25,XC_M3,XC_M4 done
+  class XC_47 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -145,8 +149,8 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | task | phase | status | depends on | needed by | requirements | criteria | scope |
 |---|---|---|---|---|---|---|---|
 | XC-00 Repository spine: licence, notice, governance and contract | design | done | - | - | R-OPEN, R-GOV | 11 (command 2, grep 7, pushed 1, scope 1) | `LICENSE`; `NOTICE`; `README.md`; `CONTRIBUTING.md`; `CODE_OF_CONDUCT.md`; `SECURITY.md`; `CHANGELOG.md`; `.gitignore`; `.github/CODEOWNERS`; `.github/ISSUE_TEMPLATE/**`; `.github/pull_request_template.md`; `guard/**`; `proofline.json`; `proofline.json.sig`; `pyproject.toml` |
-| XC-01 Live checks S1-S4 over GET /supported (GET only) | implement | done | - | XC-02, XC-04, XC-06, XC-15 | R-S1, R-S2, R-S3, R-S4, R-SAFE-GET | 9 (command 7, pushed 1, scope 1) | `src/x402conf/__init__.py`; `src/x402conf/__main__.py`; `src/x402conf/py.typed`; `src/x402conf/spec.py`; `src/x402conf/types.py`; `src/x402conf/harness.py`; `src/x402conf/cli.py`; `tests/test_live.py` |
-| XC-02 Safety checks F1-F6 with devnet fixtures and facilitator doubles | implement | done | XC-01 | XC-04, XC-05, XC-08, XC-09, XC-15 | R-F1, R-F2, R-F3, R-F4, R-F5, R-F6 | 11 (command 9, pushed 1, scope 1) | `src/x402conf/mock.py`; `src/x402conf/fixtures/**`; `tests/test_offline.py` |
+| XC-01 Live checks S1-S4 over GET /supported (GET only) | implement | done | - | XC-02, XC-04, XC-06, XC-15, XC-47 | R-S1, R-S2, R-S3, R-S4, R-SAFE-GET | 9 (command 7, pushed 1, scope 1) | `src/x402conf/__init__.py`; `src/x402conf/__main__.py`; `src/x402conf/py.typed`; `src/x402conf/spec.py`; `src/x402conf/types.py`; `src/x402conf/harness.py`; `src/x402conf/cli.py`; `tests/test_live.py` |
+| XC-02 Safety checks F1-F6 with devnet fixtures and facilitator doubles | implement | done | XC-01 | XC-04, XC-05, XC-08, XC-09, XC-15, XC-47 | R-F1, R-F2, R-F3, R-F4, R-F5, R-F6 | 11 (command 9, pushed 1, scope 1) | `src/x402conf/mock.py`; `src/x402conf/fixtures/**`; `tests/test_offline.py` |
 | XC-03 Lean models of the credit rule and nonce, standard axioms only | verify | done | - | XC-04, XC-05, XC-24 | R-LEAN | 13 (command 2, grep 7, metric 2, pushed 1, scope 1) | `lean/lean-toolchain`; `lean/lakefile.toml`; `lean/lake-manifest.json`; `lean/X402Conformance.lean`; `lean/X402Conformance/**`; `lean/Axioms.lean`; `tools/lean_axioms.py` |
 | XC-04 Documentation: architecture, spec mapping, threat model, roadmap, V&V | verify | done | XC-01, XC-02, XC-03 | XC-23 | R-DOCS | 16 (command 1, grep 13, pushed 1, scope 1) | `docs/**` |
 | XC-05 CI: lint, types, tests, Lean, V&V with receipts | integrate | done | XC-02, XC-03 | XC-21, XC-23, XC-M1, XC-M2, XC-M3, XC-M4, XC-M5, XC-M6 | R-CI | 6 (command 2, grep 2, pushed 1, scope 1) | `.github/workflows/**`; `tools/vv.py`; `tools/verify-sig.mjs`; `vv/claims.json` |
@@ -182,6 +186,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-35 Schemes: upto (U1-U3) and batch-settlement (B1-B3) | implement | signed | XC-16 | - | R-SCHEMES | 10 (command 7, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-36 Discovery and A2A: D1 (Bazaar) and G1 (A2A) | implement | signed | XC-16 | - | R-DISCOVERY | 6 (command 3, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-37 SIWX normative: W1-W3 | implement | signed | XC-10 | - | R-SIWX | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
+| XC-47 S5: every kind /supported advertises gets a verdict from /verify | implement | proposed | XC-01, XC-02 | - | R-S5 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | signed | XC-05 | - | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |
@@ -200,7 +205,7 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | S2 | built | normative | V2 11.1: networks are CAIP-2 | - | XC-01 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_live.py, tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md |
 | S3 | built | normative | V2 11.1 and SVM exact: Solana networks use the published CAIP-2 IDs | - | XC-01 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_live.py, tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md |
 | S4 | built | normative | SVM exact: extra.feePayer is the sponsor's public key | - | XC-01 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_live.py, tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md |
-| S5 | built | normative | V2 7.3: /supported lists the payment kinds the facilitator supports; V2 7.1: /verify answers isValid, with invalidReason when it is false | - | - | src/x402conf/harness.py, src/x402conf/mock.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | docs/FIXES.md, docs/SPEC.md |
+| S5 | built | normative | V2 7.3: /supported lists the payment kinds the facilitator supports; V2 7.1: /verify answers isValid, with invalidReason when it is false | - | XC-47 | src/x402conf/harness.py, src/x402conf/mock.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | docs/FIXES.md, docs/SPEC.md |
 | P1 | built | normative | V2 HTTP transport: payment required is signalled with HTTP 402 | - | - | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/index.ts, ts/src/resource.ts, ts/src/testing.ts | tests/test_live.py, tests/test_offline.py, ts/test/resource.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/mcp/README.md |
 | P2 | built | normative | V2 HTTP transport: PAYMENT-REQUIRED carries base64 JSON; V1 5.1 body | - | - | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/index.ts, ts/src/resource.ts, ts/src/testing.ts | tests/test_live.py, tests/test_offline.py, ts/test/resource.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/mcp/README.md |
 | P3 | built | normative | V2 5.1.2: x402Version, resource and accepts are required | - | - | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/index.ts, ts/src/resource.ts, ts/src/testing.ts | tests/test_live.py, tests/test_offline.py, ts/test/resource.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/mcp/README.md |
