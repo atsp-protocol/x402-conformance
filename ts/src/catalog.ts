@@ -171,6 +171,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "resilience",
   "basis": "payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile"
  },
+ "R16a": {
+  "profile": "security-profile",
+  "basis": "the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402"
+ },
  "R20": {
   "profile": "security-profile",
   "basis": "control: the route answers 402 with an exact offer the probe can pay"
