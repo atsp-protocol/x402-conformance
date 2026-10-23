@@ -98,7 +98,7 @@ inputs:
     default: "4402"
   offline:
     description: >-
-      Also run the F1-F11 self-test of the suite against its reference and fault-injected doubles. It checks the suite,
+      Also run the F1-F12 and S5 self-test of the suite against its reference and fault-injected doubles. It checks the suite,
       not your code. On by default in 1.x for compatibility; set "false" to skip it.
     required: false
     default: "true"
@@ -132,7 +132,7 @@ outputs:
     value: ${{ inputs.results-dir }}
   badge:
     description: >-
-      <results-dir>/badge.json, a shields.io endpoint badge (label "x402 conformance", pass n/n or n failing). Publish
+      <results-dir>/badge.json, a shields.io endpoint badge (label "x402 conformance", pass n/n, n failing, fail or unsupported). Publish
       it anywhere public and use https://img.shields.io/endpoint?url=<its URL>.
     value: ${{ inputs.results-dir }}/badge.json
   pr-comment:

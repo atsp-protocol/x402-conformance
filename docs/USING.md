@@ -17,7 +17,7 @@ them sends anything anywhere unless you ask it to.
 Every entry point names itself in the report's `via` field and in the User-Agent of the requests it makes
 (`x402-conformance/<version> (+https://github.com/atsp-protocol/x402-conformance; via=<entry point>)`). That's the only
 identifier: no machine or user ID, and no telemetry. It lets shared cases and committed reports be counted per
-ecosystem.
+ecosystem. `runConformance` without `via` reports `testing`.
 
 | entry point | `via` | install |
 |---|---|---|
@@ -47,8 +47,9 @@ npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start 
 one. Both CLIs produce identical cases from the same report; CI checks both against
 [one fixture](../corpus/fixtures).
 
-The Node `resource` command is a port of the Python one with the same check IDs; CI runs both on 29 answers and
-fails if they ever disagree. `--share` on a failing run writes `<out>.case.json` and prints the issue link.
+The Node `resource` command is a port of the Python one with the same check IDs; CI runs both on 37 answers and
+fails if they ever disagree. `--share` writes the case next to `--out`, with `.json` replaced by `.case.json` (or `./x402-conformance-case.json`
+without `--out`), and prints the issue link when a check failed.
 
 ## GitHub Actions
 
@@ -100,6 +101,37 @@ test("x402", async () => {
 `saveReport(report, { share: true, stack: { framework: "hono", sdk: "@x402/hono", sdk_version: "2.28.0" } })` also
 writes the anonymised case and returns the issue link.
 
+## Checks you call from code
+
+Since 1.5.0, `x402-conformance-svm` also exports R12, R13, R15, R16, R16a, R22, R23 and R24 for your server and C1,
+C2 and C3 for your client, as functions. The CLIs, the Action, `runConformance`, the pytest plugin and the MCP server
+don't run them, so call them from your own test. Each one takes the facilitator double from `startDouble()`, except
+`probeUnpaidHead`, and your server or client must use the double's `url` as its facilitator:
+
+```ts
+import { explain, makeReport, probeHead, probeMalformedHeader, probeUnpaidHead, startDouble } from "x402-conformance-svm";
+
+const double = await startDouble(0);
+const server = await startMyServer(double.url); // takes a facilitator URL, returns { url, close }
+const results = [
+  ...(await probeUnpaidHead(server.url)),              // R16a
+  ...(await probeHead(server.url, double)),            // R16
+  ...(await probeMalformedHeader(server.url, double)), // R24
+];
+await server.close();
+await double.close();
+const report = makeReport("resource-server", server.url, results, "library");
+if (report.summary.failed) throw new Error(explain(report));
+```
+
+The others take the same double: `probeParallel(url, double)` (R12), `probeReplicas(urlA, urlB, double)` (R13, one
+route on two replicas), `probeDelivery({ error, redirect, throws }, double)` (R15, routes that answer 5xx, redirect and
+throw), `probeStatus(routes, double)` (R22, routes by name, each `{ url, status, headers? }`) and `probeAbort(url,
+double)` (R23). A client check takes your client as a function that fetches a URL, pays and returns the final
+`Response`, and returns one result: `checkClientHandles402(client, url, double)` (C1), `checkClientOfferPolicy(client,
+url, double, { networks, maxAmount })` (C2) and `checkClientKeepsV2(client, url, double)` (C3). The
+[README](../README.md#what-it-catches) says what each one checks.
+
 ## Hono, Express and other servers
 
 Any server works if its facilitator URL comes from configuration. CI runs the stock `@x402/hono`
@@ -113,7 +145,7 @@ use the CLI's `--start` or the Action.
 { "mcpServers": { "x402-conformance": { "command": "npx", "args": ["-y", "x402-conformance-mcp"] } } }
 ```
 
-Seven tools: `x402_check_payment_required` (P1-P7), `x402_demo` (the whole suite on a built-in demo server, no wallet),
+Seven tools: `x402_check_payment_required` (P1-P7), `x402_demo` (P1-P7 and R0-R10 on a built-in demo server, no wallet),
 `x402_start_facilitator_double`, `x402_probe_resource_server` (R0-R10, loopback only) and
 `x402_stop_facilitator_double`, `x402_explain_check` (the FIXES.md section) and `x402_share_case` (an anonymised case
 and the issue link; it sends nothing). Listed in the MCP registry as `io.github.atsp-protocol/x402-conformance`. CI
@@ -176,14 +208,15 @@ Installing `x402-conformance` registers a pytest plugin, so any suite gets the `
 
 ```python
 def test_my_402_answer(x402):
-    x402.assert_passed(x402.check_payment_required("http://127.0.0.1:8000/paid"))      # P1-P5, in Python
+    x402.assert_passed(x402.check_payment_required("http://127.0.0.1:8000/paid"))      # P1-P7, in Python
 
 def test_never_serves_before_settlement(x402):
     report = x402.probe("http://127.0.0.1:4020/paid", start="uvicorn app:app --port 4020")  # R0-R10
     x402.assert_passed(report)
 ```
 
-`probe` runs the Node probe (`x402conf-svm` on PATH, `X402CONF_SVM`, or `npx`), which starts the facilitator double
+`probe` runs the Node probe (the command in `X402CONF_SVM` if it is set, else `x402conf-svm` on PATH, else
+`npx -y x402-conformance-svm` at the plugin's own version), which starts the facilitator double
 and your server with `X402_FACILITATOR_URL`; your app must use it as its facilitator. A failed check fails the test
 with its detail and fix link. `--x402-report-dir DIR` keeps every report, and `--x402-share` writes anonymised cases
 and lists the links to submit them in the terminal summary. Nothing is sent. CI runs the plugin against the stock

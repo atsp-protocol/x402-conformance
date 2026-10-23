@@ -77,6 +77,31 @@ settled once and the retry must get the earlier result or a `PAYMENT-RESPONSE` n
 with no record it pays twice. `checkClientRetry(client, url, double)` grades a client's own retry the same way: it must
 resend the payment or keep the payment id.
 
+**From code only (1.5.0): R12, R13, R15, R16, R16a, R22, R23, R24 and C1 to C3.** These checks are exports of the
+package, not commands: the CLI, the Action, `runConformance`, the pytest plugin and the MCP server don't run them. Each
+takes the facilitator double from `startDouble()`, except `probeUnpaidHead`, and your server or client must use the
+double's `url` as its facilitator. Each returns the same `Result[]` as `probe`, so `makeReport` and `explain` work on
+them.
+
+| id | export | what your server or client must do |
+|---|---|---|
+| R12 | `probeParallel(url, double, { parallel? })` | settle one payment-identifier id once when eight requests carry it at the same time, each with a fresh payment, and name that settlement in every served answer |
+| R13 | `probeReplicas(urlA, urlB, double)` | settle one payment-identifier id once across two replicas: sent to one, then the other, then both at once |
+| R15 | `probeDelivery({ error, redirect, throws }, double)` | not settle, and send no `PAYMENT-RESPONSE`, when the paid handler answers 5xx, redirects or throws |
+| R16 | `probeHead(url, double)` | not settle a paid `HEAD`: no 2xx, no `/settle` call, no `PAYMENT-RESPONSE` |
+| R16a | `probeUnpaidHead(url)` | answer an unpaid `HEAD` with the same 402 and `PAYMENT-REQUIRED` offer as `GET` |
+| R22 | `probeStatus(routes, double)`, each route `{ url, status, headers? }` | keep the handler's 2xx status and headers on the paid response: a 201 stays a 201 with its `Location` |
+| R23 | `probeAbort(url, double)` | not charge a client that disconnects while `/settle` is in flight, or charge it once and give a resend of the same payment the settled result |
+| R24 | `probeMalformedHeader(url, double)` | answer five malformed `PAYMENT-SIGNATURE` values with 402 or 400 and a structured error, never a 5xx, a dropped connection or the content |
+| C1 | `checkClientHandles402(client, url, double)` | never hand a 402 to its caller as a success: pay and get a 2xx, or reject with an error |
+| C2 | `checkClientOfferPolicy(client, url, double, { networks, maxAmount })` | pay one of several offers on its configured networks and within its maximum, and never sign for a network outside its set |
+| C3 | `checkClientKeepsV2(client, url, double)` | pay with `PAYMENT-SIGNATURE` at `x402Version` 2 when the 402 also carries a V1 body |
+
+A client check takes your client as a function that fetches a URL, pays and returns the final `Response`. The controls
+and the faulty builds each check catches are in `example/` and `test/`, and
+[docs/USING.md](https://github.com/atsp-protocol/x402-conformance/blob/main/docs/USING.md#checks-you-call-from-code) has
+a complete example.
+
 **Exit codes.** 0 all pass; 1 a check failed; 2 usage error, or the run couldn't complete (a port in use, your server
 exited or never answered); 3 unsupported (your server offers no network the probe grades). `--help` and `--version`
 exit 0.
