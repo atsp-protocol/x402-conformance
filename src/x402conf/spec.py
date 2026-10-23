@@ -170,4 +170,9 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
              "basis": "a retry resending the same signed payment is settled once and gets the original result",
              "controls": [_TS_RETRY, "ts:R20b client control: the stock @x402/fetch client"],
              "faulty": ["ts:R20b settle_both: with no record", "ts:R20b client resign_on_timeout"]},
+    "R22": {"profile": "normative",
+            "basis": "after a successful settle the client receives the handler's own status code and Location; "
+                     "a 302 stays a 302 and a 201 stays a 201, never a rewritten 200",
+            "controls": ["ts:R22 control: a server that returns the handler status"],
+            "faulty": ["ts:R22 catches a server that rewrites the paid response to 200"]},
 }

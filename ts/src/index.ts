@@ -10,3 +10,4 @@ export { probeCrash, SpawnedServer, commandControl, paymentRef, R14, CRASH_POINT
   type CrashPoint } from "./crash.js";
 export { probeRetry, checkClientRetry, type RetryOptions, type RetryingClient } from "./retry.js";
 export { probeDelivery, R15, type FailingRoutes, type DeliveryOptions } from "./delivery.js";
+export { probeStatus, R22, type StatusRoutes, type StatusOptions } from "./status.js";

@@ -305,6 +305,14 @@ written, fsynced and renamed). When the same payment comes back, never settle it
 with a 409 that names the payment so it can be reconciled on chain. `ts/example/crash-server.ts` shows one way to do
 it.
 
+## R22
+**What failed.** After a successful settle the client did not receive the handler's own status, or a 302 arrived
+without its Location. The result's `cases` say which route answered which status.
+**Why it matters.** The client treats the paid response as the handler's response. A 201 that arrives as 200, or a
+302 whose Location was dropped, is a different result from the one the handler produced.
+**How to fix it.** Settle, then send the handler's status and headers unchanged, including Location, and add the
+settlement header beside them. Do not replace a 201 or a 302 with 200.
+
 ## R15
 **What failed.** The probe paid a route whose handler answers 5xx, one that redirects (3xx) and one that throws, and
 your server called `/settle` for at least one of them, or sent a `PAYMENT-RESPONSE` with it. The result's `cases`

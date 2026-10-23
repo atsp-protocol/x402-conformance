@@ -1,5 +1,9 @@
 # Changelog
 ## Unreleased
+- R22, the paid response keeps the handler's status (`probeStatus`): after a successful settle the client receives
+  the handler's own status and Location. A 201 stays a 201 and a 302 stays a 302. The control is
+  `ts/example/status-server.ts`; a build that rewrites the paid response to 200 fails, on Solana devnet and Base
+  Sepolia (`ts/test/handler-status.test.ts`).
 - R15, no settlement when the paid handler fails (`probeDelivery`): the probe pays a route that answers 5xx, one that
   redirects and one that throws, and fails a server that calls `/settle` for any of them or sends a
   `PAYMENT-RESPONSE`. The control is `ts/example/delivery-server.ts`, which settles only after a 2xx; the

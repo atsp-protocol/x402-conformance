@@ -186,6 +186,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "R20b": {
   "profile": "security-profile",
   "basis": "a retry resending the same signed payment is settled once and gets the original result"
+ },
+ "R22": {
+  "profile": "normative",
+  "basis": "after a successful settle the client receives the handler's own status code and Location; a 302 stays a 302 and a 201 stays a 201, never a rewritten 200"
  }
 };
 
