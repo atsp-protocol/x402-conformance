@@ -153,10 +153,14 @@ x402-conformance:
         self.assertTrue(any("not valid Python" in p for p in problems), problems)
 
     def test_an_unparsable_ts_block_is_caught(self):
-        if not (ROOT / "ts" / "node_modules" / "typescript").is_dir():
-            self.skipTest("ts/node_modules is not installed")
+        # With the compiler installed the broken block is a syntax problem; without it the tool reports that the
+        # marked example could not be checked. Either way the run fails and names the block: no skip, so the whole
+        # suite stays "none skipped" wherever it runs.
         problems = self.broken_run("<!-- runnable: ts -->\n```ts\nconst x: = ;\n```\n")
-        self.assertTrue(any("not valid TypeScript" in p for p in problems), problems)
+        if (ROOT / "ts" / "node_modules" / "typescript").is_dir():
+            self.assertTrue(any("not valid TypeScript" in p for p in problems), problems)
+        else:
+            self.assertTrue(any("has no typescript" in p for p in problems), problems)
 
     def test_invalid_json_is_caught(self):
         problems = self.broken_run("<!-- runnable: json -->\n```json\n{\"a\": }\n```\n")
