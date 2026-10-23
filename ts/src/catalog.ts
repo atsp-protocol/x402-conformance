@@ -95,6 +95,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "normative",
   "basis": "V2 7.1: /verify MUST NOT commit payment state"
  },
+ "F12": {
+  "profile": "security-profile",
+  "basis": "V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network"
+ },
  "R0": {
   "profile": "normative",
   "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED"
@@ -202,6 +206,26 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "R20b": {
   "profile": "security-profile",
   "basis": "a retry resending the same signed payment is settled once and gets the original result"
+ },
+ "C3": {
+  "profile": "security-profile",
+  "basis": "V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none"
+ },
+ "C2": {
+  "profile": "security-profile",
+  "basis": "given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific"
+ },
+ "C1": {
+  "profile": "security-profile",
+  "basis": "V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error"
+ },
+ "R23": {
+  "profile": "security-profile",
+  "basis": "a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again"
+ },
+ "R24": {
+  "profile": "resilience",
+  "basis": "V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures"
  }
 };
 
