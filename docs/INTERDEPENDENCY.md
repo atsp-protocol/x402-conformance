@@ -424,7 +424,7 @@ graph LR
 | interdeps-map | doc | 1 | `docs/INTERDEPENDENCY.md` | this map |
 | interdeps-tests | test | 1 | `tests/test_interdeps.py` | the generator's tests |
 | contract | contract | 3 | `proofline.json`; `proofline.json.sig`; `guard/owner.pub` | the owner-signed contract, its signature and key |
-| proposals | contract | 4 | `docs/proposals/**` | proposed, unsigned contract addenda |
+| proposals | contract | 6 | `docs/proposals/**` | proposed, unsigned contract addenda |
 | claims | data | 1 | `vv/claims.json` | the tasks claimed done |
 | vv | code | 2 | `tools/vv.py`; `tools/verify-sig.mjs` | the V&V runner and the signature check |
 | vv-doc | doc | 1 | `docs/VV.md` | the V&V matrix |
