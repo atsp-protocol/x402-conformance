@@ -115,6 +115,12 @@ class Interdeps(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn("stale", out)
 
+    def test_a_new_file_in_a_component_keeps_the_map_current(self) -> None:
+        # Two pull requests that each add a file must not stale each other's committed map.
+        append(self.copy, "docs/proposals/contract-addendum-zz-probe.json", "{}\n")
+        rc, out = run("--check", root=self.copy)
+        self.assertEqual(rc, 0, out)
+
     def test_a_new_check_without_regenerating_the_map_is_stale(self) -> None:
         edit(self.copy, "src/x402conf/spec.py", '    "R14": {', NEW_CHECK + '    "R14": {')
         rc, out = run("--check", root=self.copy)

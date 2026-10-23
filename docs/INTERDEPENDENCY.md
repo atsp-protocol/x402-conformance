@@ -414,44 +414,44 @@ graph LR
   distribution -.-> readme
 ```
 
-| component | kind | files | covers | what |
-|---|---|---|---|---|
-| interdeps | code | 1 | `tools/interdeps.py` | this map's generator, drift check and PR gate |
-| interdeps-map | doc | 1 | `docs/INTERDEPENDENCY.md` | this map |
-| interdeps-tests | test | 1 | `tests/test_interdeps.py` | the generator's tests |
-| contract | contract | 3 | `proofline.json`; `proofline.json.sig`; `guard/owner.pub` | the owner-signed contract, its signature and key |
-| proposals | contract | 5 | `docs/proposals/**` | proposed, unsigned contract addenda |
-| claims | data | 1 | `vv/claims.json` | the tasks claimed done |
-| vv | code | 2 | `tools/vv.py`; `tools/verify-sig.mjs` | the V&V runner and the signature check |
-| vv-doc | doc | 1 | `docs/VV.md` | the V&V matrix |
-| catalog | code | 2 | `src/x402conf/spec.py`; `src/x402conf/types.py` | the check catalogue and its types |
-| pytest-plugin | code | 1 | `src/x402conf/pytest_plugin.py` | the pytest plugin |
-| devnet | code | 9 | `src/x402conf/devnet/**`; `src/x402conf/fixtures/**` | the devnet runner, its node helpers and fixtures |
-| py-suite | code | 7 | `src/x402conf/**`; `pyproject.toml` | the Python suite: CLI, harness, mock and package |
-| py-tests | test | 4 | `tests/**` | the Python tests |
-| py-examples | code | 1 | `examples/**` | the Python example server |
-| ts-catalog | code | 1 | `ts/src/catalog.ts` | the TypeScript catalogue, kept identical to the Python one |
-| ts-cli | code | 1 | `ts/src/cli.ts` | the x402conf-svm CLI |
-| ts-suite | code | 25 | `ts/src/**`; `ts/package.json`; `ts/package-lock.json`; `ts/tsconfig.json`; `ts/LICENSE` | the TypeScript suite, library and matchers |
-| ts-tests | test | 18 | `ts/test/**`; `ts/vitest/**`; `ts/vitest.config.mjs` | the TypeScript tests and the vitest matchers |
-| ts-examples | code | 16 | `ts/example/**` | the TypeScript example servers |
-| ts-readme | doc | 1 | `ts/README.md` | the npm package README |
-| mcp-readme | doc | 1 | `ts/mcp/README.md` | the MCP package README |
-| mcp-tests | test | 1 | `ts/mcp/test/**` | the MCP tests |
-| mcp | code | 11 | `ts/mcp/**` | the MCP server and the AI SDK and LangChain tools |
-| action | code | 1 | `action.yml` | the GitHub Action |
-| distribution | deploy | 5 | `ts/docker/**`; `ts/ci/**`; `.github/workflows/mcp-registry.yml`; `.github/workflows/pages.yml` | the Docker image, the GitLab CI component, the MCP Registry and Pages publishing |
-| site | doc | 2 | `docs/site/**` | the project site |
-| lean | code | 9 | `lean/**`; `tools/lean_axioms.py` | the Lean models and the axiom check |
-| corpus-schemas | data | 2 | `corpus/*.schema.json` | the corpus case and report schemas |
-| corpus | data | 6 | `corpus/**` | the corpus of anonymised cases and its fixtures |
-| evidence | data | 23 | `evidence/**` | hashed evidence from live and devnet runs |
-| readme | doc | 1 | `README.md` | the project README |
-| changelog | doc | 1 | `CHANGELOG.md` | the changelog |
-| docs | doc | 8 | `docs/**` | architecture, spec mapping, threat model, usage, adoption, matrix and roadmap |
-| community | doc | 11 | `CONTRIBUTING.md`; `CODE_OF_CONDUCT.md`; `SECURITY.md`; `.github/ISSUE_TEMPLATE/**`; `.github/pull_request_template.md`; `.github/CODEOWNERS` | contributing, conduct, security and templates |
-| legal | doc | 2 | `LICENSE`; `NOTICE` | the licence and notice |
-| ci | gate | 3 | `.github/workflows/ci.yml`; `.github/truedone.yml`; `.gitignore` | CI: lint, tests, Lean, the TS and MCP builds, V&V, red-green and this map |
+| component | kind | covers | what |
+|---|---|---|---|
+| interdeps | code | `tools/interdeps.py` | this map's generator, drift check and PR gate |
+| interdeps-map | doc | `docs/INTERDEPENDENCY.md` | this map |
+| interdeps-tests | test | `tests/test_interdeps.py` | the generator's tests |
+| contract | contract | `proofline.json`; `proofline.json.sig`; `guard/owner.pub` | the owner-signed contract, its signature and key |
+| proposals | contract | `docs/proposals/**` | proposed, unsigned contract addenda |
+| claims | data | `vv/claims.json` | the tasks claimed done |
+| vv | code | `tools/vv.py`; `tools/verify-sig.mjs` | the V&V runner and the signature check |
+| vv-doc | doc | `docs/VV.md` | the V&V matrix |
+| catalog | code | `src/x402conf/spec.py`; `src/x402conf/types.py` | the check catalogue and its types |
+| pytest-plugin | code | `src/x402conf/pytest_plugin.py` | the pytest plugin |
+| devnet | code | `src/x402conf/devnet/**`; `src/x402conf/fixtures/**` | the devnet runner, its node helpers and fixtures |
+| py-suite | code | `src/x402conf/**`; `pyproject.toml` | the Python suite: CLI, harness, mock and package |
+| py-tests | test | `tests/**` | the Python tests |
+| py-examples | code | `examples/**` | the Python example server |
+| ts-catalog | code | `ts/src/catalog.ts` | the TypeScript catalogue, kept identical to the Python one |
+| ts-cli | code | `ts/src/cli.ts` | the x402conf-svm CLI |
+| ts-suite | code | `ts/src/**`; `ts/package.json`; `ts/package-lock.json`; `ts/tsconfig.json`; `ts/LICENSE` | the TypeScript suite, library and matchers |
+| ts-tests | test | `ts/test/**`; `ts/vitest/**`; `ts/vitest.config.mjs` | the TypeScript tests and the vitest matchers |
+| ts-examples | code | `ts/example/**` | the TypeScript example servers |
+| ts-readme | doc | `ts/README.md` | the npm package README |
+| mcp-readme | doc | `ts/mcp/README.md` | the MCP package README |
+| mcp-tests | test | `ts/mcp/test/**` | the MCP tests |
+| mcp | code | `ts/mcp/**` | the MCP server and the AI SDK and LangChain tools |
+| action | code | `action.yml` | the GitHub Action |
+| distribution | deploy | `ts/docker/**`; `ts/ci/**`; `.github/workflows/mcp-registry.yml`; `.github/workflows/pages.yml` | the Docker image, the GitLab CI component, the MCP Registry and Pages publishing |
+| site | doc | `docs/site/**` | the project site |
+| lean | code | `lean/**`; `tools/lean_axioms.py` | the Lean models and the axiom check |
+| corpus-schemas | data | `corpus/*.schema.json` | the corpus case and report schemas |
+| corpus | data | `corpus/**` | the corpus of anonymised cases and its fixtures |
+| evidence | data | `evidence/**` | hashed evidence from live and devnet runs |
+| readme | doc | `README.md` | the project README |
+| changelog | doc | `CHANGELOG.md` | the changelog |
+| docs | doc | `docs/**` | architecture, spec mapping, threat model, usage, adoption, matrix and roadmap |
+| community | doc | `CONTRIBUTING.md`; `CODE_OF_CONDUCT.md`; `SECURITY.md`; `.github/ISSUE_TEMPLATE/**`; `.github/pull_request_template.md`; `.github/CODEOWNERS` | contributing, conduct, security and templates |
+| legal | doc | `LICENSE`; `NOTICE` | the licence and notice |
+| ci | gate | `.github/workflows/ci.yml`; `.github/truedone.yml`; `.gitignore` | CI: lint, tests, Lean, the TS and MCP builds, V&V, red-green and this map |
 
 | from | to | kind |
 |---|---|---|

@@ -491,13 +491,12 @@ def build(root: str) -> str:
         o.append(f'  {c.replace("-", "_")}["{c}<br/>{k}"]')
     for a, b, k in EDGES:
         o.append(f'  {a.replace("-", "_")} {"==>" if k == U else "-.->"} {b.replace("-", "_")}')
-    o += ["```", "", "| component | kind | files | covers | what |", "|---|---|---|---|---|"]
-    count: dict[str, int] = {}
-    for f in files:
-        if (c := owner(f)):
-            count[c] = count.get(c, 0) + 1
+    # No per-component file count: it changes whenever two pull requests add files in parallel, and each merge would
+    # leave the other's committed map stale. The patterns are the structure; --check still fails on a file no
+    # component covers and on a component that covers none.
+    o += ["```", "", "| component | kind | covers | what |", "|---|---|---|---|"]
     for c, k, g, w in COMPONENTS:
-        o.append(f"| {c} | {k} | {count.get(c, 0)} | {'; '.join(f'`{x}`' for x in g)} | {w} |")
+        o.append(f"| {c} | {k} | {'; '.join(f'`{x}`' for x in g)} | {w} |")
     o += ["", "| from | to | kind |", "|---|---|---|"] + [f"| {a} | {b} | {k} |" for a, b, k in EDGES]
     gaps = [f for f in files if owner(f) is None]
     if gaps:
