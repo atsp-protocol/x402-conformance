@@ -382,6 +382,43 @@ its status and headers and trigger its side effects for free.
 and `PAYMENT-REQUIRED` header as `GET` and never reaches the handler. `ts/example/head-unpaid-server.ts` shows one way
 to do it.
 
+## R17
+**What failed.** The probe paid your route through a shared cache on loopback, then asked for the same URL with no
+payment through the same cache, and got the paid content back, or the paid response carried no `Cache-Control:
+private` or `no-store` and no `Vary` on the payment header, so a shared cache is allowed to store it.
+**Why it matters.** A CDN, a reverse proxy or a corporate cache between your server and its clients stores any 200 it
+is not told to keep out of. The first buyer's content is then served to every later caller for free, and the paywall
+is gone for as long as the entry is fresh.
+**How to fix it.** Send `Cache-Control: private, no-store` on every paid response (and `Vary: PAYMENT-SIGNATURE` if
+you want a private cache to key on the payment). Set it in the payment layer, not in each handler, so no route can
+forget it (see `ts/example/cache-server.ts`).
+
+## R18
+**What failed.** While a settlement was pending, lost or late, your server served the content before the payment was
+final, or refused the request without naming the transaction, the payment id, the nonce or the signature, so the
+client could not tell what it had paid for.
+**Why it matters.** `settlement_pending`, a settle that times out and a settle that succeeded after you gave up all
+leave you unsure whether the funds moved. Serving on a guess gives the content away when the transaction later
+fails; refusing with nothing to go on leaves a buyer who did pay with no way to reconcile or retry.
+**How to fix it.** On `settlement_pending`, answer 402 with the transaction and ask the client to resend the same
+payment; keep retrying the same `/settle` body until it is final (F7). On a timeout, answer 402 naming the payment
+(the transaction, nonce or signature you were given). When `/settle` reports success, serve once and record what you
+served against the payment, so a resend is replayed from the record and a `duplicate_settlement` with no record is
+refused with the payment named (see `ts/example/pending-server.ts`).
+
+## R19
+**What failed.** On a route whose offer declares `extra.paymentFlow` `upfront` or `escrow`, your server served the
+content although the settle failed, answered a failed check without a reason, ran the resource before a check had
+passed, or took a payment signed for a flow the route never offered.
+**Why it matters.** In these flows funds move before the resource runs, so the settle is the check that gates
+execution. A resource that runs first does its work, and its side effects, for a payment that may never settle. A
+server that accepts a payment the client signed for another flow charges under terms the client did not agree to.
+**How to fix it.** Let the payment layer run the check for the declared flow before the handler, serve only on a
+passed check, and refuse a payment whose `accepted.extra.paymentFlow` is not the flow the route offered, with no
+`/settle` call. The probe sees content that came back without a passing check and payments that reached `/settle`;
+a resource that ran behind a refusal is visible only from inside your server, so expose an execution count to the
+testing API's `executed` option and the probe grades that too (see `ts/example/flow-server.ts`).
+
 ## R20
 **What failed.** The route did not answer 402 with an `exact` offer the probe could pay, so R20 graded nothing.
 **Why it matters.** R20a and R20b need one paid attempt to time out and be retried.
