@@ -171,6 +171,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "resilience",
   "basis": "payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile"
  },
+ "R15": {
+  "profile": "normative",
+  "basis": "V2 6.1: in the authorization flow funds move only after the resource completes successfully; a failed, redirected or thrown request is not settled"
+ },
  "R20": {
   "profile": "security-profile",
   "basis": "control: the route answers 402 with an exact offer the probe can pay"

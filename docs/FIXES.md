@@ -305,6 +305,17 @@ written, fsynced and renamed). When the same payment comes back, never settle it
 with a 409 that names the payment so it can be reconciled on chain. `ts/example/crash-server.ts` shows one way to do
 it.
 
+## R15
+**What failed.** The probe paid a route whose handler answers 5xx, one that redirects (3xx) and one that throws, and
+your server called `/settle` for at least one of them, or sent a `PAYMENT-RESPONSE` with it. The result's `cases`
+say which.
+**Why it matters.** In the default authorization flow funds move when `/settle` succeeds (V2 §6.1), and that should
+happen only once the resource has been produced. A server that settles first, or treats any status below 400 as
+success, charges the client for an error page, a redirect it still has to follow, or a crash.
+**How to fix it.** Run the handler first and buffer its response. Call `/settle` only when it answered 2xx; for a 3xx,
+4xx or 5xx, or when it throws, cancel the settlement and send the handler's response with no `PAYMENT-RESPONSE`.
+`ts/example/delivery-server.ts` shows one way to do it.
+
 ## R20
 **What failed.** The route did not answer 402 with an `exact` offer the probe could pay, so R20 graded nothing.
 **Why it matters.** R20a and R20b need one paid attempt to time out and be retried.

@@ -6,7 +6,11 @@
   server with an idempotency record written when `/settle` succeeds passes; a server that writes its record only once
   the response is delivered, and one with no record, fail (`ts/test/abort.test.ts`, on Solana devnet and Base
   Sepolia). A fix section is in [docs/FIXES.md](docs/FIXES.md#r23).
-
+- R15, no settlement when the paid handler fails (`probeDelivery`): the probe pays a route that answers 5xx, one that
+  redirects and one that throws, and fails a server that calls `/settle` for any of them or sends a
+  `PAYMENT-RESPONSE`. The control is `ts/example/delivery-server.ts`, which settles only after a 2xx; the
+  `settle_first` and `settle_below_400` builds each fail, on Solana devnet and Base Sepolia
+  (`ts/test/handler-failure.test.ts`). The contract task is XC-18 (AC01).
 ## 1.4.0 (2026-10-22)
 - R14, a crash between a successful `/settle` and the response (`x402conf-svm probe --crash`, Action `crash: "true"`).
   The probe kills the server while `/settle` is answering and again as the response starts, restarts it (the `--start`

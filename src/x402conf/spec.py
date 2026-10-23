@@ -154,6 +154,12 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
             "faulty": ["ts:R14 catches a server whose idempotency record is in memory only",
                        "ts:R14 catches a server that writes its record only after /settle returns",
                        "ts:R14 catches a server that refuses after a restart without surfacing the payment"]},
+    "R15": {"profile": "normative",
+            "basis": "V2 6.1: in the authorization flow funds move only after the resource completes successfully; a "
+                     "failed, redirected or thrown request is not settled",
+            "controls": ["ts:R15 control: a server that settles only after a 2xx charges nothing"],
+            "faulty": ["ts:R15 catches a server that settles before the handler runs (settle_first)",
+                       "ts:R15 catches a server that settles anything below 400"]},
     "R20": {"profile": "security-profile", "basis": "control: the route answers 402 with an exact offer the probe can pay",
             "controls": [_TS_RETRY], "faulty": ["ts:R20 control: a URL that is not a paid route fails the control"]},
     "R20a": {"profile": "security-profile",

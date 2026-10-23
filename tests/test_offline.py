@@ -193,6 +193,7 @@ class Offline(unittest.TestCase):
         emitted |= {f"R{i}" for i in range(11)} | {"R11", "R11a", "R11b", "R11c", "R11d", "R11e", "R11f", "R14"}
         emitted |= {"R20", "R20a", "R20b"}
         emitted |= {"R23"}
+        emitted |= {"R15"}
         self.assertEqual(emitted - set(S.CATALOG), set(), "checks with no catalog entry")
         for cid, e in S.CATALOG.items():
             with self.subTest(check=cid):
