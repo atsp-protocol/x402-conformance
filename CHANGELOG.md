@@ -1,4 +1,9 @@
 # Changelog
+## Unreleased
+- R16, a paid `HEAD` is never settled (`probeHead`): the probe sends `HEAD` with a payment to a paid `GET` route and
+  fails a server that answers 2xx, calls `/settle` or sends a `PAYMENT-RESPONSE`. The control is
+  `ts/example/head-server.ts`; the `head_settles` build fails, on Solana devnet and Base Sepolia
+  (`ts/test/head.test.ts`). The contract task is XC-18 (AC02).
 ## 1.4.0 (2026-10-22)
 - R14, a crash between a successful `/settle` and the response (`x402conf-svm probe --crash`, Action `crash: "true"`).
   The probe kills the server while `/settle` is answering and again as the response starts, restarts it (the `--start`
