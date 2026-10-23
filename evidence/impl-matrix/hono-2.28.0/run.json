@@ -1,0 +1,174 @@
+{
+ "tool": "x402-conformance-svm 1.4.0",
+ "evidence": "x402-conformance-evidence/2",
+ "versions": {
+  "x402-conformance-svm": "1.4.0",
+  "node": "23.7.0"
+ },
+ "run_at": "2026-10-23T20:20:59.893Z",
+ "resource": "http://127.0.0.1:47502/paid",
+ "facilitator_double": "http://127.0.0.1:58203",
+ "results": [
+  {
+   "check": "R0 unpaid request: 402 with a PAYMENT-REQUIRED header offering a network the probe grades",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "status": 402,
+    "accepts": [
+     [
+      "exact",
+      "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+     ]
+    ],
+    "graded_on": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+   },
+   "profile": "normative",
+   "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r0"
+  },
+  {
+   "check": "R1 a settled payment is served, and the server used the facilitator double",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "status": 200,
+    "facilitator_calls_seen": 2
+   },
+   "profile": "normative",
+   "basis": "V2 7.2: the resource server settles through its facilitator",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r1"
+  },
+  {
+   "check": "R2 the same payment presented twice is served at most once (F3)",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "first": 200,
+    "second": 402
+   },
+   "profile": "normative",
+   "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r2"
+  },
+  {
+   "check": "R3 /settle never answers: content not served (F6)",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "status": 0,
+    "body": "TimeoutError: The operation was aborted due to timeout",
+    "note": "no answer within 60000 ms; nothing served"
+   },
+   "profile": "resilience",
+   "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r3"
+  },
+  {
+   "check": "R4 /settle HTML 502: content not served (F6)",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "status": 402,
+    "body": "{}"
+   },
+   "profile": "resilience",
+   "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r4"
+  },
+  {
+   "check": "R5 /settle 503 with a success body: content not served (F9)",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "status": 402,
+    "body": "{}"
+   },
+   "profile": "resilience",
+   "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r5"
+  },
+  {
+   "check": "R6 /settle non-JSON 200: content not served (F9)",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "status": 502,
+    "body": "{\"error\":\"Facilitator settle returned invalid JSON: <html><body>Service temporarily unavailable</body></html>\"}"
+   },
+   "profile": "resilience",
+   "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r6"
+  },
+  {
+   "check": "R7 /settle truncated body: content not served (F9)",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "status": 502,
+    "body": "{\"error\":\"Facilitator settle returned invalid JSON: {\\\"success\\\":true,\\\"transaction\\\":\\\"double-tx-e3548659-216\\\",\\\"netwo"
+   },
+   "profile": "resilience",
+   "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r7"
+  },
+  {
+   "check": "R8 settlement_pending: content not served before the payment is final (F5)",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "status": 402,
+    "body": "{}"
+   },
+   "profile": "normative",
+   "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r8"
+  },
+  {
+   "check": "R9 invalid_transaction_state: content not served (F8)",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "status": 402,
+    "body": "{}"
+   },
+   "profile": "normative",
+   "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r9"
+  },
+  {
+   "check": "R10 the served response carries a PAYMENT-RESPONSE header that decodes to success=true (V2 HTTP transport)",
+   "pass": true,
+   "status": "pass",
+   "detail": {
+    "header": true,
+    "decoded": {
+     "success": true,
+     "payer": "double-payer",
+     "transaction": "double-tx-ffad55fe-216",
+     "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+    }
+   },
+   "profile": "normative",
+   "basis": "V2 HTTP transport: settlement results go in PAYMENT-RESPONSE",
+   "fix": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md#r10"
+  }
+ ],
+ "schema": "x402-conformance.report/1",
+ "via": "cli-ts",
+ "kind": "resource-server",
+ "summary": {
+  "checks": 11,
+  "failed": 0,
+  "failed_ids": [],
+  "unsupported": false
+ },
+ "links": {
+  "repo": "https://github.com/atsp-protocol/x402-conformance",
+  "fixes": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md",
+  "corpus": "https://github.com/atsp-protocol/x402-conformance/tree/main/corpus",
+  "contribute": "https://github.com/atsp-protocol/x402-conformance/issues/new?template=corpus-case.yml",
+  "using": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/USING.md",
+  "badge": "[![Tested with x402-conformance](https://img.shields.io/badge/tested%20with-x402--conformance-2ea44f)](https://github.com/atsp-protocol/x402-conformance)"
+ }
+}

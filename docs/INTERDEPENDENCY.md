@@ -338,6 +338,7 @@ graph LR
   corpus_schemas["corpus-schemas<br/>data"]
   corpus["corpus<br/>data"]
   evidence["evidence<br/>data"]
+  impl_matrix["impl-matrix<br/>code"]
   readme["readme<br/>doc"]
   changelog["changelog<br/>doc"]
   docs["docs<br/>doc"]
@@ -416,6 +417,10 @@ graph LR
   community ==> interdeps_map
   ci -.-> community
   distribution -.-> readme
+  ts_cli -.-> impl_matrix
+  ts_examples -.-> impl_matrix
+  py_examples -.-> impl_matrix
+  impl_matrix -.-> evidence
 ```
 
 | component | kind | covers | what |
@@ -450,6 +455,7 @@ graph LR
 | corpus-schemas | data | `corpus/*.schema.json` | the corpus case and report schemas |
 | corpus | data | `corpus/**` | the corpus of anonymised cases and its fixtures |
 | evidence | data | `evidence/**` | hashed evidence from live and devnet runs |
+| impl-matrix | code | `.github/workflows/impl-matrix.yml` | the implementation matrix workflow: the probe against stock servers at pinned versions, one job per evidence row |
 | readme | doc | `README.md` | the project README |
 | changelog | doc | `CHANGELOG.md` | the changelog |
 | docs | doc | `docs/**` | architecture, spec mapping, threat model, usage, adoption, matrix and roadmap |
@@ -531,6 +537,10 @@ graph LR
 | community | interdeps-map | update |
 | ci | community | review |
 | distribution | readme | review |
+| ts-cli | impl-matrix | review |
+| ts-examples | impl-matrix | review |
+| py-examples | impl-matrix | review |
+| impl-matrix | evidence | review |
 
 ## Entry points
 

@@ -276,6 +276,8 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
     ("corpus-schemas", "data", ("corpus/*.schema.json",), "the corpus case and report schemas"),
     ("corpus", "data", ("corpus/**",), "the corpus of anonymised cases and its fixtures"),
     ("evidence", "data", ("evidence/**",), "hashed evidence from live and devnet runs"),
+    ("impl-matrix", "code", (".github/workflows/impl-matrix.yml",),
+     "the implementation matrix workflow: the probe against stock servers at pinned versions, one job per evidence row"),
     ("readme", "doc", ("README.md",), "the project README"),
     ("changelog", "doc", ("CHANGELOG.md",), "the changelog"),
     ("docs", "doc", ("docs/**",), "architecture, spec mapping, threat model, usage, adoption, matrix and roadmap"),
@@ -309,6 +311,8 @@ EDGES: list[tuple[str, str, str]] = [
     ("docs", "interdeps-map", U), ("readme", "interdeps-map", U), ("ts-readme", "interdeps-map", U),
     ("mcp-readme", "interdeps-map", U), ("community", "interdeps-map", U), ("ci", "community", R),
     ("distribution", "readme", R),
+    ("ts-cli", "impl-matrix", R), ("ts-examples", "impl-matrix", R), ("py-examples", "impl-matrix", R),
+    ("impl-matrix", "evidence", R),
 ]
 ACK = re.compile(r"^[ \t]*Interdeps-Ack:[ \t]*(?P<ids>[A-Za-z0-9_.-]+(?:[ \t]*,[ \t]*[A-Za-z0-9_.-]+)*)"
                  r"[ \t]+-[ \t]+(?P<why>\S.*)$", re.M)
