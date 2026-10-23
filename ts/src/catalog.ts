@@ -95,6 +95,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "normative",
   "basis": "V2 7.1: /verify MUST NOT commit payment state"
  },
+ "F12": {
+  "profile": "security-profile",
+  "basis": "V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network"
+ },
  "R0": {
   "profile": "normative",
   "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED"

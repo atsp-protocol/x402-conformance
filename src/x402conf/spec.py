@@ -119,6 +119,11 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
             "faulty": ["fault:cross_request_replay"]},
     "F11": {"profile": "normative", "basis": "V2 7.1: /verify MUST NOT commit payment state",
             "controls": [_OFF + "test_reference_passes_all"], "faulty": ["fault:verify_commits"]},
+    "F12": {"profile": "security-profile",
+            "basis": "V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a "
+                     "token contract on the network",
+            "controls": [_OFF + "test_f12_reference_rejects_unsupported_network_and_asset"],
+            "faulty": ["fault:trust_kind"]},
     "R0": {"profile": "normative", "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED",
            "controls": [_TS_OK, _TS_STOCK], "faulty": ["ts:a server that serves without payment is caught"]},
     "R1": {"profile": "normative", "basis": "V2 7.2: the resource server settles through its facilitator",

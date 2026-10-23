@@ -179,6 +179,15 @@ class Offline(unittest.TestCase):
         # XC-15-AC02: a /verify that commits payment state (V2 7.1) is caught by F11
         self.assertIn("F11", fails(H.check_safety(M.Faulty(verify_commits=True), M.vectors())))
 
+    def test_f12_reference_rejects_unsupported_network_and_asset(self):
+        r = next(x for x in H.check_safety(M.Reference(), M.vectors()) if x["check"].startswith("F12 "))
+        self.assertTrue(r["pass"], r)
+        self.assertEqual(r["detail"]["unsupported_network"]["invalidReason"], "unsupported_network")
+        self.assertEqual(r["detail"]["asset_without_code"]["invalidReason"], "invalid_asset")
+
+    def test_f12_trusting_the_requirements_caught(self):
+        self.assertEqual(fails(H.check_safety(M.FAULTS["trust_kind"](), M.vectors())), {"F12"})
+
     def test_f6_guard_crediting_on_error_caught(self):
         g = H.GUARD_FAULTS["guard_credit_on_error"]
         self.assertEqual(fails(H.check_safety(M.Reference(), M.vectors(), guard=g)), {"F6"})

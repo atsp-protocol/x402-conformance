@@ -172,6 +172,17 @@ facilitators that read it fall back to authorization semantics when it's absent.
 scheme text allows omitting it.
 **How to fix it.** Set `extra.paymentFlow` (`"upfront"` or `"escrow"`) on every such offer.
 
+## F12
+**What failed.** The probe asked your facilitator to verify a well-formed payment on a network it does not advertise in
+`/supported`, and one whose asset address is not a token contract on the network. It answered `isValid: true` for at
+least one, or answered without an `invalidReason`.
+**Why it matters.** A facilitator that trusts the network and asset in the requirements verifies payments it can
+never settle, or "payments" in a token that does not exist. The resource server serves on that verdict, or settles
+against an address with no code and gets a meaningless success.
+**How to fix it.** Before anything else in `/verify`, check that the payment's (scheme, network) is one you advertise
+and that the asset is a known token contract on that network (an allow-list, or a code check against the chain), and
+answer `isValid: false` with a specific reason (`unsupported_network`, `invalid_asset`) when it is not.
+
 ## R0
 **What failed.** An unpaid request to your paid route didn't get a 402 with a decodable `PAYMENT-REQUIRED` header.
 If the header decoded but offered no `exact` payment on Solana devnet or Base Sepolia, the result is **unsupported**

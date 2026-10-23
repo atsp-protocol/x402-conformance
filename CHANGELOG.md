@@ -1,4 +1,8 @@
 # Changelog
+## Unreleased
+- F12, `/verify` rejects an unsupported network or an asset that is not a token contract: the offline harness verifies
+  a well-formed payment on a network the facilitator doesn't advertise and one in an address with no contract code,
+  and each must be answered `isValid: false` with a reason. The `trust_kind` double fails it.
 ## 1.4.0 (2026-10-22)
 - R14, a crash between a successful `/settle` and the response (`x402conf-svm probe --crash`, Action `crash: "true"`).
   The probe kills the server while `/settle` is answering and again as the response starts, restarts it (the `--start`
