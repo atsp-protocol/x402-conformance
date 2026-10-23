@@ -1,4 +1,12 @@
 # Changelog
+## Unreleased
+- R23, a client abort during settle (`probeAbort`): the probe pays a route, drops its connection while the server's
+  `/settle` is in flight and then resends the same signed payment. It passes when nothing was settled, or when the
+  payment was settled once and the resend gets the settled result with no second charge. The stock `@x402/express`
+  server with an idempotency record written when `/settle` succeeds passes; a server that writes its record only once
+  the response is delivered, and one with no record, fail (`ts/test/abort.test.ts`, on Solana devnet and Base
+  Sepolia). A fix section is in [docs/FIXES.md](docs/FIXES.md#r23).
+
 ## 1.4.0 (2026-10-22)
 - R14, a crash between a successful `/settle` and the response (`x402conf-svm probe --crash`, Action `crash: "true"`).
   The probe kills the server while `/settle` is answering and again as the response starts, restarts it (the `--start`

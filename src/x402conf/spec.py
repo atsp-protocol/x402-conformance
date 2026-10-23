@@ -164,4 +164,10 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
              "basis": "a retry resending the same signed payment is settled once and gets the original result",
              "controls": [_TS_RETRY, "ts:R20b client control: the stock @x402/fetch client"],
              "faulty": ["ts:R20b settle_both: with no record", "ts:R20b client resign_on_timeout"]},
+    "R23": {"profile": "security-profile",
+            "basis": "a client that disconnects while /settle is in flight is not charged, or a resend of the same "
+                     "payment gets the settled result and is not charged again",
+            "controls": ["ts:R23 control: the stock @x402/express server with an idempotency record"],
+            "faulty": ["ts:R23 record_on_delivery: a server that records the result only once the response",
+                       "ts:R23 settle_both: a server with no idempotency record"]},
 }

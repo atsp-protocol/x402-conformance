@@ -182,6 +182,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "R20b": {
   "profile": "security-profile",
   "basis": "a retry resending the same signed payment is settled once and gets the original result"
+ },
+ "R23": {
+  "profile": "security-profile",
+  "basis": "a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again"
  }
 };
 

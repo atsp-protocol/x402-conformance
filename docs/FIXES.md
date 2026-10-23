@@ -330,3 +330,18 @@ paid result is lost. A client that re-signs with no key leaves a server nothing 
 **How to fix it.** Server: serve a resent payment from the idempotency record above. Client: generate one payment id per
 logical request and append it in `onBeforePaymentCreation` (`appendPaymentIdentifierToExtensions`), or resend the
 same `PAYMENT-SIGNATURE` on retry.
+
+## R23
+**What failed.** The probe paid your route and dropped its connection while your server's `/settle` call was in flight,
+then resent the same signed payment. The payment had settled, and the resend did not get the settled result (it was
+asked to pay again, refused, or answered an error), or it was settled a second time. The result's `settled_on_abort`,
+`resend` and `successful_settles` say which.
+**Why it matters.** Clients disconnect: a process is killed, a network drops, a user closes the tab. If settlement
+finishes after the client has gone, the client has paid, and sending the same payment again is its only way back to
+what it bought. A server that records the result only once the response has been delivered, or keeps no record, has
+nothing to answer with: the facilitator refuses the duplicate and the purchase is lost.
+**How to fix it.** Record the settled result when `/settle` succeeds (in `onAfterSettle`), not when the response is
+written, keyed by route and by the payment-identifier `id` or, without one, by the payment itself, and serve a resent
+payment from that record with the original `PAYMENT-RESPONSE`. A server that cancels the purchase when the client goes
+away must do so before it calls `/settle`; once `/settle` has been called, the record is what makes the abort
+recoverable. `ts/example/retry-server.ts` shows the record.

@@ -10,6 +10,8 @@
 //   settle_both     the same route with no idempotency record: a retry with a fresh payment is settled again
 //   key_by_payment  a record keyed by the payment (a hash of the whole payload) instead of the request: a retry that
 //                   resends the same payment is served from it, a retry with a fresh payment is settled again
+//   record_on_delivery  the control's record, but committed only once the response has been delivered: when the
+//                   client disconnects while /settle is in flight the settlement happens and the record is lost (R23)
 import type { AddressInfo } from "node:net";
 import { createHash } from "node:crypto";
 import express from "express";
@@ -23,8 +25,8 @@ import { declarePaymentIdentifierExtension, extractPaymentIdentifier, PAYMENT_ID
 
 export const DEVNET = "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1";
 export const BASE_SEPOLIA = "eip155:84532";
-export type RetryFault = "" | "settle_both" | "key_by_payment";
-export const RETRY_FAULTS: RetryFault[] = ["settle_both", "key_by_payment"];
+export type RetryFault = "" | "settle_both" | "key_by_payment" | "record_on_delivery";
+export const RETRY_FAULTS: RetryFault[] = ["settle_both", "key_by_payment", "record_on_delivery"];
 
 export interface RetryServer { base: string; url: string; close(): Promise<void> }
 
@@ -44,6 +46,8 @@ export async function startRetryServer(facilitatorUrl: string, fault: RetryFault
   const payTo = evm ? "0x209693Bc6afc0C5328bA36FaF03C514EF312287C" : "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin";
   const facilitator = new HTTPFacilitatorClient({ url: facilitatorUrl });
   const record = new Map<string, Entry>();
+  // record_on_delivery: entries wait here until their response has been written out to the client.
+  const undelivered = new Map<string, Entry>();
   // The handler's body by key until its payment settles, so the record returns the result the first attempt produced.
   const bodies = new Map<string, unknown>();
   const keyOf = (path: string, p: any): string | null => {
@@ -58,7 +62,8 @@ export async function startRetryServer(facilitatorUrl: string, fault: RetryFault
     server.onAfterSettle(async (ctx: any) => {
       const key = keyOf(ctx.transportContext?.request?.path ?? "/report", ctx.paymentPayload);
       if (!key || !ctx.result?.success) return;
-      record.set(key, { payer: payerOf(ctx.paymentPayload), settlement: { ...ctx.result }, body: bodies.get(key) ?? null });
+      const entry = { payer: payerOf(ctx.paymentPayload), settlement: { ...ctx.result }, body: bodies.get(key) ?? null };
+      if (fault === "record_on_delivery") undelivered.set(key, entry); else record.set(key, entry);
       bodies.delete(key);
     });
   }
@@ -83,9 +88,16 @@ export async function startRetryServer(facilitatorUrl: string, fault: RetryFault
     });
   }
   const app = express();
-  app.use((req, _res, next) => {
+  app.use((req, res, next) => {
     const h = req.header("payment-signature");
     if (h) { try { (req as any).payment = decodePaymentSignatureHeader(h); } catch { /* the middleware answers */ } }
+    if (fault === "record_on_delivery") {
+      res.on("finish", () => {
+        const key = (req as any).payment ? keyOf(req.path, (req as any).payment) : null;
+        const entry = key ? undelivered.get(key) : undefined;
+        if (key && entry) { record.set(key, entry); undelivered.delete(key); }
+      });
+    }
     next();
   });
   app.use(paymentMiddlewareFromHTTPServer(http402));
