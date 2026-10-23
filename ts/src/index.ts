@@ -10,3 +10,8 @@ export { probeCrash, SpawnedServer, commandControl, paymentRef, R14, CRASH_POINT
   type CrashPoint } from "./crash.js";
 export { probeRetry, checkClientRetry, type RetryOptions, type RetryingClient } from "./retry.js";
 export { checkClientOfferPolicy, type OfferPolicy, type OfferClient } from "./client-offers.js";
+export { checkClientHandles402, type PayingClient, type ClientStatusOptions } from "./client-status.js";
+export { probeAbort, type AbortOptions } from "./abort.js";
+export { probeDelivery, R15, type FailingRoutes, type DeliveryOptions } from "./delivery.js";
+export { probeHead, R16 } from "./head.js";
+export { probeUnpaidHead, R16A } from "./head-unpaid.js";

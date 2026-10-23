@@ -1,7 +1,7 @@
 """The checks.
 
 Live checks (S0-S4) read a facilitator's public GET /supported and nothing else: no signing, no payment, no POST.
-Offline checks (F1-F11) drive a facilitator implementation in-process through /verify and /settle semantics and test
+Offline checks (F1-F12) drive a facilitator implementation in-process through /verify and /settle semantics and test
 the safety properties a resource server depends on. F7 and F8 advance the double's simulated chain between retries of
 the same /settle body; F9 puts a broken transport (a 503, a non-JSON page, a truncated body) between the resource
 server and the facilitator. On devnet they run only against a facilitator its operator
@@ -388,6 +388,27 @@ def _f11(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
     return result(F11, valid and _success(s), {"verify": [v1, v2], "settle": s})
 
 
+F12 = ("F12 /verify answers invalid, with a reason, for a network the facilitator does not support or an asset that "
+       "is not a token contract on the network")
+# A CAIP-2 id no facilitator supports, and an address with no contract code: both are well formed, so only a
+# facilitator that checks the kind it is asked to verify, rather than trusting the requirements, rejects them.
+UNSUPPORTED_NETWORK = "x402conf:unsupported"
+NO_CODE_ASSET = "x402confNoCodeAsset11111111111111111111111"
+
+
+def _f12(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
+    got: dict[str, Any] = {}
+    for name, change in (("network", {"network": UNSUPPORTED_NETWORK}), ("asset", {"asset": NO_CODE_ASSET})):
+        other = dict(req, **change)
+        p = dict(mk("good"), tx=f"tx-f12-{name}", memo=f"m-f12-{name}", mint=other["asset"], dest=other["payTo"])
+        try:
+            got[name] = fac.verify(p, other)
+        except Exception:  # noqa: BLE001  raising is not a structured answer
+            got[name] = "raised"
+    ok = all(isinstance(v, dict) and v.get("isValid") is False and bool(v.get("invalidReason")) for v in got.values())
+    return result(F12, ok, {"unsupported_network": got["network"], "asset_without_code": got["asset"]})
+
+
 def check_safety(fac: Facilitator, mk: Vectors,
                  guard: Callable[[Facilitator], ResourceServerGuard] | None = None) -> list[CheckResult]:
     make_guard = guard or ResourceServerGuard
@@ -434,6 +455,7 @@ def check_safety(fac: Facilitator, mk: Vectors,
     out.append(_f9(fac, mk, req, make_guard))
     out.append(_f10(fac, mk, req))
     out.append(_f11(fac, mk, req))
+    out.append(_f12(fac, mk, req))
     return out
 
 

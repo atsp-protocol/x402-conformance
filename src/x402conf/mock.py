@@ -99,6 +99,9 @@ class Reference:
         self.failed: set[str] = set()        # transactions the chain reported as failed
         self.memo_tx: dict[str, str] = {}    # memo -> the transaction that holds it, in flight or settled
         self.req_hash: dict[str, str] = {}   # transaction -> the requirements hash it was verified under
+        fx = load_fixture()["requirements"]
+        self.networks: set[str] = {fx["network"]}              # the networks /supported advertises
+        self.tokens: set[tuple[str, str]] = {(fx["network"], fx["asset"])}   # (network, asset) with token code
 
     def _payment_matches(self, p: Any, req: Json) -> Json | None:
         """Fail-closed conformance of the payload to the CURRENT requirements. None means it matches."""
@@ -108,6 +111,9 @@ class Reference:
             return {"isValid": False, "invalidReason": "invalid_payload"}
         if p.get("mint") != req["asset"] or p.get("dest") != req["payTo"]:
             return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
+        kind = self._kind(req)
+        if kind is not None:
+            return kind
         required = self._units(req["amount"])
         if required is None or required <= 0:
             return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
@@ -120,6 +126,14 @@ class Reference:
 
     def _units(self, x: Any, *, allow_int: bool = False) -> int | None:
         return atomic_units(x, allow_int=allow_int)
+
+    def _kind(self, req: Json) -> Json | None:
+        """A network this facilitator supports, and an asset that is a token contract on it. None means both hold."""
+        if req["network"] not in self.networks:
+            return {"isValid": False, "invalidReason": "unsupported_network"}
+        if (req["network"], req["asset"]) not in self.tokens:
+            return {"isValid": False, "invalidReason": "invalid_asset"}
+        return None
 
     def verify(self, p: Any, req: Json) -> Json:
         mismatch = self._payment_matches(p, req)
@@ -173,7 +187,7 @@ class Faulty(Reference):
                  no_memo_check: bool = False, success_before_final: bool = False, burn_on_pending: bool = False,
                  stuck_pending: bool = False, cross_request_replay: bool = False,
                  lenient_amounts: bool = False, pending_without_tx: bool = False,
-                 verify_commits: bool = False) -> None:
+                 verify_commits: bool = False, trust_kind: bool = False) -> None:
         super().__init__()
         self.open_on_malformed, self.accept_dust = open_on_malformed, accept_dust
         self.no_dup_cache, self.no_memo_check = no_dup_cache, no_memo_check
@@ -182,6 +196,7 @@ class Faulty(Reference):
         self.cross_request_replay = cross_request_replay
         self.lenient_amounts = lenient_amounts
         self.pending_without_tx, self.verify_commits = pending_without_tx, verify_commits
+        self.trust_kind = trust_kind
         self.burned: set[str] = set()
 
     def verify(self, p: Any, req: Json) -> Json:
@@ -205,6 +220,10 @@ class Faulty(Reference):
         if prev is not None and prev != requirements_hash(req):
             return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
         return {"isValid": True}
+
+    def _kind(self, req: Json) -> Json | None:
+        # the fault: the network and asset are taken from the requirements on trust
+        return None if self.trust_kind else super()._kind(req)
 
     def _units(self, x: Any, *, allow_int: bool = False) -> int | None:
         if self.lenient_amounts:
@@ -255,4 +274,5 @@ FAULTS: dict[str, Callable[[], Reference]] = {
     "lenient_amounts": lambda: Faulty(lenient_amounts=True),
     "pending_without_tx": lambda: Faulty(pending_without_tx=True),
     "verify_commits": lambda: Faulty(verify_commits=True),
+    "trust_kind": lambda: Faulty(trust_kind=True),
 }
