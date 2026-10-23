@@ -151,6 +151,16 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
              "basis": "sign-in-with-x: access is for the requested resource the server priced and settled",
              "controls": ["ts:R11f control: a SIWX server that records the settled route passes"],
              "faulty": ["ts:R11f: a SIWX server that records the client's resource.url is caught"]},
+    "R12": {"profile": "security-profile",
+            "basis": "payment-identifier: the id is an idempotency key that deduplicates requests, so parallel "
+                     "requests with one id are charged once",
+            "controls": ["ts:R12 control: a record that reserves the key before it awaits"],
+            "faulty": ["ts:R12 catches a non-atomic check-then-set"]},
+    "R13": {"profile": "resilience",
+            "basis": "payment-identifier: the id deduplicates requests for the service, not per process, so its "
+                     "replicas charge one id once",
+            "controls": ["ts:R13 control: two replicas sharing one record"],
+            "faulty": ["ts:R13 catches a per-process in-memory cache"]},
     "R14": {"profile": "resilience",
             "basis": "payment-identifier: same id, same payload returns the cached response; V2 6.1: in the "
                      "authorization flow funds move only after the resource completes; V2 9: a transaction is "
