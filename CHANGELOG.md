@@ -7,6 +7,29 @@
   client whose status check accepts every status and whose payment step only runs for rejected statuses is caught
   (`ts/test/client-status.test.ts`, Solana devnet and Base Sepolia). A fix section is in
   [docs/FIXES.md](docs/FIXES.md#c1).
+- R23, a client abort during settle (`probeAbort`): the probe pays a route, drops its connection while the server's
+  `/settle` is in flight and then resends the same signed payment. It passes when nothing was settled, or when the
+  payment was settled once and the resend gets the settled result with no second charge. The stock `@x402/express`
+  server with an idempotency record written when `/settle` succeeds passes; a server that writes its record only once
+  the response is delivered, and one with no record, fail (`ts/test/abort.test.ts`, on Solana devnet and Base
+  Sepolia). A fix section is in [docs/FIXES.md](docs/FIXES.md#r23).
+
+- R15, no settlement when the paid handler fails (`probeDelivery`): the probe pays a route that answers 5xx, one that
+  redirects and one that throws, and fails a server that calls `/settle` for any of them or sends a
+  `PAYMENT-RESPONSE`. The control is `ts/example/delivery-server.ts`, which settles only after a 2xx; the
+  `settle_first` and `settle_below_400` builds each fail, on Solana devnet and Base Sepolia
+  (`ts/test/handler-failure.test.ts`). The contract task is XC-18 (AC01).
+- R16, a paid `HEAD` is never settled (`probeHead`): the probe sends `HEAD` with a payment to a paid `GET` route and
+  fails a server that answers 2xx, calls `/settle` or sends a `PAYMENT-RESPONSE`. The control is
+  `ts/example/head-server.ts`; the `head_settles` build fails, on Solana devnet and Base Sepolia
+  (`ts/test/head.test.ts`). The contract task is XC-18 (AC02).
+- R16a, an unpaid `HEAD` gets the same 402 as `GET` (`probeUnpaidHead`): it fails a paid route whose unpaid `HEAD`
+  is not answered 402 with a `PAYMENT-REQUIRED` offer. The control is `ts/example/head-unpaid-server.ts`; the
+  `head_bypass` build (a paywall that matches only `GET`) fails, on Solana devnet and Base Sepolia
+  (`ts/test/head-unpaid.test.ts`).
+- F12, `/verify` rejects an unsupported network or an asset that is not a token contract: the offline harness verifies
+  a well-formed payment on a network the facilitator doesn't advertise and one in an address with no contract code,
+  and each must be answered `isValid: false` with a reason. The `trust_kind` double fails it.
 ## 1.4.0 (2026-10-22)
 - R14, a crash between a successful `/settle` and the response (`x402conf-svm probe --crash`, Action `crash: "true"`).
   The probe kills the server while `/settle` is answering and again as the response starts, restarts it (the `--start`
