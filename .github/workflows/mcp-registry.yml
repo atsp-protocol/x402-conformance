@@ -50,9 +50,24 @@ jobs:
       - name: Validate server.json against the registry
         working-directory: ts/mcp
         run: ../../mcp-publisher validate server.json
+      - name: Skip if this version is already in the registry
+        id: existing
+        run: |
+          name="$(jq -r .name ts/mcp/server.json)"
+          version="$(jq -r .version ts/mcp/server.json)"
+          enc="$(jq -rn --arg n "$name" '$n|@uri')"
+          code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 60 --retry 3 --retry-delay 10 \
+            "https://registry.modelcontextprotocol.io/v0/servers/${enc}/versions/${version}")"
+          case "$code" in
+            200) echo "already=true" >> "$GITHUB_OUTPUT"; echo "::notice::$name $version is already published; skipping" ;;
+            404) echo "already=false" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::registry lookup returned HTTP $code"; exit 1 ;;
+          esac
       - name: Log in with GitHub OIDC
+        if: steps.existing.outputs.already == 'false'
         run: ./mcp-publisher login github-oidc
       - name: Publish to the MCP Registry
+        if: steps.existing.outputs.already == 'false'
         working-directory: ts/mcp
         run: ../../mcp-publisher publish server.json
       - name: Confirm the entry is live
