@@ -3291,21 +3291,23 @@
    "owner": "mgillr",
    "depends_on": [
     "XC-17",
-    "XC-18",
-    "XC-19",
     "XC-21",
-    "XC-22",
-    "XC-24",
-    "XC-26",
-    "XC-27",
-    "XC-28",
-    "XC-29",
-    "XC-30"
+    "XC-23",
+    "XC-25",
+    "XC-30",
+    "XC-39",
+    "XC-40",
+    "XC-41",
+    "XC-42",
+    "XC-43",
+    "XC-44",
+    "XC-45",
+    "XC-46"
    ],
    "requirements": [
     "R-RELEASE"
    ],
-   "description": "As XC-30, for 1.5.0: versions, changelog, corpus-v1.5. Publishing stays with the owner.",
+   "description": "As XC-30, for 1.5.0: versions, changelog, corpus-v1.5. 1.5.0 ships the checks built since 1.4.0 (XC-39 to XC-46), the docs sync (XC-23) and the PR summary and badge (XC-25); the eight tasks it shipped without move to XC-48. Publishing stays with the owner.",
    "scope": {
     "allow": [
      "pyproject.toml",
@@ -3368,6 +3370,50 @@
      "statement": "Committed and pushed to main",
      "verifier": {
       "type": "pushed"
+     }
+    },
+    {
+     "id": "XC-31-AC06",
+     "mandatory": true,
+     "statement": "The interdependency map is current and the docs match the code",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/interdeps.py --check && python3 tools/interdeps.py --drift",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-31-AC07",
+     "mandatory": true,
+     "statement": "CHANGELOG's 1.5.0 section names every check added since 1.4.0 (S5, F12, R12, R13, R15, R16, R16a, R22, R23, R24, C1, C2, C3)",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import re,sys;s=open('CHANGELOG.md').read();i=s.find('\\n## 1.5.0');assert i>=0,'no 1.5.0 section';j=s.find('\\n## ',i+1);t=s[i:j if j>0 else len(s)];m=[c for c in 'S5 F12 R12 R13 R15 R16 R16a R22 R23 R24 C1 C2 C3'.split() if not re.search('(?<![A-Za-z0-9])'+c+'(?![0-9a-z])',t)];print(m);sys.exit(1 if m else 0)\"",
+      "expect_exit": 0,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-31-AC08",
+     "mandatory": true,
+     "statement": "docs/RELEASES.md has a 1.5.0 section naming every check added since 1.4.0 (S5, F12, R12, R13, R15, R16, R16a, R22, R23, R24, C1, C2, C3)",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import re,sys;s=open('docs/RELEASES.md').read();i=s.find('\\n## 1.5.0');assert i>=0,'no 1.5.0 section';j=s.find('\\n## ',i+1);t=s[i:j if j>0 else len(s)];m=[c for c in 'S5 F12 R12 R13 R15 R16 R16a R22 R23 R24 C1 C2 C3'.split() if not re.search('(?<![A-Za-z0-9])'+c+'(?![0-9a-z])',t)];print(m);sys.exit(1 if m else 0)\"",
+      "expect_exit": 0,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-31-AC09",
+     "mandatory": true,
+     "statement": "README.md names every check 1.5.0 adds",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import re,sys;s=open('README.md').read();t=s;m=[c for c in 'S5 F12 R12 R13 R15 R16 R16a R22 R23 R24 C1 C2 C3'.split() if not re.search('(?<![A-Za-z0-9])'+c+'(?![0-9a-z])',t)];print(m);sys.exit(1 if m else 0)\"",
+      "expect_exit": 0,
+      "timeout_s": 30
      }
     }
    ],
@@ -4667,6 +4713,139 @@
      "statement": "Committed and pushed to main",
      "verifier": {
       "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  },
+  {
+   "id": "XC-48",
+   "title": "Release 1.6.0: the rest of the v1.5 build list",
+   "phase": "release",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-18",
+    "XC-19",
+    "XC-22",
+    "XC-24",
+    "XC-26",
+    "XC-27",
+    "XC-28",
+    "XC-29",
+    "XC-31"
+   ],
+   "requirements": [
+    "R-RELEASE"
+   ],
+   "description": "As XC-31, for 1.6.0: versions, changelog, corpus-v1.6, once the eight tasks that 1.5.0 shipped without are done: R15 to R19 (XC-18), the implementation matrix (XC-19), the R20 corpus case (XC-22), the n-replica Lean models (XC-24), the framework quickstarts (XC-26), docs examples run by CI (XC-27), the compatibility matrix (XC-28) and the mutation matrix with the false-positive register (XC-29). Publishing stays with the owner.",
+   "scope": {
+    "allow": [
+     "pyproject.toml",
+     "src/x402conf/__init__.py",
+     "ts/package.json",
+     "ts/package-lock.json",
+     "ts/mcp/package.json",
+     "ts/mcp/package-lock.json",
+     "ts/mcp/server.json",
+     "CHANGELOG.md",
+     "README.md",
+     "docs/**"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-48-AC01",
+     "mandatory": true,
+     "statement": "Every version string is 1.6.0",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/interdeps.py --versions 1.6.0",
+      "expect_exit": 0,
+      "timeout_s": 60
+     }
+    },
+    {
+     "id": "XC-48-AC02",
+     "mandatory": true,
+     "statement": "CHANGELOG has a 1.6.0 section",
+     "verifier": {
+      "type": "grep",
+      "file": "CHANGELOG.md",
+      "pattern": "^## 1\\.6\\.0 ",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-48-AC03",
+     "mandatory": true,
+     "statement": "Tags v1.6.0 and corpus-v1.6 are on origin (pushed by the owner)",
+     "verifier": {
+      "type": "command",
+      "cmd": "git ls-remote --exit-code --tags origin refs/tags/v1.6.0 refs/tags/corpus-v1.6 | test $(wc -l) -eq 2",
+      "expect_exit": 0,
+      "timeout_s": 60
+     }
+    },
+    {
+     "id": "XC-48-AC04",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-48-AC05",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    },
+    {
+     "id": "XC-48-AC06",
+     "mandatory": true,
+     "statement": "The interdependency map is current and the docs match the code",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/interdeps.py --check && python3 tools/interdeps.py --drift",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-48-AC07",
+     "mandatory": true,
+     "statement": "CHANGELOG's 1.6.0 section names every check it adds (R17, R18, R19) and every task it closes (XC-18, XC-19, XC-22, XC-24, XC-26 to XC-29)",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import re,sys;s=open('CHANGELOG.md').read();i=s.find('\\n## 1.6.0');assert i>=0,'no 1.6.0 section';j=s.find('\\n## ',i+1);t=s[i:j if j>0 else len(s)];m=[c for c in 'R17 R18 R19 XC-18 XC-19 XC-22 XC-24 XC-26 XC-27 XC-28 XC-29'.split() if not re.search('(?<![A-Za-z0-9])'+c+'(?![0-9a-z])',t)];print(m);sys.exit(1 if m else 0)\"",
+      "expect_exit": 0,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-48-AC08",
+     "mandatory": true,
+     "statement": "docs/RELEASES.md has a 1.6.0 section naming every check it adds (R17, R18, R19) and every task it closes (XC-18, XC-19, XC-22, XC-24, XC-26 to XC-29)",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import re,sys;s=open('docs/RELEASES.md').read();i=s.find('\\n## 1.6.0');assert i>=0,'no 1.6.0 section';j=s.find('\\n## ',i+1);t=s[i:j if j>0 else len(s)];m=[c for c in 'R17 R18 R19 XC-18 XC-19 XC-22 XC-24 XC-26 XC-27 XC-28 XC-29'.split() if not re.search('(?<![A-Za-z0-9])'+c+'(?![0-9a-z])',t)];print(m);sys.exit(1 if m else 0)\"",
+      "expect_exit": 0,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-48-AC09",
+     "mandatory": true,
+     "statement": "README.md names every check 1.6.0 adds",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import re,sys;s=open('README.md').read();t=s;m=[c for c in 'R17 R18 R19'.split() if not re.search('(?<![A-Za-z0-9])'+c+'(?![0-9a-z])',t)];print(m);sys.exit(1 if m else 0)\"",
+      "expect_exit": 0,
+      "timeout_s": 30
      }
     }
    ],
