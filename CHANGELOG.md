@@ -1,5 +1,10 @@
 # Changelog
 ## Unreleased
+- R15, no settlement when the paid handler fails (`probeDelivery`): the probe pays a route that answers 5xx, one that
+  redirects and one that throws, and fails a server that calls `/settle` for any of them or sends a
+  `PAYMENT-RESPONSE`. The control is `ts/example/delivery-server.ts`, which settles only after a 2xx; the
+  `settle_first` and `settle_below_400` builds each fail, on Solana devnet and Base Sepolia
+  (`ts/test/handler-failure.test.ts`). The contract task is XC-18 (AC01).
 - R16, a paid `HEAD` is never settled (`probeHead`): the probe sends `HEAD` with a payment to a paid `GET` route and
   fails a server that answers 2xx, calls `/settle` or sends a `PAYMENT-RESPONSE`. The control is
   `ts/example/head-server.ts`; the `head_settles` build fails, on Solana devnet and Base Sepolia

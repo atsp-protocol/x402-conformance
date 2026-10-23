@@ -171,6 +171,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "resilience",
   "basis": "payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile"
  },
+ "R15": {
+  "profile": "normative",
+  "basis": "V2 6.1: in the authorization flow funds move only after the resource completes successfully; a failed, redirected or thrown request is not settled"
+ },
  "R16": {
   "profile": "security-profile",
   "basis": "RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to deliver and is not settled"

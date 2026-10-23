@@ -9,4 +9,5 @@ export { probeBinding, type BindingTargets } from "./binding.js";
 export { probeCrash, SpawnedServer, commandControl, paymentRef, R14, CRASH_POINTS, type ServerControl, type CrashOptions,
   type CrashPoint } from "./crash.js";
 export { probeRetry, checkClientRetry, type RetryOptions, type RetryingClient } from "./retry.js";
+export { probeDelivery, R15, type FailingRoutes, type DeliveryOptions } from "./delivery.js";
 export { probeHead, R16 } from "./head.js";
