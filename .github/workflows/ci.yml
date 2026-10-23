@@ -34,6 +34,20 @@ jobs:
         run: python3 tools/interdeps.py --check && python3 tools/interdeps.py --drift
       - run: PYTHONPATH=src python -m x402conf offline > /dev/null
       - run: cd evidence/2026-10-20 && sha256sum -c SHA256SUMS
+  interdeps-gate:
+    # A PR that changes a component must touch, or acknowledge, every doc, contract and test component directly
+    # downstream of it. Acks are `Interdeps-Ack: <component>[, <component>] - <reason>` in a commit message or in
+    # the PR body as it stood when the commits were pushed.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Downstream docs, contracts and tests are updated or acknowledged
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: python3 tools/interdeps.py --gate --base "origin/${{ github.base_ref }}"
   lean:
     runs-on: ubuntu-latest
     timeout-minutes: 30

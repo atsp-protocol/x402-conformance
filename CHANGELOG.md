@@ -56,6 +56,11 @@
   when the code has one no doc names, or when the package versions disagree; `--versions X.Y.Z` fails unless every
   package is at X.Y.Z. CI runs `--check` and `--drift`, and `tests/test_interdeps.py` shows each kind of drift is
   caught. The `ts/README.md` now documents the R11 binding flags, which no doc named. The contract task is XC-23.
+- `tools/interdeps.py` also maps every tracked file to one of 36 components (code, tests, docs, the contract, CI,
+  distribution) with the edges between them, drawn in `docs/INTERDEPENDENCY.md`; `--check` fails when a file is in no
+  component. `--gate --base REF` fails a change that leaves a doc, contract or test component directly downstream
+  neither touched nor acknowledged with `Interdeps-Ack: <component> - <reason>`, and lists the rest for review. CI
+  runs the gate on pull requests. The contract task is XC-23.
 - R15, no settlement when the paid handler fails (`probeDelivery`): the probe pays a route that answers 5xx, one that
   redirects and one that throws, and fails a server that calls `/settle` for any of them or sends a
   `PAYMENT-RESPONSE`. The control is `ts/example/delivery-server.ts`, which settles only after a 2xx; the
