@@ -228,4 +228,11 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
             "faulty": ["ts:R24 decode_unchecked: a server that throws on a malformed payment header",
                        "ts:R24 drop_on_bad_header: a server that drops the connection",
                        "ts:R24 gate: a URL that is not a paid route fails and grades nothing"]},
+    "R22": {"profile": "normative",
+            "basis": "after a successful settle the client receives the handler's own 2xx status code and headers, "
+                     "such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; "
+                     "a paid 3xx is not settled (R15)",
+            "controls": ["ts:R22 control: a server that returns the handler status"],
+            "faulty": ["ts:R22 catches a server that rewrites the paid response to 200",
+                       "ts:R22 gate: a 3xx expectation is refused and nothing is paid"]},
 }

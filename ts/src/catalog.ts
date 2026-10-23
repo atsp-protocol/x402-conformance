@@ -226,6 +226,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "R24": {
   "profile": "resilience",
   "basis": "V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures"
+ },
+ "R22": {
+  "profile": "normative",
+  "basis": "after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15)"
  }
 };
 
