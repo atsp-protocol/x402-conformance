@@ -1,7 +1,7 @@
 {
  "about": "PROPOSED, UNSIGNED. Eight Proofline tasks, XC-39 to XC-46, one per check built after the v1.5 addendum that no signed task covers: R16a, R22, R23, R24, C1, C2, C3 and F12. Nothing here is binding and vv does not read this file. A task becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. XC-38 is left for R20c, which is proposed on its own. Each task has the shape of XC-21: the TypeScript criteria use the signed name guard from XC-17-AC01, with the name anchored to the check id and a minimum equal to the passing tests at the commit that adds the check, so a control or a faulty build can't be dropped later without failing the task. Requirement ids reuse R-DELIV and R-CONC where a signed task already has them, and are R-<check id> for a new kind of check, as R-F11 and R-R11 are.",
  "schema": "proofline/1",
- "status": "proposed",
+ "status": "merged into proofline.json (signed)",
  "proposed_by": "mgillr",
  "target": "proofline.json tasks[]",
  "tasks": [

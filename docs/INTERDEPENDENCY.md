@@ -46,14 +46,14 @@ graph LR
   XC_35["XC-35<br/>Schemes: upto (U1-U3) and batch-settlement (B1-B..."]
   XC_36["XC-36<br/>Discovery and A2A: D1 (Bazaar) and G1 (A2A)"]
   XC_37["XC-37<br/>SIWX normative: W1-W3"]
-  XC_39("XC-39<br/>R16a: an unpaid HEAD on a paid GET route gets th...")
-  XC_40("XC-40<br/>R22: the paid response keeps the handler's 2xx s...")
-  XC_41("XC-41<br/>R23: a client abort during settle is recoverable")
-  XC_42("XC-42<br/>R24: a malformed payment header is a 4xx")
-  XC_43("XC-43<br/>C1: a client never treats 402 as success")
-  XC_44("XC-44<br/>C2: a client pays an offer within its own policy")
-  XC_45("XC-45<br/>C3: a client pays V2 and never falls back to V1...")
-  XC_46("XC-46<br/>F12: /verify rejects an unsupported network or a...")
+  XC_39["XC-39<br/>R16a: an unpaid HEAD on a paid GET route gets th..."]
+  XC_40["XC-40<br/>R22: the paid response keeps the handler's 2xx s..."]
+  XC_41["XC-41<br/>R23: a client abort during settle is recoverable"]
+  XC_42["XC-42<br/>R24: a malformed payment header is a 4xx"]
+  XC_43["XC-43<br/>C1: a client never treats 402 as success"]
+  XC_44["XC-44<br/>C2: a client pays an offer within its own policy"]
+  XC_45["XC-45<br/>C3: a client pays V2 and never falls back to V1..."]
+  XC_46["XC-46<br/>F12: /verify rejects an unsupported network or a..."]
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -151,8 +151,7 @@ graph LR
   XC_05 --> XC_M6
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
-  class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_21,XC_25,XC_M3,XC_M4 done
-  class XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46 proposed
+  class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_21,XC_25,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_M3,XC_M4 done
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -199,14 +198,14 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-35 Schemes: upto (U1-U3) and batch-settlement (B1-B3) | implement | signed | XC-16 | - | R-SCHEMES | 10 (command 7, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-36 Discovery and A2A: D1 (Bazaar) and G1 (A2A) | implement | signed | XC-16 | - | R-DISCOVERY | 6 (command 3, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-37 SIWX normative: W1-W3 | implement | signed | XC-10 | - | R-SIWX | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
-| XC-39 R16a: an unpaid HEAD on a paid GET route gets the same 402 as GET | implement | proposed | XC-18 | - | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-40 R22: the paid response keeps the handler's 2xx status and headers | implement | proposed | XC-18 | - | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-41 R23: a client abort during settle is recoverable | implement | proposed | XC-22 | - | R-CONC | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-42 R24: a malformed payment header is a 4xx | implement | proposed | XC-10 | - | R-R24 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-43 C1: a client never treats 402 as success | implement | proposed | XC-M4 | - | R-C1 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-44 C2: a client pays an offer within its own policy | implement | proposed | XC-M4 | - | R-C2 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-45 C3: a client pays V2 and never falls back to V1 when a V2 offer is present | implement | proposed | XC-M4 | - | R-C3 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-46 F12: /verify rejects an unsupported network or an asset with no token contract | implement | proposed | XC-15 | - | R-F12 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
+| XC-39 R16a: an unpaid HEAD on a paid GET route gets the same 402 as GET | implement | done | XC-18 | - | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-40 R22: the paid response keeps the handler's 2xx status and headers | implement | done | XC-18 | - | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-41 R23: a client abort during settle is recoverable | implement | done | XC-22 | - | R-CONC | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-42 R24: a malformed payment header is a 4xx | implement | done | XC-10 | - | R-R24 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-43 C1: a client never treats 402 as success | implement | done | XC-M4 | - | R-C1 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-44 C2: a client pays an offer within its own policy | implement | done | XC-M4 | - | R-C2 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-45 C3: a client pays V2 and never falls back to V1 when a V2 offer is present | implement | done | XC-M4 | - | R-C3 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-46 F12: /verify rejects an unsupported network or an asset with no token contract | implement | done | XC-15 | - | R-F12 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | signed | XC-05 | - | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |
@@ -244,7 +243,7 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | F9 | built | resilience | SVM exact 2.1.2: a transient failure fails closed and stays retryable | - | - | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/probe.ts | tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md, ts/README.md |
 | F10 | built | security-profile | V2 5.1.2 and 5.2.2: a payment is verified against the requirements it was quoted under | - | - | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md |
 | F11 | built | normative | V2 7.1: /verify MUST NOT commit payment state | - | XC-15 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md |
-| F12 | built | security-profile | V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network | - | XC-46 | src/x402conf/harness.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | docs/FIXES.md, docs/SPEC.md |
+| F12 | built | security-profile | V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network | - | XC-46 | src/x402conf/harness.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | docs/FIXES.md, docs/SPEC.md, docs/VV.md |
 | R0 | built | normative | V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED | - | - | action.yml, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/example/server.ts, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/crash.ts, ts/src/probe.ts, ts/src/testing.ts | tests/test_live.py, ts/test/delivery.test.ts, ts/test/probe.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md, ts/mcp/README.md |
 | R1 | built | normative | V2 7.2: the resource server settles through its facilitator | - | - | action.yml, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/crash.ts, ts/src/probe.ts, ts/src/testing.ts | tests/test_offline.py, ts/test/delivery.test.ts, ts/test/probe.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md, ts/mcp/README.md |
 | R2 | built | normative | F3, F5, F6, F8 and F9 applied to a running resource server | - | - | action.yml, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/probe.ts, ts/src/testing.ts | tests/check_pytest_plugin.py, ts/mcp/test/mcp.test.ts, ts/test/delivery.test.ts, ts/test/probe.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md, ts/mcp/README.md |
@@ -268,7 +267,7 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | R14 | built | resilience | payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile | - | XC-17, XC-21 | action.yml, src/x402conf/cli.py, src/x402conf/spec.py, ts/example/crash-server.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/crash.ts, ts/src/double.ts, ts/src/index.ts | tests/test_live.py, tests/test_offline.py, ts/test/delivery.test.ts | README.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md, ts/README.md |
 | R15 | built | normative | V2 6.1: in the authorization flow funds move only after the resource completes successfully; a failed, redirected or thrown request is not settled | - | XC-18 | src/x402conf/spec.py, ts/example/delivery-server.ts, ts/src/catalog.ts, ts/src/delivery.ts, ts/src/index.ts, ts/src/status.ts | tests/test_offline.py, ts/test/handler-failure.test.ts, ts/test/handler-status.test.ts | docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md |
 | R16 | built | security-profile | RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to deliver and is not settled | - | XC-18 | src/x402conf/spec.py, ts/example/head-server.ts, ts/src/catalog.ts, ts/src/head.ts, ts/src/index.ts | tests/test_offline.py, ts/test/head.test.ts | docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md |
-| R16a | built | security-profile | the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402 | - | XC-39 | src/x402conf/spec.py, ts/example/head-unpaid-server.ts, ts/src/catalog.ts, ts/src/head-unpaid.ts | tests/test_offline.py, ts/test/head-unpaid.test.ts | docs/FIXES.md, docs/SPEC.md |
+| R16a | built | security-profile | the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402 | - | XC-39 | src/x402conf/spec.py, ts/example/head-unpaid-server.ts, ts/src/catalog.ts, ts/src/head-unpaid.ts | tests/test_offline.py, ts/test/head-unpaid.test.ts | docs/FIXES.md, docs/SPEC.md, docs/VV.md |
 | R17 | planned | - | - | - | XC-18 | - | - | docs/ROADMAP.md, docs/VV.md |
 | R18 | planned | - | - | - | XC-18 | - | - | docs/ROADMAP.md, docs/VV.md |
 | R19 | planned | - | - | - | XC-18 | - | - | docs/ROADMAP.md, docs/VV.md |
@@ -276,9 +275,9 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | R20a | built | security-profile | payment-identifier: a retry with the same id and a fresh payment is not charged again | - | - | action.yml, src/x402conf/spec.py, ts/src/catalog.ts, ts/src/cli.ts, ts/src/retry.ts | tests/test_offline.py, ts/test/retry.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md, ts/README.md |
 | R20b | built | security-profile | a retry resending the same signed payment is settled once and gets the original result | - | - | action.yml, src/x402conf/spec.py, ts/example/client-offers-clients.ts, ts/example/retry-clients.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/retry.ts | tests/test_offline.py, ts/test/retry.test.ts | README.md, docs/ARCHITECTURE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md, ts/README.md |
 | R21 | planned | - | - | - | XC-34 | - | - | docs/VV.md |
-| R22 | built | normative | after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15) | - | XC-40 | src/x402conf/spec.py, ts/src/catalog.ts, ts/src/index.ts, ts/src/status.ts | tests/test_offline.py, ts/test/handler-status.test.ts | docs/FIXES.md, docs/SPEC.md |
-| R23 | built | security-profile | a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again | - | XC-41 | src/x402conf/spec.py, ts/example/retry-server.ts, ts/src/abort.ts, ts/src/catalog.ts | tests/test_offline.py, ts/test/abort.test.ts | docs/FIXES.md, docs/SPEC.md |
-| R24 | built | resilience | V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures | - | XC-42 | src/x402conf/spec.py, ts/example/header-server.ts, ts/src/catalog.ts, ts/src/header.ts | tests/test_offline.py, ts/test/malformed-header.test.ts | docs/FIXES.md, docs/SPEC.md |
+| R22 | built | normative | after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15) | - | XC-40 | src/x402conf/spec.py, ts/src/catalog.ts, ts/src/index.ts, ts/src/status.ts | tests/test_offline.py, ts/test/handler-status.test.ts | docs/FIXES.md, docs/SPEC.md, docs/VV.md |
+| R23 | built | security-profile | a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again | - | XC-41 | src/x402conf/spec.py, ts/example/retry-server.ts, ts/src/abort.ts, ts/src/catalog.ts | tests/test_offline.py, ts/test/abort.test.ts | docs/FIXES.md, docs/SPEC.md, docs/VV.md |
+| R24 | built | resilience | V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures | - | XC-42 | src/x402conf/spec.py, ts/example/header-server.ts, ts/src/catalog.ts, ts/src/header.ts | tests/test_offline.py, ts/test/malformed-header.test.ts | docs/FIXES.md, docs/SPEC.md, docs/VV.md |
 | B1 | planned | - | - | - | XC-35 | - | - | docs/VV.md |
 | B2 | planned | - | - | - | XC-35 | - | - | docs/VV.md |
 | B3 | planned | - | - | - | XC-35 | - | - | docs/VV.md |
@@ -292,9 +291,9 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | W3 | planned | - | - | - | XC-37 | - | - | docs/VV.md |
 | X1 | planned | - | - | - | XC-33 | - | - | docs/VV.md |
 | X2 | planned | - | - | - | XC-33 | - | - | docs/VV.md |
-| C1 | built | security-profile | V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error | - | XC-43 | src/x402conf/spec.py, ts/example/client-status-clients.ts, ts/src/catalog.ts, ts/src/client-status.ts | tests/test_offline.py, ts/test/client-status.test.ts | docs/FIXES.md, docs/SPEC.md |
-| C2 | built | security-profile | given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific | - | XC-44 | src/x402conf/spec.py, ts/example/client-offers-clients.ts, ts/src/catalog.ts, ts/src/client-offers.ts | tests/test_offline.py, ts/test/client-offers.test.ts | docs/FIXES.md, docs/SPEC.md |
-| C3 | built | security-profile | V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none | - | XC-45 | src/x402conf/spec.py, ts/example/client-version-clients.ts, ts/src/catalog.ts, ts/src/client-version.ts | tests/test_offline.py, ts/test/client-version.test.ts | docs/FIXES.md, docs/SPEC.md |
+| C1 | built | security-profile | V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error | - | XC-43 | src/x402conf/spec.py, ts/example/client-status-clients.ts, ts/src/catalog.ts, ts/src/client-status.ts | tests/test_offline.py, ts/test/client-status.test.ts | docs/FIXES.md, docs/SPEC.md, docs/VV.md |
+| C2 | built | security-profile | given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific | - | XC-44 | src/x402conf/spec.py, ts/example/client-offers-clients.ts, ts/src/catalog.ts, ts/src/client-offers.ts | tests/test_offline.py, ts/test/client-offers.test.ts | docs/FIXES.md, docs/SPEC.md, docs/VV.md |
+| C3 | built | security-profile | V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none | - | XC-45 | src/x402conf/spec.py, ts/example/client-version-clients.ts, ts/src/catalog.ts, ts/src/client-version.ts | tests/test_offline.py, ts/test/client-version.test.ts | docs/FIXES.md, docs/SPEC.md, docs/VV.md |
 
 Upstream references are issue and PR numbers in x402-foundation/x402.
 
