@@ -51,6 +51,15 @@ fail to settle, or a fee payer clients can't verify.
 **How to fix it.** Set `extra.feePayer` to the key that will sign as fee payer and list it in `signers` under
 `solana:*` or the kind's exact network ID.
 
+## S5
+**What failed.** A kind that `/supported` advertises got no structured `/verify` answer: the call raised or answered
+5xx, the connection dropped, or the answer was `isValid: false` with no `invalidReason`.
+**Why it matters.** A resource server and its clients read `/supported` to choose a kind and expect `/verify` to give
+a verdict for it. A kind that errors at `/verify` looks supported but fails every payment, and a refusal with no reason
+can't be acted on.
+**How to fix it.** Advertise only the kinds your `/verify` has a handler for. For each one, answer `isValid: true`, or
+`isValid: false` with an `invalidReason`, and keep 5xx for the facilitator's own failures.
+
 ## F1
 **What failed.** A malformed payment payload was accepted (`isValid: true`) instead of rejected.
 **How to fix it.** Validate the payload's shape and decoding before anything else and answer `invalid_payload` on any

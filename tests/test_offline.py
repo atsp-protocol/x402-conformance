@@ -188,6 +188,48 @@ class Offline(unittest.TestCase):
     def test_f12_trusting_the_requirements_caught(self):
         self.assertEqual(fails(H.check_safety(M.FAULTS["trust_kind"](), M.vectors())), {"F12"})
 
+    def _s5(self, fac):
+        r = next((x for x in H.check_safety(fac, M.vectors()) if x["check"].startswith("S5 ")), None)
+        self.assertIsNotNone(r, "check_safety gave no S5 result")
+        return r
+
+    def _fault(self, name):
+        self.assertIn(name, M.FAULTS, f"no {name} build")
+        return M.FAULTS[name]()
+
+    def test_s5_reference_answers_every_advertised_kind(self):
+        r = self._s5(M.Reference())
+        self.assertTrue(r["pass"], r)
+        self.assertEqual([k["answer"] for k in r["detail"]["kinds"]], [{"isValid": True}])
+        # A second advertised network with no token at the fixture's asset gets invalid with a reason: still an answer.
+        fac = M.Reference()
+        fac.networks.add("solana:x402confSecondNetwork")
+        r = self._s5(fac)
+        self.assertTrue(r["pass"], r)
+        self.assertEqual(sorted(str(k["answer"].get("invalidReason")) for k in r["detail"]["kinds"]),
+                         ["None", "invalid_asset"])
+
+    def test_s5_unhandled_advertised_kind_caught(self):
+        self.assertEqual(fails(H.check_safety(self._fault("advertise_unhandled"), M.vectors())), {"S5"})
+        r = self._s5(self._fault("advertise_unhandled"))
+        self.assertIn("raised KeyError", [k.get("answer") for k in r["detail"]["kinds"]])
+
+    def test_s5_reasonless_invalid_caught(self):
+        self.assertEqual(fails(H.check_safety(self._fault("reasonless_invalid"), M.vectors())), {"S5"})
+
+    def test_s5_not_graded_without_supported(self):
+        class Bare:
+            def __init__(self) -> None:
+                self.inner = M.Reference()
+
+            def verify(self, p, req):
+                return self.inner.verify(p, req)
+
+            def settle(self, p, req):
+                return self.inner.settle(p, req)
+
+        self.assertFalse(any(x["check"].startswith("S5 ") for x in H.check_safety(Bare(), M.vectors())))
+
     def test_f6_guard_crediting_on_error_caught(self):
         g = H.GUARD_FAULTS["guard_credit_on_error"]
         self.assertEqual(fails(H.check_safety(M.Reference(), M.vectors(), guard=g)), {"F6"})

@@ -23,6 +23,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "normative",
   "basis": "SVM exact: extra.feePayer is the sponsor's public key"
  },
+ "S5": {
+  "profile": "normative",
+  "basis": "V2 7.3: /supported lists the payment kinds the facilitator supports; V2 7.1: /verify answers isValid, with invalidReason when it is false"
+ },
  "P1": {
   "profile": "normative",
   "basis": "V2 HTTP transport: payment required is signalled with HTTP 402"

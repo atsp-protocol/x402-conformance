@@ -1,5 +1,11 @@
 # Changelog
 ## Unreleased
+- S5, every advertised kind gets a verdict: the offline checks read the facilitator's `/supported` and send `/verify`
+  once for each kind it lists. Each answer must be `isValid: true`, or `isValid: false` with an `invalidReason`; an
+  exception (a 5xx or a dropped answer over HTTP) or a refusal with no reason fails. The reference double passes, with
+  one kind or with a second network it answers `invalid_asset` for. The `advertise_unhandled` build (a listed kind its
+  `/verify` has no handler for) and the `reasonless_invalid` build each fail (`tests/test_offline.py`). A facilitator
+  double with no `supported()` is not graded on S5. A fix section is in [docs/FIXES.md](docs/FIXES.md#s5).
 - R22, the paid response keeps the handler's 2xx status and headers (`probeStatus`): after a successful settle the
   client receives the handler's own status and headers. A 201 stays a 201 with its Location and a 202 stays a 202 with
   its Content-Location. Only 2xx statuses are graded, since a paid 3xx is never settled (R15). The control is
