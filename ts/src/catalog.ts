@@ -95,6 +95,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "normative",
   "basis": "V2 7.1: /verify MUST NOT commit payment state"
  },
+ "F12": {
+  "profile": "security-profile",
+  "basis": "V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network"
+ },
  "R0": {
   "profile": "normative",
   "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED"
@@ -170,6 +174,18 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "R14": {
   "profile": "resilience",
   "basis": "payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile"
+ },
+ "R15": {
+  "profile": "normative",
+  "basis": "V2 6.1: in the authorization flow funds move only after the resource completes successfully; a failed, redirected or thrown request is not settled"
+ },
+ "R16": {
+  "profile": "security-profile",
+  "basis": "RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to deliver and is not settled"
+ },
+ "R16a": {
+  "profile": "security-profile",
+  "basis": "the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402"
  },
  "R20": {
   "profile": "security-profile",
