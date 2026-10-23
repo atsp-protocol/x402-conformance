@@ -64,7 +64,7 @@ def tracked(root: str) -> list[str]:
     out = subprocess.run(["git", "ls-files"], cwd=root, capture_output=True, text=True).stdout
     files = [f for f in out.splitlines() if f]
     if files:
-        return sorted(files)
+        return sorted(set(files))  # a file mid-merge is listed once per stage
     out = []  # not a git tree (the tests' copies): every file, dotfiles included, outside .git and node_modules
     for d, dirs, names in os.walk(root):
         dirs[:] = [x for x in dirs if x not in (".git", "node_modules")]
@@ -283,8 +283,8 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
                           ".github/pull_request_template.md", ".github/CODEOWNERS"),
      "contributing, conduct, security and templates"),
     ("legal", "doc", ("LICENSE", "NOTICE"), "the licence and notice"),
-    ("ci", "gate", (".github/workflows/ci.yml", ".gitignore"),
-     "CI: lint, tests, Lean, the TS and MCP builds, V&V and this map"),
+    ("ci", "gate", (".github/workflows/ci.yml", ".github/truedone.yml", ".gitignore"),
+     "CI: lint, tests, Lean, the TS and MCP builds, V&V, red-green and this map"),
 ]
 GATE_KINDS = ("doc", "contract", "test")
 U, R = "update", "review"

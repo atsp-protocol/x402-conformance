@@ -51,6 +51,15 @@ fail to settle, or a fee payer clients can't verify.
 **How to fix it.** Set `extra.feePayer` to the key that will sign as fee payer and list it in `signers` under
 `solana:*` or the kind's exact network ID.
 
+## S5
+**What failed.** A kind that `/supported` advertises got no structured `/verify` answer: the call raised or answered
+5xx, the connection dropped, or the answer was `isValid: false` with no `invalidReason`.
+**Why it matters.** A resource server and its clients read `/supported` to choose a kind and expect `/verify` to give
+a verdict for it. A kind that errors at `/verify` looks supported but fails every payment, and a refusal with no reason
+can't be acted on.
+**How to fix it.** Advertise only the kinds your `/verify` has a handler for. For each one, answer `isValid: true`, or
+`isValid: false` with an `invalidReason`, and keep 5xx for the facilitator's own failures.
+
 ## F1
 **What failed.** A malformed payment payload was accepted (`isValid: true`) instead of rejected.
 **How to fix it.** Validate the payload's shape and decoding before anything else and answer `invalid_payload` on any
@@ -334,6 +343,14 @@ written, fsynced and renamed). When the same payment comes back, never settle it
 (the extension's "Same `id`, same payload: Return cached response"), or, if the record is still `settling`, refuse
 with a 409 that names the payment so it can be reconciled on chain. `ts/example/crash-server.ts` shows one way to do
 it.
+
+## R22
+**What failed.** After a successful settle the client did not receive the handler's own 2xx status, or a header the
+handler set (such as `Location` on a 201) was dropped. The result's `cases` say which route answered which status.
+**Why it matters.** The client treats the paid response as the handler's response. A 201 or 202 that arrives as 200,
+or a 201 whose `Location` was dropped, is a different result from the one the handler produced.
+**How to fix it.** Settle, then send the handler's status and headers unchanged and add the settlement header beside
+them. Do not replace a 201 or 202 with 200. A handler that answers 3xx should not be settled at all (see R15).
 
 ## R15
 **What failed.** The probe paid a route whose handler answers 5xx, one that redirects (3xx) and one that throws, and

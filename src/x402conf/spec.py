@@ -74,6 +74,11 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
     "S4": {"profile": "normative", "basis": "SVM exact: extra.feePayer is the sponsor's public key",
            "controls": [_LIVE + "test_s_all_pass_on_conformant_body", _LIVE + "test_s4_exact_network_signer_key"],
            "faulty": [_LIVE + "test_s4_bad_fee_payer", _LIVE + "test_s4_fee_payer_not_signer"]},
+    "S5": {"profile": "normative",
+           "basis": "V2 7.3: /supported lists the payment kinds the facilitator supports; V2 7.1: /verify answers "
+                    "isValid, with invalidReason when it is false",
+           "controls": [_OFF + "test_s5_reference_answers_every_advertised_kind"],
+           "faulty": ["fault:advertise_unhandled", "fault:reasonless_invalid"]},
     "P1": {"profile": "normative", "basis": "V2 HTTP transport: payment required is signalled with HTTP 402",
            "controls": [_LIVE + "test_p_all_pass_on_spec_example"], "faulty": [_LIVE + "test_p1_served_without_payment"]},
     "P2": {"profile": "normative", "basis": "V2 HTTP transport: PAYMENT-REQUIRED carries base64 JSON; V1 5.1 body",
@@ -228,4 +233,11 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
             "faulty": ["ts:R24 decode_unchecked: a server that throws on a malformed payment header",
                        "ts:R24 drop_on_bad_header: a server that drops the connection",
                        "ts:R24 gate: a URL that is not a paid route fails and grades nothing"]},
+    "R22": {"profile": "normative",
+            "basis": "after a successful settle the client receives the handler's own 2xx status code and headers, "
+                     "such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; "
+                     "a paid 3xx is not settled (R15)",
+            "controls": ["ts:R22 control: a server that returns the handler status"],
+            "faulty": ["ts:R22 catches a server that rewrites the paid response to 200",
+                       "ts:R22 gate: a 3xx expectation is refused and nothing is paid"]},
 }

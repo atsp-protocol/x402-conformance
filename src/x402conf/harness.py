@@ -409,6 +409,44 @@ def _f12(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
     return result(F12, ok, {"unsupported_network": got["network"], "asset_without_code": got["asset"]})
 
 
+S5 = ("S5 every kind /supported advertises gets a structured /verify answer: valid, or invalid with a reason, never "
+      "an error (V2 7.1, 7.3)")
+
+
+def _s5(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult | None:
+    """Sends /verify once for each kind the facilitator advertises. A facilitator double with no supported() is not
+    graded; the HTTP adapter reads GET /supported."""
+    supported = getattr(fac, "supported", None)
+    if not callable(supported):
+        return None
+    try:
+        doc = supported()
+    except Exception as e:  # noqa: BLE001  a /supported that fails grades nothing
+        return result(S5, False, {"error": f"/supported failed: {type(e).__name__}: {e}"})
+    kinds = [k for k in doc.get("kinds", []) if isinstance(k, dict)] if isinstance(doc, dict) else []
+    if not kinds:
+        return result(S5, False, {"error": "/supported advertises no kinds, so nothing was graded"})
+    answers: list[Json] = []
+    for i, k in enumerate(kinds):
+        kind = {"x402Version": k.get("x402Version"), "scheme": k.get("scheme"), "network": k.get("network")}
+        p = dict(mk("good"), tx=f"tx-s5-{i}", memo=f"m-s5-{i}")
+        try:
+            v: Any = fac.verify(p, dict(req, scheme=kind["scheme"], network=kind["network"]))
+        except Exception as e:  # noqa: BLE001  an exception is the in-process form of a 5xx or a dropped answer
+            if type(e).__name__ == "Refused":   # the devnet adapter sends devnet requirements only
+                answers.append({"kind": kind, "not_sent": str(e)})
+                continue
+            v = f"raised {type(e).__name__}"
+        ok = isinstance(v, dict) and (v.get("isValid") is True
+                                      or (v.get("isValid") is False and bool(v.get("invalidReason"))))
+        answers.append({"kind": kind, "answer": v, "structured": ok})
+    graded = [a for a in answers if "structured" in a]
+    bad = [a["kind"] for a in graded if not a["structured"]]
+    error = ("no advertised kind could be sent, so nothing was graded" if not graded
+             else f"{len(bad)} advertised kind(s) got no structured /verify answer" if bad else None)
+    return result(S5, bool(graded) and not bad, {"kinds": answers, **({"error": error} if error else {})})
+
+
 def check_safety(fac: Facilitator, mk: Vectors,
                  guard: Callable[[Facilitator], ResourceServerGuard] | None = None) -> list[CheckResult]:
     make_guard = guard or ResourceServerGuard
@@ -456,6 +494,9 @@ def check_safety(fac: Facilitator, mk: Vectors,
     out.append(_f10(fac, mk, req))
     out.append(_f11(fac, mk, req))
     out.append(_f12(fac, mk, req))
+    s5 = _s5(fac, mk, req)
+    if s5 is not None:
+        out.append(s5)
     return out
 
 

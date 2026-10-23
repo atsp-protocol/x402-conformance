@@ -37,6 +37,15 @@ function cli(args: string[], env: Record<string, string> = {}): Promise<{ code: 
   });
 }
 
+/** A port that was free a moment ago, for a server the CLI starts with --start. */
+async function freePort(): Promise<number> {
+  const s = http.createServer();
+  await new Promise<void>((ok) => s.listen(0, "127.0.0.1", ok));
+  const port = (s.address() as AddressInfo).port;
+  await new Promise<void>((ok) => s.close(() => ok()));
+  return port;
+}
+
 async function busyPort(): Promise<{ port: number; close(): Promise<void> }> {
   const s = http.createServer((_q, r) => { r.writeHead(200); r.end("someone else"); });
   await new Promise<void>((ok) => s.listen(0, "127.0.0.1", ok));
@@ -170,8 +179,9 @@ describe("CLI", () => {
   const lastDoc = (out: string) => JSON.parse(out.slice(out.lastIndexOf('{\n "tool"')));
   test("the CLI passes the example server end to end and exits 0", async () => {
     const ex = join(new URL("../example/server.js", import.meta.url).pathname);
-    const r = await cli(["probe", "--resource", "http://127.0.0.1:45231/paid", "--port", "0",
-      "--start", `PORT=45231 node ${ex}`]);
+    const port = await freePort();
+    const r = await cli(["probe", "--resource", `http://127.0.0.1:${port}/paid`, "--port", "0",
+      "--start", `PORT=${port} node ${ex}`]);
     assert.equal(r.code, 0, r.err + r.out);
     const doc = lastDoc(r.out);
     assert.equal(doc.evidence, "x402-conformance-evidence/2");
@@ -179,15 +189,19 @@ describe("CLI", () => {
   });
   test("the CLI runs the R11 binding checks end to end and catches a server that trusts the client", async () => {
     const ex = join(new URL("../example/binding-server.js", import.meta.url).pathname);
-    const b = "http://127.0.0.1:45232";
-    const args = (fault: string) => ["probe", "--port", "0", "--cheap", `${b}/cheap`, "--expensive", `${b}/expensive`,
-      "--by-method", `${b}/item`, "--by-query", `${b}/report?tier=basic,${b}/report?tier=pro`,
-      "--param", `${b}/items/{id}/premium`, "--start", `PORT=45232 BINDING_FAULT=${fault} node ${ex}`];
-    const ok = await cli(args(""));
+    // Each run starts its own server on a port of its own: the first one's process may still hold its port while the
+    // second starts.
+    const args = (fault: string, port: number) => {
+      const b = `http://127.0.0.1:${port}`;
+      return ["probe", "--port", "0", "--cheap", `${b}/cheap`, "--expensive", `${b}/expensive`,
+        "--by-method", `${b}/item`, "--by-query", `${b}/report?tier=basic,${b}/report?tier=pro`,
+        "--param", `${b}/items/{id}/premium`, "--start", `PORT=${port} BINDING_FAULT=${fault} node ${ex}`];
+    };
+    const ok = await cli(args("", await freePort()));
     assert.equal(ok.code, 0, ok.err + ok.out);
     const ids = lastDoc(ok.out).results.map((x: any) => x.check.split(" ")[0]);
     assert.deepEqual(ids, ["R11", "R11a", "R11b", "R11c", "R11d", "R11e"]);
-    const bad = await cli(args("trust_client"));
+    const bad = await cli(args("trust_client", await freePort()));
     assert.equal(bad.code, 1, bad.err + bad.out);
     const profiles = lastDoc(bad.out).results.filter((x: any) => !x.pass).map((x: any) => x.profile);
     assert.deepEqual(profiles, ["normative", "normative", "security-profile", "security-profile"]);
