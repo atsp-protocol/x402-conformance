@@ -236,7 +236,8 @@ class Interdeps(unittest.TestCase):
 
         g = I.gate(["src/x402conf/spec.py"], "")
         self.assertEqual(g["changed"], ["catalog"])
-        self.assertEqual(g["missing"], ["changelog", "docs", "interdeps-map", "py-tests", "readme", "vv-doc"])
+        self.assertEqual(g["missing"],
+                         ["changelog", "docs", "interdeps-map", "mutation-matrix", "py-tests", "readme", "vv-doc"])
         self.assertIn("ts-catalog", g["review"])  # code downstream: review only
         self.assertIn("ts-tests", g["review"])  # two steps out: review only
         self.assertEqual(I.gate(["docs/USING.md"], "")["missing"], ["interdeps-map", "readme", "site"])
