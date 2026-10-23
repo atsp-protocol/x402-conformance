@@ -315,6 +315,7 @@ graph LR
   proposals["proposals<br/>contract"]
   claims["claims<br/>data"]
   vv["vv<br/>code"]
+  doc_examples["doc-examples<br/>code"]
   vv_doc["vv-doc<br/>doc"]
   catalog["catalog<br/>code"]
   pytest_plugin["pytest-plugin<br/>code"]
@@ -358,6 +359,10 @@ graph LR
   claims -.-> vv
   vv -.-> ci
   vv -.-> vv_doc
+  docs -.-> doc_examples
+  ts_cli -.-> doc_examples
+  py_suite -.-> doc_examples
+  doc_examples -.-> ci
   catalog ==> interdeps_map
   catalog ==> ts_catalog
   catalog -.-> docs
@@ -427,6 +432,7 @@ graph LR
 | proposals | contract | `docs/proposals/**` | proposed, unsigned contract addenda |
 | claims | data | `vv/claims.json` | the tasks claimed done |
 | vv | code | `tools/vv.py`; `tools/verify-sig.mjs` | the V&V runner and the signature check |
+| doc-examples | code | `tools/doc_examples.py` | the runnable docs examples: the fences marked in the docs, run against the bundled mock in CI |
 | vv-doc | doc | `docs/VV.md` | the V&V matrix |
 | catalog | code | `src/x402conf/spec.py`; `src/x402conf/types.py` | the check catalogue and its types |
 | pytest-plugin | code | `src/x402conf/pytest_plugin.py` | the pytest plugin |
@@ -473,6 +479,10 @@ graph LR
 | claims | vv | review |
 | vv | ci | review |
 | vv | vv-doc | review |
+| docs | doc-examples | review |
+| ts-cli | doc-examples | review |
+| py-suite | doc-examples | review |
+| doc-examples | ci | review |
 | catalog | interdeps-map | update |
 | catalog | ts-catalog | update |
 | catalog | docs | review |
