@@ -29,6 +29,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "${{ matrix.python }}" }
+      - run: pip install pyyaml==6.0.2
       - run: PYTHONPATH=src python -m unittest discover -s tests -v
       - name: The interdependency map is current and the docs match the code
         run: python3 tools/interdeps.py --check && python3 tools/interdeps.py --drift
@@ -158,6 +159,20 @@ jobs:
           test "$rc" = 1
           grep -q "corpus-case.yml" fail.err
           python3 -c "import json,sys;c=json.load(open('fail/x402-conformance/resource-server.case.json'));sys.exit(0 if c['via']=='docker' and 'R3' in c['failed_ids'] and c['target']=='loopback' else 1)"
+  docs-examples:
+    # A8: every example the docs mark as runnable runs against the bundled mock, so a broken example fails the build.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: pip install pyyaml==6.0.2
+      - run: cd ts && npm ci --no-audit --no-fund && npx tsc -p .
+      - name: The marked examples in README.md, docs and the examples READMEs run and exit as documented
+        run: python3 tools/doc_examples.py --list && python3 tools/doc_examples.py --run
   first-run:
     # A1: what a new user types, from the packed packages, timed. Under 60 s each, no wallet, no project, no config.
     runs-on: ubuntu-latest
@@ -343,7 +358,7 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install ruff==0.7.4 mypy==1.13.0 pytest==8.3.5
+      - run: pip install ruff==0.7.4 mypy==1.13.0 pytest==8.3.5 pyyaml==6.0.2
       - name: Install elan
         run: |
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh

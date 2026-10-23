@@ -36,6 +36,19 @@ ecosystem.
 
 ## Command line
 
+Try it with nothing of your own: each of these runs against a bundled mock on loopback, never the network. CI runs
+them from the docs (see [Examples that CI runs](#examples-that-ci-runs)).
+
+<!-- runnable: cli subst="npx -y x402-conformance-svm=node ts/dist/src/cli.js;pipx run --spec x402-conformance x402conf=python3 -m x402conf" -->
+```
+npx -y x402-conformance-svm demo                                     # R0-R10 against a bundled mock server
+pipx run --spec x402-conformance x402conf demo                       # S1-S4, P1-P7 against a bundled mock, then F1-F11
+pipx run --spec x402-conformance x402conf offline                    # the F1-F11 self-test on its own
+npx -y x402-conformance-svm demo --fault serve_on_any_settle         # a faulty server: exits 1 with a fix link per check
+```
+
+Then your own endpoints:
+
 ```
 x402conf resource https://your.api/paid                              # P1-P7, one unpaid GET (Python)
 npx -y x402-conformance-svm resource --url https://your.api/paid      # the same P1-P7, in Node
@@ -57,6 +70,7 @@ JUnit for test summaries.
 
 ## vitest
 
+<!-- runnable: ts -->
 ```ts
 // x402.spec.ts
 import { expect, test } from "vitest";
@@ -86,6 +100,7 @@ The matchers follow the `expect.extend` contract vitest and jest share, so the v
 
 ## node:test and other runners
 
+<!-- runnable: ts -->
 ```ts
 import { test } from "node:test";
 import { assertX402Conformance, runConformance, saveReport } from "x402-conformance-svm/testing";
@@ -109,6 +124,7 @@ use the CLI's `--start` or the Action.
 
 ## MCP: Claude, Cursor and other MCP clients
 
+<!-- runnable: json -->
 ```json
 { "mcpServers": { "x402-conformance": { "command": "npx", "args": ["-y", "x402-conformance-mcp"] } } }
 ```
@@ -121,6 +137,7 @@ drives the server over real stdio with the MCP SDK client. [ts/mcp/README.md](..
 
 ## Vercel AI SDK
 
+<!-- runnable: ts -->
 ```ts
 import { x402ConformanceTools } from "x402-conformance-mcp/ai-sdk";
 await generateText({ model, tools: x402ConformanceTools(), prompt: "Is the 402 answer at https://api.example.com/paid valid?" });
@@ -131,6 +148,7 @@ before paying an unfamiliar endpoint is the common use. CI runs a tool call thro
 
 ## LangChain and LangGraph
 
+<!-- runnable: ts -->
 ```ts
 import { x402ConformanceTools } from "x402-conformance-mcp/langchain";
 const agent = createReactAgent({ llm, tools: x402ConformanceTools() });
@@ -155,6 +173,7 @@ it and runs every one of these against the reference and a faulty server.
 
 ## GitLab CI and other CI systems
 
+<!-- runnable: gitlab -->
 ```yaml
 include:
   - remote: https://raw.githubusercontent.com/atsp-protocol/x402-conformance/v1/ts/ci/gitlab/x402-conformance.gitlab-ci.yml
@@ -174,6 +193,7 @@ template's script inside the image, as GitLab would, against a passing and a fau
 
 Installing `x402-conformance` registers a pytest plugin, so any suite gets the `x402` fixture:
 
+<!-- runnable: python -->
 ```python
 def test_my_402_answer(x402):
     x402.assert_passed(x402.check_payment_required("http://127.0.0.1:8000/paid"))      # P1-P5, in Python
@@ -189,3 +209,11 @@ with its detail and fix link. `--x402-report-dir DIR` keeps every report, and `-
 and lists the links to submit them in the terminal summary. Nothing is sent. CI runs the plugin against the stock
 x402 Python SDK's FastAPI middleware ([example](../examples/python/fastapi_server.py)), which passes R0-R10 on Solana
 devnet, and against a faulty server, which fails.
+
+## Examples that CI runs
+
+A fenced example whose previous line is `<!-- runnable: <kind> -->` is run or checked by `python3 tools/doc_examples.py
+--run` in CI, so a broken example fails the build. The marker is an HTML comment, invisible on the page. `cli` runs
+each command from the tree root against the bundled mock, with `subst="old=new"` mapping a published command to the
+tree's own build; `actions` and `gitlab` parse the YAML and check the inputs and variables against `action.yml` and
+the GitLab template; `python`, `ts` and `json` check that the block parses. `--list` prints the marked examples.
