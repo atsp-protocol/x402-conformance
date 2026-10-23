@@ -1,0 +1,66 @@
+name: mcp-registry
+# Publishes ts/mcp/server.json to the official MCP Registry
+# (registry.modelcontextprotocol.io) under io.github.atsp-protocol/x402-conformance.
+# Auth is GitHub OIDC: the registry grants the io.github.atsp-protocol/* namespace
+# to workflows running in this org, so no token or browser login is needed.
+# The npm package (x402-conformance-mcp) and the GHCR image must already be
+# published at the server.json version; the registry checks both before accepting.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: mcp-registry
+  cancel-in-progress: false
+env:
+  MCP_PUBLISHER_VERSION: v1.8.1
+  MCP_PUBLISHER_SHA256: a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc
+jobs:
+  publish:
+    if: github.repository == 'atsp-protocol/x402-conformance'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # required for mcp-publisher login github-oidc
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check server.json version matches the release tag
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          want="${TAG#v}"
+          have="$(jq -r .version ts/mcp/server.json)"
+          if [ "$have" != "$want" ]; then
+            echo "::error::ts/mcp/server.json version $have does not match release tag $TAG"
+            exit 1
+          fi
+      - name: Install mcp-publisher (pinned, checksum verified)
+        run: |
+          url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          curl -fsSL -o mcp-publisher.tar.gz "$url"
+          echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+          ./mcp-publisher --help > /dev/null
+      - name: Validate server.json against the registry
+        working-directory: ts/mcp
+        run: ../../mcp-publisher validate server.json
+      - name: Log in with GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+      - name: Publish to the MCP Registry
+        working-directory: ts/mcp
+        run: ../../mcp-publisher publish server.json
+      - name: Confirm the entry is live
+        run: |
+          name="$(jq -r .name ts/mcp/server.json)"
+          version="$(jq -r .version ts/mcp/server.json)"
+          enc="$(jq -rn --arg n "$name" '$n|@uri')"
+          curl -fsS --max-time 60 --retry 5 --retry-delay 10 --retry-all-errors \
+            "https://registry.modelcontextprotocol.io/v0/servers/${enc}/versions/${version}" \
+            | jq -e --arg n "$name" --arg v "$version" \
+              '.server.name == $n and .server.version == $v'
