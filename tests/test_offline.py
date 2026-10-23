@@ -179,6 +179,15 @@ class Offline(unittest.TestCase):
         # XC-15-AC02: a /verify that commits payment state (V2 7.1) is caught by F11
         self.assertIn("F11", fails(H.check_safety(M.Faulty(verify_commits=True), M.vectors())))
 
+    def test_f12_reference_rejects_unsupported_network_and_asset(self):
+        r = next(x for x in H.check_safety(M.Reference(), M.vectors()) if x["check"].startswith("F12 "))
+        self.assertTrue(r["pass"], r)
+        self.assertEqual(r["detail"]["unsupported_network"]["invalidReason"], "unsupported_network")
+        self.assertEqual(r["detail"]["asset_without_code"]["invalidReason"], "invalid_asset")
+
+    def test_f12_trusting_the_requirements_caught(self):
+        self.assertEqual(fails(H.check_safety(M.FAULTS["trust_kind"](), M.vectors())), {"F12"})
+
     def test_f6_guard_crediting_on_error_caught(self):
         g = H.GUARD_FAULTS["guard_credit_on_error"]
         self.assertEqual(fails(H.check_safety(M.Reference(), M.vectors(), guard=g)), {"F6"})
@@ -192,7 +201,13 @@ class Offline(unittest.TestCase):
         emitted |= {"S0", "S1", "S2", "S3", "S4", "P1", "P2", "P3", "P4", "P5", "P6", "P7"}
         emitted |= {f"R{i}" for i in range(11)} | {"R11", "R11a", "R11b", "R11c", "R11d", "R11e", "R11f", "R14"}
         emitted |= {"R20", "R20a", "R20b"}
+        emitted |= {"C3"}
+        emitted |= {"C2"}
+        emitted |= {"C1"}
+        emitted |= {"R23"}
         emitted |= {"R15"}
+        emitted |= {"R16"}
+        emitted |= {"R16a"}
         emitted |= {"R24"}
         self.assertEqual(emitted - set(S.CATALOG), set(), "checks with no catalog entry")
         for cid, e in S.CATALOG.items():
