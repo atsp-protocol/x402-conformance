@@ -298,6 +298,236 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 
 Upstream references are issue and PR numbers in x402-foundation/x402.
 
+## Components
+
+Every tracked file belongs to one component (`COMPONENTS` in `tools/interdeps.py`, first match wins). An update edge means the downstream component changes in the same change, a review edge means it is read and changed if the change reaches it. The PR gate (`--gate`) fails only when a touched component's direct downstream doc, contract or test component is neither touched nor acknowledged with `Interdeps-Ack: <component> - <reason>`; everything else it reaches is listed for review.
+
+```mermaid
+graph LR
+  interdeps["interdeps<br/>code"]
+  interdeps_map["interdeps-map<br/>doc"]
+  interdeps_tests["interdeps-tests<br/>test"]
+  contract["contract<br/>contract"]
+  proposals["proposals<br/>contract"]
+  claims["claims<br/>data"]
+  vv["vv<br/>code"]
+  vv_doc["vv-doc<br/>doc"]
+  catalog["catalog<br/>code"]
+  pytest_plugin["pytest-plugin<br/>code"]
+  devnet["devnet<br/>code"]
+  py_suite["py-suite<br/>code"]
+  py_tests["py-tests<br/>test"]
+  py_examples["py-examples<br/>code"]
+  ts_catalog["ts-catalog<br/>code"]
+  ts_cli["ts-cli<br/>code"]
+  ts_suite["ts-suite<br/>code"]
+  ts_tests["ts-tests<br/>test"]
+  ts_examples["ts-examples<br/>code"]
+  ts_readme["ts-readme<br/>doc"]
+  mcp_readme["mcp-readme<br/>doc"]
+  mcp_tests["mcp-tests<br/>test"]
+  mcp["mcp<br/>code"]
+  action["action<br/>code"]
+  distribution["distribution<br/>deploy"]
+  site["site<br/>doc"]
+  lean["lean<br/>code"]
+  corpus_schemas["corpus-schemas<br/>data"]
+  corpus["corpus<br/>data"]
+  evidence["evidence<br/>data"]
+  readme["readme<br/>doc"]
+  changelog["changelog<br/>doc"]
+  docs["docs<br/>doc"]
+  community["community<br/>doc"]
+  legal["legal<br/>doc"]
+  ci["ci<br/>gate"]
+  interdeps ==> interdeps_map
+  interdeps -.-> interdeps_tests
+  interdeps -.-> ci
+  interdeps_tests -.-> ci
+  contract ==> interdeps_map
+  contract -.-> vv
+  contract -.-> vv_doc
+  contract -.-> claims
+  proposals ==> interdeps_map
+  proposals -.-> contract
+  claims ==> interdeps_map
+  claims -.-> vv
+  vv -.-> ci
+  vv -.-> vv_doc
+  catalog ==> interdeps_map
+  catalog ==> ts_catalog
+  catalog -.-> docs
+  catalog -.-> readme
+  catalog -.-> py_tests
+  catalog -.-> py_suite
+  catalog -.-> vv_doc
+  catalog -.-> changelog
+  ts_catalog -.-> ts_tests
+  ts_catalog -.-> catalog
+  py_suite -.-> py_tests
+  py_suite ==> interdeps_map
+  py_suite -.-> readme
+  py_suite -.-> docs
+  py_suite -.-> pytest_plugin
+  py_suite -.-> action
+  py_suite -.-> py_examples
+  devnet -.-> py_tests
+  devnet -.-> evidence
+  devnet -.-> docs
+  pytest_plugin -.-> py_tests
+  pytest_plugin -.-> readme
+  ts_cli -.-> ts_tests
+  ts_cli -.-> ts_readme
+  ts_cli ==> interdeps_map
+  ts_cli -.-> action
+  ts_suite -.-> ts_tests
+  ts_suite -.-> ts_readme
+  ts_suite -.-> mcp
+  ts_suite -.-> ts_examples
+  ts_suite -.-> distribution
+  ts_suite ==> interdeps_map
+  mcp -.-> mcp_tests
+  mcp -.-> mcp_readme
+  mcp -.-> distribution
+  mcp ==> interdeps_map
+  action -.-> readme
+  action -.-> docs
+  action ==> interdeps_map
+  action -.-> ci
+  lean -.-> docs
+  lean -.-> ci
+  corpus_schemas -.-> corpus
+  corpus_schemas -.-> py_tests
+  corpus -.-> docs
+  evidence -.-> docs
+  py_examples -.-> docs
+  ts_examples -.-> ts_readme
+  readme -.-> site
+  docs -.-> site
+  docs -.-> readme
+  docs ==> interdeps_map
+  readme ==> interdeps_map
+  ts_readme ==> interdeps_map
+  mcp_readme ==> interdeps_map
+  community ==> interdeps_map
+  ci -.-> community
+  distribution -.-> readme
+```
+
+| component | kind | files | covers | what |
+|---|---|---|---|---|
+| interdeps | code | 1 | `tools/interdeps.py` | this map's generator, drift check and PR gate |
+| interdeps-map | doc | 1 | `docs/INTERDEPENDENCY.md` | this map |
+| interdeps-tests | test | 1 | `tests/test_interdeps.py` | the generator's tests |
+| contract | contract | 3 | `proofline.json`; `proofline.json.sig`; `guard/owner.pub` | the owner-signed contract, its signature and key |
+| proposals | contract | 4 | `docs/proposals/**` | proposed, unsigned contract addenda |
+| claims | data | 1 | `vv/claims.json` | the tasks claimed done |
+| vv | code | 2 | `tools/vv.py`; `tools/verify-sig.mjs` | the V&V runner and the signature check |
+| vv-doc | doc | 1 | `docs/VV.md` | the V&V matrix |
+| catalog | code | 2 | `src/x402conf/spec.py`; `src/x402conf/types.py` | the check catalogue and its types |
+| pytest-plugin | code | 1 | `src/x402conf/pytest_plugin.py` | the pytest plugin |
+| devnet | code | 9 | `src/x402conf/devnet/**`; `src/x402conf/fixtures/**` | the devnet runner, its node helpers and fixtures |
+| py-suite | code | 7 | `src/x402conf/**`; `pyproject.toml` | the Python suite: CLI, harness, mock and package |
+| py-tests | test | 4 | `tests/**` | the Python tests |
+| py-examples | code | 1 | `examples/**` | the Python example server |
+| ts-catalog | code | 1 | `ts/src/catalog.ts` | the TypeScript catalogue, kept identical to the Python one |
+| ts-cli | code | 1 | `ts/src/cli.ts` | the x402conf-svm CLI |
+| ts-suite | code | 25 | `ts/src/**`; `ts/package.json`; `ts/package-lock.json`; `ts/tsconfig.json`; `ts/LICENSE` | the TypeScript suite, library and matchers |
+| ts-tests | test | 18 | `ts/test/**`; `ts/vitest/**`; `ts/vitest.config.mjs` | the TypeScript tests and the vitest matchers |
+| ts-examples | code | 16 | `ts/example/**` | the TypeScript example servers |
+| ts-readme | doc | 1 | `ts/README.md` | the npm package README |
+| mcp-readme | doc | 1 | `ts/mcp/README.md` | the MCP package README |
+| mcp-tests | test | 1 | `ts/mcp/test/**` | the MCP tests |
+| mcp | code | 11 | `ts/mcp/**` | the MCP server and the AI SDK and LangChain tools |
+| action | code | 1 | `action.yml` | the GitHub Action |
+| distribution | deploy | 5 | `ts/docker/**`; `ts/ci/**`; `.github/workflows/mcp-registry.yml`; `.github/workflows/pages.yml` | the Docker image, the GitLab CI component, the MCP Registry and Pages publishing |
+| site | doc | 2 | `docs/site/**` | the project site |
+| lean | code | 9 | `lean/**`; `tools/lean_axioms.py` | the Lean models and the axiom check |
+| corpus-schemas | data | 2 | `corpus/*.schema.json` | the corpus case and report schemas |
+| corpus | data | 6 | `corpus/**` | the corpus of anonymised cases and its fixtures |
+| evidence | data | 23 | `evidence/**` | hashed evidence from live and devnet runs |
+| readme | doc | 1 | `README.md` | the project README |
+| changelog | doc | 1 | `CHANGELOG.md` | the changelog |
+| docs | doc | 8 | `docs/**` | architecture, spec mapping, threat model, usage, adoption, matrix and roadmap |
+| community | doc | 11 | `CONTRIBUTING.md`; `CODE_OF_CONDUCT.md`; `SECURITY.md`; `.github/ISSUE_TEMPLATE/**`; `.github/pull_request_template.md`; `.github/CODEOWNERS` | contributing, conduct, security and templates |
+| legal | doc | 2 | `LICENSE`; `NOTICE` | the licence and notice |
+| ci | gate | 3 | `.github/workflows/ci.yml`; `.github/truedone.yml`; `.gitignore` | CI: lint, tests, Lean, the TS and MCP builds, V&V, red-green and this map |
+
+| from | to | kind |
+|---|---|---|
+| interdeps | interdeps-map | update |
+| interdeps | interdeps-tests | review |
+| interdeps | ci | review |
+| interdeps-tests | ci | review |
+| contract | interdeps-map | update |
+| contract | vv | review |
+| contract | vv-doc | review |
+| contract | claims | review |
+| proposals | interdeps-map | update |
+| proposals | contract | review |
+| claims | interdeps-map | update |
+| claims | vv | review |
+| vv | ci | review |
+| vv | vv-doc | review |
+| catalog | interdeps-map | update |
+| catalog | ts-catalog | update |
+| catalog | docs | review |
+| catalog | readme | review |
+| catalog | py-tests | review |
+| catalog | py-suite | review |
+| catalog | vv-doc | review |
+| catalog | changelog | review |
+| ts-catalog | ts-tests | review |
+| ts-catalog | catalog | review |
+| py-suite | py-tests | review |
+| py-suite | interdeps-map | update |
+| py-suite | readme | review |
+| py-suite | docs | review |
+| py-suite | pytest-plugin | review |
+| py-suite | action | review |
+| py-suite | py-examples | review |
+| devnet | py-tests | review |
+| devnet | evidence | review |
+| devnet | docs | review |
+| pytest-plugin | py-tests | review |
+| pytest-plugin | readme | review |
+| ts-cli | ts-tests | review |
+| ts-cli | ts-readme | review |
+| ts-cli | interdeps-map | update |
+| ts-cli | action | review |
+| ts-suite | ts-tests | review |
+| ts-suite | ts-readme | review |
+| ts-suite | mcp | review |
+| ts-suite | ts-examples | review |
+| ts-suite | distribution | review |
+| ts-suite | interdeps-map | update |
+| mcp | mcp-tests | review |
+| mcp | mcp-readme | review |
+| mcp | distribution | review |
+| mcp | interdeps-map | update |
+| action | readme | review |
+| action | docs | review |
+| action | interdeps-map | update |
+| action | ci | review |
+| lean | docs | review |
+| lean | ci | review |
+| corpus-schemas | corpus | review |
+| corpus-schemas | py-tests | review |
+| corpus | docs | review |
+| evidence | docs | review |
+| py-examples | docs | review |
+| ts-examples | ts-readme | review |
+| readme | site | review |
+| docs | site | review |
+| docs | readme | review |
+| docs | interdeps-map | update |
+| readme | interdeps-map | update |
+| ts-readme | interdeps-map | update |
+| mcp-readme | interdeps-map | update |
+| community | interdeps-map | update |
+| ci | community | review |
+| distribution | readme | review |
+
 ## Entry points
 
 Every entry point is a thin wrapper over the same suite and corpus.

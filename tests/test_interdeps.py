@@ -210,6 +210,58 @@ class Interdeps(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn("not 0.0.0", out)
 
+    # ---------------- files, components and the PR gate ----------------
+    def test_every_tracked_file_is_in_a_component(self) -> None:
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        import interdeps as I
+
+        self.assertEqual(I.coverage(ROOT), [])
+
+    def test_a_file_no_component_covers_fails_the_check(self) -> None:
+        append(self.copy, "stray.txt", "x\n")
+        run(root=self.copy)
+        rc, out = run("--check", root=self.copy)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("stray.txt: no component covers it", out)
+
+    def test_the_gate_fails_only_on_direct_downstream_docs_contracts_and_tests(self) -> None:
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        import interdeps as I
+
+        g = I.gate(["src/x402conf/spec.py"], "")
+        self.assertEqual(g["changed"], ["catalog"])
+        self.assertEqual(g["missing"], ["changelog", "docs", "interdeps-map", "py-tests", "readme", "vv-doc"])
+        self.assertIn("ts-catalog", g["review"])  # code downstream: review only
+        self.assertIn("ts-tests", g["review"])  # two steps out: review only
+        self.assertEqual(I.gate(["docs/USING.md"], "")["missing"], ["interdeps-map", "readme", "site"])
+        self.assertNotIn("catalog", I.gate(["docs/USING.md"], "")["missing"])  # upstream never fails
+        self.assertEqual(I.gate(["README.md"], "Interdeps-Ack: interdeps-map, site - wording only")["missing"], [])
+
+    def test_an_ack_needs_a_reason_and_a_known_component(self) -> None:
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        import interdeps as I
+
+        self.assertEqual(I.acks("Interdeps-Ack: docs\nInterdeps-Ack: docs -\n"), {})
+        self.assertEqual(I.gate(["README.md"], "Interdeps-Ack: site, nope - checked")["unknown_acks"], ["nope"])
+
+    def test_the_gate_reads_the_diff_and_the_pr_body(self) -> None:
+        def git(*a: str) -> None:
+            subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *a],
+                           cwd=self.copy, check=True, capture_output=True)
+
+        git("init", "-q", "-b", "main")
+        git("add", "-A")
+        git("commit", "-q", "-m", "base")
+        append(self.copy, "README.md", "\nmore\n")
+        git("commit", "-q", "-am", "readme")
+        rc, out = run("--gate", "--base", "HEAD~1", root=self.copy)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("MISSING interdeps-map", out)
+        env = dict(os.environ, PR_BODY="Interdeps-Ack: interdeps-map, site - wording only")
+        p = subprocess.run([sys.executable, TOOL, "--root", self.copy, "--gate", "--base", "HEAD~1"],
+                           capture_output=True, text=True, env=env)
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

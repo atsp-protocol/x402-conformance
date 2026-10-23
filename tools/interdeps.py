@@ -20,6 +20,16 @@ Drift is any of:
   an action.yml input that no doc names
   the package versions disagree
 
+Files: every tracked file belongs to one component (COMPONENTS, first match wins) and the components are joined by
+EDGES (a -> b: when a changes, b is updated with it or reviewed). --check also fails on a tracked file no component
+covers and on a component that covers nothing.
+
+    python3 tools/interdeps.py --gate --base REF [--head REF]
+        the PR gate: for each component the diff touches, its direct downstream components of kind doc, contract or
+        test must be touched too, or acknowledged in a commit message or the PR body (env PR_BODY) with a line
+            Interdeps-Ack: <component>[, <component> ...] - <reason>
+        upstream components, other downstream kinds and components two steps out are printed for review only
+
 --root DIR runs against another tree (the tests use it on a copy)."""
 
 from __future__ import annotations
@@ -53,9 +63,13 @@ def read(root: str, path: str) -> str:
 def tracked(root: str) -> list[str]:
     out = subprocess.run(["git", "ls-files"], cwd=root, capture_output=True, text=True).stdout
     files = [f for f in out.splitlines() if f]
-    return sorted(files) if files else sorted(
-        os.path.relpath(p, root) for p in glob.glob(os.path.join(root, "**", "*"), recursive=True)
-        if os.path.isfile(p) and "/.git/" not in p and "/node_modules/" not in p)
+    if files:
+        return sorted(set(files))  # a file mid-merge is listed once per stage
+    out = []  # not a git tree (the tests' copies): every file, dotfiles included, outside .git and node_modules
+    for d, dirs, names in os.walk(root):
+        dirs[:] = [x for x in dirs if x not in (".git", "node_modules")]
+        out += [os.path.relpath(os.path.join(d, n), root) for n in names]
+    return sorted(out)
 
 
 def glob_match(path: str, pat: str) -> bool:
@@ -223,6 +237,161 @@ def versions(root: str) -> dict[str, str]:
     return v
 
 
+# ---------------- files and components ----------------
+# (id, kind, globs, what). The first component whose glob matches a file owns it, so specific ones come first.
+COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
+    ("interdeps", "code", ("tools/interdeps.py",), "this map's generator, drift check and PR gate"),
+    ("interdeps-map", "doc", ("docs/INTERDEPENDENCY.md",), "this map"),
+    ("interdeps-tests", "test", ("tests/test_interdeps.py",), "the generator's tests"),
+    ("contract", "contract", ("proofline.json", "proofline.json.sig", "guard/owner.pub"),
+     "the owner-signed contract, its signature and key"),
+    ("proposals", "contract", ("docs/proposals/**",), "proposed, unsigned contract addenda"),
+    ("claims", "data", ("vv/claims.json",), "the tasks claimed done"),
+    ("vv", "code", ("tools/vv.py", "tools/verify-sig.mjs"), "the V&V runner and the signature check"),
+    ("vv-doc", "doc", ("docs/VV.md",), "the V&V matrix"),
+    ("catalog", "code", ("src/x402conf/spec.py", "src/x402conf/types.py"), "the check catalogue and its types"),
+    ("pytest-plugin", "code", ("src/x402conf/pytest_plugin.py",), "the pytest plugin"),
+    ("devnet", "code", ("src/x402conf/devnet/**", "src/x402conf/fixtures/**"),
+     "the devnet runner, its node helpers and fixtures"),
+    ("py-suite", "code", ("src/x402conf/**", "pyproject.toml"), "the Python suite: CLI, harness, mock and package"),
+    ("py-tests", "test", ("tests/**",), "the Python tests"),
+    ("py-examples", "code", ("examples/**",), "the Python example server"),
+    ("ts-catalog", "code", ("ts/src/catalog.ts",), "the TypeScript catalogue, kept identical to the Python one"),
+    ("ts-cli", "code", ("ts/src/cli.ts",), "the x402conf-svm CLI"),
+    ("ts-suite", "code", ("ts/src/**", "ts/package.json", "ts/package-lock.json", "ts/tsconfig.json", "ts/LICENSE"),
+     "the TypeScript suite, library and matchers"),
+    ("ts-tests", "test", ("ts/test/**", "ts/vitest/**", "ts/vitest.config.mjs"),
+     "the TypeScript tests and the vitest matchers"),
+    ("ts-examples", "code", ("ts/example/**",), "the TypeScript example servers"),
+    ("ts-readme", "doc", ("ts/README.md",), "the npm package README"),
+    ("mcp-readme", "doc", ("ts/mcp/README.md",), "the MCP package README"),
+    ("mcp-tests", "test", ("ts/mcp/test/**",), "the MCP tests"),
+    ("mcp", "code", ("ts/mcp/**",), "the MCP server and the AI SDK and LangChain tools"),
+    ("action", "code", ("action.yml",), "the GitHub Action"),
+    ("distribution", "deploy",
+     ("ts/docker/**", "ts/ci/**", ".github/workflows/mcp-registry.yml", ".github/workflows/pages.yml"),
+     "the Docker image, the GitLab CI component, the MCP Registry and Pages publishing"),
+    ("site", "doc", ("docs/site/**",), "the project site"),
+    ("lean", "code", ("lean/**", "tools/lean_axioms.py"), "the Lean models and the axiom check"),
+    ("corpus-schemas", "data", ("corpus/*.schema.json",), "the corpus case and report schemas"),
+    ("corpus", "data", ("corpus/**",), "the corpus of anonymised cases and its fixtures"),
+    ("evidence", "data", ("evidence/**",), "hashed evidence from live and devnet runs"),
+    ("readme", "doc", ("README.md",), "the project README"),
+    ("changelog", "doc", ("CHANGELOG.md",), "the changelog"),
+    ("docs", "doc", ("docs/**",), "architecture, spec mapping, threat model, usage, adoption, matrix and roadmap"),
+    ("community", "doc", ("CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", ".github/ISSUE_TEMPLATE/**",
+                          ".github/pull_request_template.md", ".github/CODEOWNERS"),
+     "contributing, conduct, security and templates"),
+    ("legal", "doc", ("LICENSE", "NOTICE"), "the licence and notice"),
+    ("ci", "gate", (".github/workflows/ci.yml", ".github/truedone.yml", ".gitignore"),
+     "CI: lint, tests, Lean, the TS and MCP builds, V&V, red-green and this map"),
+]
+GATE_KINDS = ("doc", "contract", "test")
+U, R = "update", "review"
+EDGES: list[tuple[str, str, str]] = [
+    ("interdeps", "interdeps-map", U), ("interdeps", "interdeps-tests", R), ("interdeps", "ci", R),
+    ("interdeps-tests", "ci", R), ("contract", "interdeps-map", U), ("contract", "vv", R), ("contract", "vv-doc", R),
+    ("contract", "claims", R), ("proposals", "interdeps-map", U), ("proposals", "contract", R),
+    ("claims", "interdeps-map", U), ("claims", "vv", R), ("vv", "ci", R), ("vv", "vv-doc", R),
+    ("catalog", "interdeps-map", U), ("catalog", "ts-catalog", U), ("catalog", "docs", R), ("catalog", "readme", R),
+    ("catalog", "py-tests", R), ("catalog", "py-suite", R), ("catalog", "vv-doc", R), ("catalog", "changelog", R),
+    ("ts-catalog", "ts-tests", R), ("ts-catalog", "catalog", R), ("py-suite", "py-tests", R),
+    ("py-suite", "interdeps-map", U), ("py-suite", "readme", R), ("py-suite", "docs", R), ("py-suite", "pytest-plugin", R),
+    ("py-suite", "action", R), ("py-suite", "py-examples", R), ("devnet", "py-tests", R), ("devnet", "evidence", R),
+    ("devnet", "docs", R), ("pytest-plugin", "py-tests", R), ("pytest-plugin", "readme", R), ("ts-cli", "ts-tests", R),
+    ("ts-cli", "ts-readme", R), ("ts-cli", "interdeps-map", U), ("ts-cli", "action", R), ("ts-suite", "ts-tests", R),
+    ("ts-suite", "ts-readme", R), ("ts-suite", "mcp", R), ("ts-suite", "ts-examples", R), ("ts-suite", "distribution", R),
+    ("ts-suite", "interdeps-map", U), ("mcp", "mcp-tests", R), ("mcp", "mcp-readme", R), ("mcp", "distribution", R),
+    ("mcp", "interdeps-map", U), ("action", "readme", R), ("action", "docs", R), ("action", "interdeps-map", U),
+    ("action", "ci", R), ("lean", "docs", R), ("lean", "ci", R), ("corpus-schemas", "corpus", R),
+    ("corpus-schemas", "py-tests", R), ("corpus", "docs", R), ("evidence", "docs", R), ("py-examples", "docs", R),
+    ("ts-examples", "ts-readme", R), ("readme", "site", R), ("docs", "site", R), ("docs", "readme", R),
+    ("docs", "interdeps-map", U), ("readme", "interdeps-map", U), ("ts-readme", "interdeps-map", U),
+    ("mcp-readme", "interdeps-map", U), ("community", "interdeps-map", U), ("ci", "community", R),
+    ("distribution", "readme", R),
+]
+ACK = re.compile(r"^[ \t]*Interdeps-Ack:[ \t]*(?P<ids>[A-Za-z0-9_.-]+(?:[ \t]*,[ \t]*[A-Za-z0-9_.-]+)*)"
+                 r"[ \t]+-[ \t]+(?P<why>\S.*)$", re.M)
+
+
+def owner(path: str) -> str | None:
+    """The first component whose glob matches the path."""
+    return next((c for c, _k, globs, _w in COMPONENTS if any(glob_match(path, g) for g in globs)), None)
+
+
+def coverage(root: str) -> list[str]:
+    """Tracked files no component covers, components that cover nothing, and bad edges."""
+    files = tracked(root)
+    ids = [c for c, *_ in COMPONENTS]
+    out = [f"{f}: no component covers it" for f in files if owner(f) is None and f != ".git"]
+    owned = {owner(f) for f in files}
+    out += [f"component {c} covers no tracked file" for c in ids if c not in owned]
+    seen = set()
+    for a, b, k in EDGES:
+        if a not in ids or b not in ids:
+            out.append(f"edge {a} -> {b}: unknown component")
+        if k not in (U, R) or a == b or (a, b) in seen:
+            out.append(f"edge {a} -> {b}: bad kind, a loop or listed twice")
+        seen.add((a, b))
+    return out
+
+
+def acks(text: str) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for m in ACK.finditer(text or ""):
+        for i in re.split(r"\s*,\s*", m.group("ids").strip()):
+            out[i] = m.group("why").strip()
+    return out
+
+
+def gate(paths: list[str], text: str) -> dict[str, Any]:
+    """A touched component fails the gate only for its direct downstream components of kind doc, contract or test
+    that are neither touched nor acknowledged. Everything else it reaches is listed for review and never fails."""
+    hit = {o for p in paths if (o := owner(p))}
+    kind = {c: k for c, k, *_ in COMPONENTS}
+    need: dict[str, list[str]] = {}
+    review: dict[str, list[str]] = {}
+    for a, b, k in EDGES:
+        if a in hit and b not in hit:
+            (need if kind[b] in GATE_KINDS else review).setdefault(b, []).append(f"downstream of {a} ({k})")
+        if b in hit and a not in hit:
+            review.setdefault(a, []).append(f"upstream of {b} ({k})")
+    near = hit | set(need) | set(review)
+    for a, b, k in EDGES:
+        if a in near - hit and b not in near:
+            review.setdefault(b, []).append(f"two steps out, via {a} ({k})")
+    ack = acks(text)
+    return {"changed": sorted(hit), "required": dict(sorted(need.items())), "review": dict(sorted(review.items())),
+            "missing": sorted(set(need) - set(ack)), "unknown_acks": sorted(set(ack) - set(kind))}
+
+
+def run_gate(root: str, base: str, head: str) -> int:
+    def git(*a: str) -> str:
+        p = subprocess.run(["git", *a], cwd=root, capture_output=True, text=True)
+        if p.returncode:
+            raise SystemExit(f"git {' '.join(a)} failed: {p.stderr.strip()}")
+        return p.stdout
+    paths = [x for x in git("diff", "--name-only", "--no-renames", f"{base}...{head}").splitlines() if x]
+    g = gate(paths, git("log", "--format=%B", f"{base}..{head}") + "\n" + os.environ.get("PR_BODY", ""))
+    touched = ", ".join(g["changed"]) or "none"
+    print(f"interdeps gate: {len(paths)} changed file(s) touch {len(g['changed'])} component(s): {touched}")
+    for c, why in g["required"].items():
+        print(f"  {'ok ' if c not in g['missing'] else 'MISSING'} {c}: {'; '.join(why)}")
+    if g["review"]:
+        print(f"  review only ({len(g['review'])} component(s), these never fail the gate):")
+        for c, why in g["review"].items():
+            print(f"    {c}: {'; '.join(why)}")
+    for c in g["unknown_acks"]:
+        print(f"  Interdeps-Ack names an unknown component: {c}")
+    if g["missing"] or g["unknown_acks"]:
+        if g["missing"]:
+            print("\nTouch these components in the same PR, or acknowledge them in the PR body or a commit message:\n")
+            print(f"Interdeps-Ack: {', '.join(g['missing'])} - <why they need no change>")
+        return 1
+    print("interdeps gate: ok")
+    return 0
+
+
 # ---------------- the map ----------------
 def short(s: str, n: int = 48) -> str:
     s = s.replace('"', "'")
@@ -312,6 +481,29 @@ def build(root: str) -> str:
                  f"{cell(n.get('tests', []))} | {cell(n.get('docs', []))} |")
     o += ["", "Upstream references are issue and PR numbers in x402-foundation/x402.", ""]
 
+    o += ["## Components", "",
+          "Every tracked file belongs to one component (`COMPONENTS` in `tools/interdeps.py`, first match wins). An update "
+          "edge means the downstream component changes in the same change, a review edge means it is read and changed if "
+          "the change reaches it. The PR gate (`--gate`) fails only when a touched component's direct downstream doc, "
+          "contract or test component is neither touched nor acknowledged with `Interdeps-Ack: <component> - <reason>`; "
+          "everything else it reaches is listed for review.", "", "```mermaid", "graph LR"]
+    for c, k, _g, _w in COMPONENTS:
+        o.append(f'  {c.replace("-", "_")}["{c}<br/>{k}"]')
+    for a, b, k in EDGES:
+        o.append(f'  {a.replace("-", "_")} {"==>" if k == U else "-.->"} {b.replace("-", "_")}')
+    o += ["```", "", "| component | kind | files | covers | what |", "|---|---|---|---|---|"]
+    count: dict[str, int] = {}
+    for f in files:
+        if (c := owner(f)):
+            count[c] = count.get(c, 0) + 1
+    for c, k, g, w in COMPONENTS:
+        o.append(f"| {c} | {k} | {count.get(c, 0)} | {'; '.join(f'`{x}`' for x in g)} | {w} |")
+    o += ["", "| from | to | kind |", "|---|---|---|"] + [f"| {a} | {b} | {k} |" for a, b, k in EDGES]
+    gaps = [f for f in files if owner(f) is None]
+    if gaps:
+        o += ["", "Files no component covers: " + ", ".join(f"`{f}`" for f in gaps)]
+    o.append("")
+
     o += ["## Entry points", "", "Every entry point is a thin wrapper over the same suite and corpus.", "",
           "| entry point | code | in this tree | how users reach it |", "|---|---|---|---|"]
     for name, path, how in ENTRY_POINTS:
@@ -383,12 +575,23 @@ def main(argv: list[str]) -> int:
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if "--root" in argv:
         root = os.path.abspath(argv[argv.index("--root") + 1])
+    if "--gate" in argv:
+        if "--base" not in argv:
+            print("usage: tools/interdeps.py --gate --base REF [--head REF]", file=sys.stderr)
+            return 2
+        head = argv[argv.index("--head") + 1] if "--head" in argv else "HEAD"
+        return run_gate(root, argv[argv.index("--base") + 1], head)
     if "--check" in argv:
         want = build(root)
+        bad = coverage(root)
+        for x in bad:
+            print("coverage:", x, file=sys.stderr)
         if read(root, MAP) != want:
             print(f"{MAP} is stale: run python3 tools/interdeps.py and commit it", file=sys.stderr)
             return 1
-        print(f"{MAP} is up to date")
+        if bad:
+            return 1
+        print(f"{MAP} is up to date and every tracked file is in a component")
         return 0
     if "--drift" in argv:
         p = drift(root)
