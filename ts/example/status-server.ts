@@ -1,8 +1,8 @@
 // A resource server for the paid-response status check. Two paid GET routes:
-//   /created  the handler answers 201
-//   /moved    the handler answers 302 with a Location
-// The control settles, then sends the handler's own status and Location.
-// STATUS_FAULT rewrite_200 settles, then answers 200 and drops Location.
+//   /created   the handler answers 201 with a Location
+//   /accepted  the handler answers 202 with a Content-Location
+// The control settles, then sends the handler's own status and headers.
+// STATUS_FAULT rewrite_200 settles, then answers 200 and drops the handler's headers.
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { HTTPFacilitatorClient, x402HTTPResourceServer, x402ResourceServer } from "@x402/core/server";
@@ -18,8 +18,8 @@ export type StatusFault = "" | (typeof STATUS_FAULTS)[number];
 interface Out { status: number; headers: Record<string, string>; body: unknown }
 
 const HANDLERS: Record<string, () => Out> = {
-  "/created": () => ({ status: 201, headers: {}, body: { created: true } }),
-  "/moved": () => ({ status: 302, headers: { location: "/created" }, body: { moved: "/created" } }),
+  "/created": () => ({ status: 201, headers: { location: "/created/1" }, body: { created: "/created/1" } }),
+  "/accepted": () => ({ status: 202, headers: { "content-location": "/jobs/1" }, body: { job: "/jobs/1" } }),
 };
 
 export interface StatusServer { base: string; close(): Promise<void>; handled: Record<string, number> }

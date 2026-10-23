@@ -172,6 +172,17 @@ facilitators that read it fall back to authorization semantics when it's absent.
 scheme text allows omitting it.
 **How to fix it.** Set `extra.paymentFlow` (`"upfront"` or `"escrow"`) on every such offer.
 
+## F12
+**What failed.** The probe asked your facilitator to verify a well-formed payment on a network it does not advertise in
+`/supported`, and one whose asset address is not a token contract on the network. It answered `isValid: true` for at
+least one, or answered without an `invalidReason`.
+**Why it matters.** A facilitator that trusts the network and asset in the requirements verifies payments it can
+never settle, or "payments" in a token that does not exist. The resource server serves on that verdict, or settles
+against an address with no code and gets a meaningless success.
+**How to fix it.** Before anything else in `/verify`, check that the payment's (scheme, network) is one you advertise
+and that the asset is a known token contract on that network (an allow-list, or a code check against the chain), and
+answer `isValid: false` with a specific reason (`unsupported_network`, `invalid_asset`) when it is not.
+
 ## R0
 **What failed.** An unpaid request to your paid route didn't get a 402 with a decodable `PAYMENT-REQUIRED` header.
 If the header decoded but offered no `exact` payment on Solana devnet or Base Sepolia, the result is **unsupported**
@@ -306,12 +317,12 @@ with a 409 that names the payment so it can be reconciled on chain. `ts/example/
 it.
 
 ## R22
-**What failed.** After a successful settle the client did not receive the handler's own status, or a 302 arrived
-without its Location. The result's `cases` say which route answered which status.
-**Why it matters.** The client treats the paid response as the handler's response. A 201 that arrives as 200, or a
-302 whose Location was dropped, is a different result from the one the handler produced.
-**How to fix it.** Settle, then send the handler's status and headers unchanged, including Location, and add the
-settlement header beside them. Do not replace a 201 or a 302 with 200.
+**What failed.** After a successful settle the client did not receive the handler's own 2xx status, or a header the
+handler set (such as `Location` on a 201) was dropped. The result's `cases` say which route answered which status.
+**Why it matters.** The client treats the paid response as the handler's response. A 201 or 202 that arrives as 200,
+or a 201 whose `Location` was dropped, is a different result from the one the handler produced.
+**How to fix it.** Settle, then send the handler's status and headers unchanged and add the settlement header beside
+them. Do not replace a 201 or 202 with 200. A handler that answers 3xx should not be settled at all (see R15).
 
 ## R15
 **What failed.** The probe paid a route whose handler answers 5xx, one that redirects (3xx) and one that throws, and
@@ -323,6 +334,25 @@ success, charges the client for an error page, a redirect it still has to follow
 **How to fix it.** Run the handler first and buffer its response. Call `/settle` only when it answered 2xx; for a 3xx,
 4xx or 5xx, or when it throws, cancel the settlement and send the handler's response with no `PAYMENT-RESPONSE`.
 `ts/example/delivery-server.ts` shows one way to do it.
+
+## R16
+**What failed.** The probe sent `HEAD` to your paid `GET` route with a valid-looking payment, and your server
+answered it 2xx, called `/settle` for it, or sent a `PAYMENT-RESPONSE`.
+**Why it matters.** A `HEAD` response carries no content (RFC 9110 §9.3.2). A server that settles one charges the
+client for headers only, and a client or crawler that probes with `HEAD` pays for nothing.
+**How to fix it.** Match `HEAD` against the `GET` route so the paywall applies, and when a `HEAD` carries a payment
+answer 402 asking the client to retry as `GET`, without calling `/verify` or `/settle`.
+`ts/example/head-server.ts` shows one way to do it.
+
+## R16a
+**What failed.** The probe sent an unpaid `HEAD` to your paid `GET` route. Your server did not answer it 402 with a
+`PAYMENT-REQUIRED` offer; usually it answered 200, which means the protected handler ran with no payment.
+**Why it matters.** Many routers serve `HEAD` from the `GET` handler (RFC 9110 §9.3.2: the same response without the
+content). A paywall that matches routes by the exact method then misses `HEAD`, and anyone can run the handler, read
+its status and headers and trigger its side effects for free.
+**How to fix it.** Match `HEAD` against the `GET` route in the payment layer, so an unpaid `HEAD` gets the same 402
+and `PAYMENT-REQUIRED` header as `GET` and never reaches the handler. `ts/example/head-unpaid-server.ts` shows one way
+to do it.
 
 ## R20
 **What failed.** The route did not answer 402 with an `exact` offer the probe could pay, so R20 graded nothing.
@@ -349,3 +379,64 @@ paid result is lost. A client that re-signs with no key leaves a server nothing 
 **How to fix it.** Server: serve a resent payment from the idempotency record above. Client: generate one payment id per
 logical request and append it in `onBeforePaymentCreation` (`appendPaymentIdentifierToExtensions`), or resend the
 same `PAYMENT-SIGNATURE` on retry.
+
+## C3
+**What failed.** The 402 offered V2 (the `PAYMENT-REQUIRED` header) and V1 (a V1 JSON body for the same offer), and the
+client paid the V1 offer: with an `X-PAYMENT` header, or with a payment at `x402Version` 1. Or it never paid.
+**Why it matters.** A client offered V2 should pay V2. A V2 payment names the offer it accepted (`accepted`, V2 §5.2.2);
+a V1 payment carries only its scheme, network and payload (V1 §5.2.2), so it no longer says which requirements it pays
+for. A client that reads the body first also pays whatever the body says, even when the header says something else.
+**How to fix it.** Read the `PAYMENT-REQUIRED` header first and use the body only when there is no header, as the stock
+`@x402/core` HTTP client does (`x402HTTPClient.getPaymentRequiredResponse`). Pay a V2 offer with `PAYMENT-SIGNATURE` at
+`x402Version` 2, and keep a V1 scheme (`registerV1`) for servers that send no V2 offer at all.
+
+## C2
+**What failed.** Given several offers, the client signed one outside its own policy: an offer on a network outside
+its configured set, or one for more than its maximum amount, listed before an offer it could pay. Or it paid nothing,
+although an offer within its policy was there.
+**Why it matters.** The server decides what goes in `accepts` and in what order. A client that signs the first offer
+pays on whatever network and for whatever amount is listed first, not what it was configured to pay. V2 leaves
+spending controls to the implementation (§12.1), so the client has to enforce its own.
+**How to fix it.** Filter `accepts` by your own configuration before you choose: keep offers on your configured
+networks and at or below your maximum, choose among those, and pay nothing if none is left. With `@x402/core`'s
+`x402Client`, register your scheme clients only for the networks you configured (registration is its network scope),
+not a wildcard, and keep spend controls on with a per-payment cap (`setSpendControls({ allowedAssets: [{ network,
+asset, maxAmountPerPayment }] })`, an atomic amount). `ts/example/client-offers-clients.ts` shows one way to do it.
+
+## C1
+**What failed.** The client was answered 402 with payment requirements and handed that 402 to its caller as a
+successful response: it neither paid and retried nor raised an error. This happens when the client's status check
+accepts every status and its payment step only runs for statuses the check rejects.
+**Why it matters.** The caller takes the payment-required answer for the resource it asked for. It gets no content and
+no error, so nothing tells it the request was never paid for or served.
+**How to fix it.** Run the payment step on every 402 with a `PAYMENT-REQUIRED` header before any status check, whatever
+that check accepts. If the client can't or won't pay (no matching scheme, over budget), raise a payment-required error
+instead of returning the 402. The stock `@x402/fetch` wrapper does this (see `ts/example/client-status-clients.ts`).
+
+## R23
+**What failed.** The probe paid your route and dropped its connection while your server's `/settle` call was in flight,
+then resent the same signed payment. The payment had settled, and the resend did not get the settled result (it was
+asked to pay again, refused, or answered an error), or it was settled a second time. The result's `settled_on_abort`,
+`resend` and `successful_settles` say which.
+**Why it matters.** Clients disconnect: a process is killed, a network drops, a user closes the tab. If settlement
+finishes after the client has gone, the client has paid, and sending the same payment again is its only way back to
+what it bought. A server that records the result only once the response has been delivered, or keeps no record, has
+nothing to answer with: the facilitator refuses the duplicate and the purchase is lost.
+**How to fix it.** Record the settled result when `/settle` succeeds (in `onAfterSettle`), not when the response is
+written, keyed by route and by the payment-identifier `id` or, without one, by the payment itself, and serve a resent
+payment from that record with the original `PAYMENT-RESPONSE`. A server that cancels the purchase when the client goes
+away must do so before it calls `/settle`; once `/settle` has been called, the record is what makes the abort
+recoverable. `ts/example/retry-server.ts` shows the record.
+
+## R24
+**What failed.** The probe sent your paid route payment headers that were not base64, base64 that was not JSON, and
+JSON that was not an object. At least one got a 5xx, no answer at all (the connection was dropped), or a 4xx with no
+structured error. The result's `cases` list each header with the status it got.
+**Why it matters.** A malformed header is the client's mistake, so it should get a client error it can read: the HTTP
+transport maps an invalid payment to 400 and a payment that is required or failed to 402. A 5xx tells the client the
+server broke, invites blind retries and hides the real problem, and a header that throws inside your stack can take
+the request, or the process, down with it.
+**How to fix it.** Let the payment middleware decode `PAYMENT-SIGNATURE`: it answers anything it cannot decode with
+402 and a `PAYMENT-REQUIRED` that names the error. If your own code reads the header first (for logging or routing),
+wrap the decode and the field access in a guard and pass a malformed header on unchanged, or answer it with 400 and a
+JSON body carrying `error`.
