@@ -186,6 +186,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "R20b": {
   "profile": "security-profile",
   "basis": "a retry resending the same signed payment is settled once and gets the original result"
+ },
+ "R24": {
+  "profile": "resilience",
+  "basis": "V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures"
  }
 };
 

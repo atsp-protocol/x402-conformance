@@ -1,5 +1,10 @@
 # Changelog
 ## Unreleased
+- R24, a malformed payment header (`probeMalformedHeader`): the probe sends a paid route five `PAYMENT-SIGNATURE`
+  values that are not base64, not JSON or not an object, and passes when every one gets 402 or 400 with a structured
+  error, never a 5xx, a dropped connection or the content. The stock `@x402/express` server passes; a build that decodes
+  the header itself and throws, and one that drops the connection, fail (`ts/test/malformed-header.test.ts`, on Solana
+  devnet and Base Sepolia). A fix section is in [docs/FIXES.md](docs/FIXES.md#r24).
 - R15, no settlement when the paid handler fails (`probeDelivery`): the probe pays a route that answers 5xx, one that
   redirects and one that throws, and fails a server that calls `/settle` for any of them or sends a
   `PAYMENT-RESPONSE`. The control is `ts/example/delivery-server.ts`, which settles only after a 2xx; the

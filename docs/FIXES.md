@@ -341,3 +341,16 @@ paid result is lost. A client that re-signs with no key leaves a server nothing 
 **How to fix it.** Server: serve a resent payment from the idempotency record above. Client: generate one payment id per
 logical request and append it in `onBeforePaymentCreation` (`appendPaymentIdentifierToExtensions`), or resend the
 same `PAYMENT-SIGNATURE` on retry.
+
+## R24
+**What failed.** The probe sent your paid route payment headers that were not base64, base64 that was not JSON, and
+JSON that was not an object. At least one got a 5xx, no answer at all (the connection was dropped), or a 4xx with no
+structured error. The result's `cases` list each header with the status it got.
+**Why it matters.** A malformed header is the client's mistake, so it should get a client error it can read: the HTTP
+transport maps an invalid payment to 400 and a payment that is required or failed to 402. A 5xx tells the client the
+server broke, invites blind retries and hides the real problem, and a header that throws inside your stack can take
+the request, or the process, down with it.
+**How to fix it.** Let the payment middleware decode `PAYMENT-SIGNATURE`: it answers anything it cannot decode with
+402 and a `PAYMENT-REQUIRED` that names the error. If your own code reads the header first (for logging or routing),
+wrap the decode and the field access in a guard and pass a malformed header on unchanged, or answer it with 400 and a
+JSON body carrying `error`.

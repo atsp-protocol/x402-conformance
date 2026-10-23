@@ -170,4 +170,11 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
              "basis": "a retry resending the same signed payment is settled once and gets the original result",
              "controls": [_TS_RETRY, "ts:R20b client control: the stock @x402/fetch client"],
              "faulty": ["ts:R20b settle_both: with no record", "ts:R20b client resign_on_timeout"]},
+    "R24": {"profile": "resilience",
+            "basis": "V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, "
+                     "Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures",
+            "controls": ["ts:R24 control: the stock @x402/express server answers every malformed payment header"],
+            "faulty": ["ts:R24 decode_unchecked: a server that throws on a malformed payment header",
+                       "ts:R24 drop_on_bad_header: a server that drops the connection",
+                       "ts:R24 gate: a URL that is not a paid route fails and grades nothing"]},
 }
