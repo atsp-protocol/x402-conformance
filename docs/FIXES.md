@@ -330,3 +330,13 @@ paid result is lost. A client that re-signs with no key leaves a server nothing 
 **How to fix it.** Server: serve a resent payment from the idempotency record above. Client: generate one payment id per
 logical request and append it in `onBeforePaymentCreation` (`appendPaymentIdentifierToExtensions`), or resend the
 same `PAYMENT-SIGNATURE` on retry.
+
+## C3
+**What failed.** The 402 offered V2 (the `PAYMENT-REQUIRED` header) and V1 (a V1 JSON body for the same offer), and the
+client paid the V1 offer: with an `X-PAYMENT` header, or with a payment at `x402Version` 1. Or it never paid.
+**Why it matters.** A client offered V2 should pay V2. A V2 payment names the offer it accepted (`accepted`, V2 §5.2.2);
+a V1 payment carries only its scheme, network and payload (V1 §5.2.2), so it no longer says which requirements it pays
+for. A client that reads the body first also pays whatever the body says, even when the header says something else.
+**How to fix it.** Read the `PAYMENT-REQUIRED` header first and use the body only when there is no header, as the stock
+`@x402/core` HTTP client does (`x402HTTPClient.getPaymentRequiredResponse`). Pay a V2 offer with `PAYMENT-SIGNATURE` at
+`x402Version` 2, and keep a V1 scheme (`registerV1`) for servers that send no V2 offer at all.

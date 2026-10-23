@@ -164,4 +164,9 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
              "basis": "a retry resending the same signed payment is settled once and gets the original result",
              "controls": [_TS_RETRY, "ts:R20b client control: the stock @x402/fetch client"],
              "faulty": ["ts:R20b settle_both: with no record", "ts:R20b client resign_on_timeout"]},
+    "C3": {"profile": "security-profile",
+           "basis": "V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload "
+                    "(V1 5.2.2) has none",
+           "controls": ["ts:C3 control: the stock @x402/fetch client pays with V2 when the 402 also carries a V1 body"],
+           "faulty": ["ts:C3 v1_fallback: a client that pays the V1 offer when V2 is present is caught"]},
 }

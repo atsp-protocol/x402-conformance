@@ -1,4 +1,12 @@
 # Changelog
+## Unreleased
+- C3, a client offered V2 never falls back to V1 (`checkClientKeepsV2`). A recording proxy in front of a paid route
+  adds a V1 body for the same offer to the route's 402, next to its V2 `PAYMENT-REQUIRED` header. The client must pay
+  with `PAYMENT-SIGNATURE` at `x402Version` 2; a payment with `X-PAYMENT` or at `x402Version` 1 fails, and so does a
+  client that never pays. Only a V2 payment is forwarded, so nothing settles for a V1 one. The stock `@x402/fetch`
+  client passes and a client that reads the V1 body first is caught, on Solana devnet and Base Sepolia
+  (`ts/test/client-version.test.ts`). A fix section is in [docs/FIXES.md](docs/FIXES.md#c3).
+
 ## 1.4.0 (2026-10-22)
 - R14, a crash between a successful `/settle` and the response (`x402conf-svm probe --crash`, Action `crash: "true"`).
   The probe kills the server while `/settle` is answering and again as the response starts, restarts it (the `--start`
