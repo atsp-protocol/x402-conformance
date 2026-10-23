@@ -135,7 +135,7 @@ graph LR
   XC_05 --> XC_M6
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
-  class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_21,XC_25,XC_M3,XC_M4 done
+  class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_21,XC_25,XC_M3,XC_M4 done
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -161,7 +161,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-14 pytest plugin and the Python server examples | implement | done | XC-11, XC-13 | XC-26, XC-30 | R-ADOPT | 5 (command 1, grep 2, pushed 1, scope 1) | `src/x402conf/pytest_plugin.py`; `tests/check_pytest_plugin.py`; `examples/**`; `pyproject.toml`; `.github/workflows/ci.yml`; `docs/USING.md` |
 | XC-15 Normative additions: F5 extended, F11, P6, P7 | implement | done | XC-02, XC-01 | XC-16, XC-30 | R-F5X, R-F11, R-P6, R-P7 | 6 (command 4, pushed 1, scope 1) | `src/x402conf/**`; `tests/**`; `ts/**`; `docs/SPEC.md`; `docs/FIXES.md`; `README.md` |
 | XC-16 Evidence v2 and the test-credibility gate | integrate | done | XC-09, XC-10, XC-15 | XC-20, XC-25, XC-29, XC-30, XC-33, XC-35, XC-36 | R-CRED | 4 (command 2, pushed 1, scope 1) | `src/x402conf/**`; `ts/**`; `tests/**`; `tools/vv.py`; `.github/workflows/**`; `docs/**` |
-| XC-17 Concurrency and idempotency: R12, R13, R14 | implement | signed | XC-10 | XC-19, XC-22, XC-31, XC-34 | R-CONC | 6 (command 4, pushed 1, scope 1) | `ts/**`; `lean/X402Conformance/**`; `docs/**` |
+| XC-17 Concurrency and idempotency: R12, R13, R14 | implement | done | XC-10 | XC-19, XC-22, XC-31, XC-34 | R-CONC | 6 (command 4, pushed 1, scope 1) | `ts/**`; `lean/X402Conformance/**`; `docs/**` |
 | XC-18 Payment versus delivery: R15 to R19 | implement | signed | XC-10 | XC-19, XC-31 | R-DELIV | 7 (command 5, pushed 1, scope 1) | `ts/**`; `docs/**` |
 | XC-19 Implementation matrix: stock servers at pinned versions | verify | signed | XC-10, XC-17, XC-18 | XC-28, XC-31 | R-MATRIX | 3 (command 1, pushed 1, scope 1) | `evidence/impl-matrix/**`; `docs/MATRIX.md`; `.github/workflows/**`; `ts/**` |
 | XC-20 Adoption track A1-A8, built into the code | integrate | signed | XC-10, XC-16 | XC-26, XC-30 | R-ADOPT | 8 (command 5, file_exists 1, pushed 1, scope 1) | `corpus/**`; `examples/**`; `ts/**`; `src/x402conf/**`; `tests/**`; `action.yml`; `.github/**`; `docs/**`; `README.md` |
