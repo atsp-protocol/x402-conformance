@@ -2,10 +2,20 @@
 ## 1.5.0 (2026-10-23)
 - The contract: XC-39 to XC-46 (R16a, R22, R23, R24, C1, C2, C3, F12) are signed and claimed (#55), XC-23 is claimed
   (#48), XC-30 is claimed, and XC-47 for S5 is proposed, unsigned (#49). XC-31 (this release) is amended to depend on the
-  tasks that are built, and XC-48, Release 1.6.0, carries the eight tasks 1.5.0 ships without: R17 to R19, the
-  implementation matrix, the R20 corpus case, the n-replica Lean models, the framework quickstarts, docs examples run by
-  CI, the compatibility matrix and the mutation matrix. [docs/RELEASES.md](docs/RELEASES.md) lists every release with
-  what it added.
+  tasks that are built, and XC-48, Release 1.6.0, carries the eight tasks that were open when 1.5.0 was planned (XC-18,
+  XC-19, XC-22, XC-24, XC-26 to XC-29); two of them, the R20 corpus case and the n-replica Lean models, landed before
+  the tag. [RELEASES.md](RELEASES.md) at the repository root maps every release to what it added, with the narrative in
+  [docs/RELEASES.md](docs/RELEASES.md), and [docs/COVERAGE.md](docs/COVERAGE.md) lists every check with its profile,
+  where it runs and its controls and faulty builds, and the networks, schemes, stacks, facilitators and Lean models the
+  evidence covers.
+- Lean: `lean/X402Conformance/Replicas.lean` models n replicas; its five theorems include `shared_cas_at_most_one_grant`
+  (a shared atomic check-and-set admits at most one grant) and `partitioned_caches_admit_double_grant`, with standard
+  axioms only. The contract task is XC-24.
+- The R20 corpus case, `corpus/cases/2026-10-23-R20-express.json`, from a `--share` run of `x402conf-svm probe --retry`
+  against a stock `@x402/express` 2.28.0 server with no idempotency record (R20a and R20b fail); `ts/example/retry-server.ts`
+  now runs standalone. The contract task is XC-22.
+- MCP: `x402_explain_check` finds the fix section of a check whose id has a lowercase suffix (R11a to R11f, R16a, R20a,
+  R20b); the heading lookup used to upper-case the id.
 - `tools/interdeps.py` no longer writes a per-component file count into the map, so a pull request that adds a file no
   longer stales the committed map of every other open pull request (#52).
 - The MCP server is published to the MCP Registry as `io.github.atsp-protocol/x402-conformance` on each GitHub release

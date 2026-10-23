@@ -18,6 +18,7 @@ complements x402 and its facilitators and doesn't replace them.
 — Ryan Gillespie, Optitransfer
 
 Project page with the checks and the latest results: https://atsp-protocol.github.io/x402-conformance/
+Release map: [RELEASES.md](RELEASES.md). What the suite covers, check by check: [docs/COVERAGE.md](docs/COVERAGE.md).
 
 ## 60-second quickstart
 
@@ -350,9 +351,9 @@ settling and serving (R14) and retry double-pay (R20), and makes the suite's own
 amounts. 1.5.0 (2026-10-23) adds parallel and multi-replica replay (R12, R13), payment versus delivery (failed handlers
 R15, `HEAD` R16 and R16a, the paid 2xx status R22), a client abort during settle (R23), malformed payment headers
 (R24), three client checks (C1-C3), and a `/verify` answer for every advertised kind (S5) and for an unsupported
-network or asset (F12). Next, for 1.6.0: caches and late settlement (R17, R18), `upfront` and `escrow` flows (R19),
-the implementation matrix, the n-replica Lean models, and the rest of the adoption track (framework quickstarts, docs
-examples run by CI, the compatibility matrix and the mutation matrix). Every check is labelled normative, security
+network or asset (F12), with the n-replica Lean models (`Replicas.lean`) and the R20 corpus case. Next, for 1.6.0:
+caches and late settlement (R17, R18), `upfront` and `escrow` flows (R19), the implementation matrix, and the rest of
+the adoption track (framework quickstarts, docs examples run by CI, the compatibility matrix and the mutation matrix). Every check is labelled normative, security
 profile or resilience, and every check ships with a passing control and a faulty build it catches. The plan and the
 release gate for dropping the experimental label are in [docs/ROADMAP.md](docs/ROADMAP.md); every release and what it
 added is in [docs/RELEASES.md](docs/RELEASES.md).
@@ -384,7 +385,7 @@ If your project runs the suite in CI, you can say so. It means "tested with", no
 
 [![x402 conformance: tested](https://img.shields.io/badge/x402%20conformance-tested-2ea44f)](https://github.com/atsp-protocol/x402-conformance)
 
-For a badge that shows the latest result (`pass 25/25` for the quickstart workflow above, or `2 failing`), publish the action's `badge` output somewhere
+For a badge that shows the latest result (`pass 32/32` or `2 failing`), publish the action's `badge` output somewhere
 public, for example with GitHub Pages or a gist, and point shields.io at it:
 
 ```markdown

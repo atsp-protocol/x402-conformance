@@ -7,9 +7,16 @@ is historical: it grades Base Sepolia too. The double never touches a chain, a k
 
 ```
 npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start "node server.js" --out results.json
+npx -y x402-conformance-svm resource --url https://your.api/paid --out answer.json   # P1-P7: one unpaid GET, any network
+npx -y x402-conformance-svm demo                                                     # R0-R10 against a bundled mock, no wallet
 npx -y x402-conformance-svm --help
 npx -y x402-conformance-svm --version
 ```
+
+`demo --fault serve_on_any_settle` shows a failing run and its fix hints. `--share` on `probe` and `resource` also writes
+an anonymised corpus case next to `--out` (or to `./x402-conformance-case.json`) and, when a check failed, prints a link
+to a pre-filled GitHub issue; nothing is sent. `X402CONF_VIA` names the entry point in the report and the User-Agent.
+`resource` and `demo` exit 0 when every check passes, 1 when one fails and 2 on a usage error.
 
 | id | what the double does on `/settle` | your server must |
 |---|---|---|
@@ -50,16 +57,17 @@ This server passes R0-R10 in this repo's CI on both networks
 **Options.** `--port` sets the double's loopback port (default 4402). `--start` runs your server with
 `X402_FACILITATOR_URL` set; the probe refuses to run if something else already answers on your server's port, and stops
 with an error if your server exits. `--network` picks `auto` (default), `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` or
-`eip155:84532`. `--out` writes the results JSON, on errors too. Each request has a 60 s deadline; a server still holding
+`eip155:84532`. `--out` writes the results JSON, on errors too. Each R0-R10 request has a 60 s deadline, and each R14 request 30 s; a server still holding
 a request then has served nothing.
 
 **R11, payment-to-request binding.** Give the routes to bind, with or without `--resource`: `--cheap` and `--expensive`
 are two paid routes at different prices (R11, R11a, R11b), `--by-method` a paid URL priced differently for `GET` and
 `POST` (R11c), `--by-query` two paid URLs that differ only in the query, comma-separated (R11d), `--param` a paid
 parameterised route with `{id}` where the parameter goes (R11e), and `--siwx-cheap` and `--siwx-expensive` two paid
-routes at different prices that declare sign-in-with-x, on Base Sepolia (R11f).
+routes at different prices that declare sign-in-with-x, on an EVM (`eip155:`) network such as Base Sepolia (R11f). R11f
+needs `@x402/extensions` and `viem` installed next to the probe; without them it is reported unsupported, not failed.
 
-**R14, a crash between `/settle` and the response (`--crash`).** After R0-R10 the probe kills your server twice, once
+**R14, a crash between `/settle` and the response (`--crash`).** After the other checks, and only when R1 passed (otherwise R14 is left out of the results), the probe kills your server twice, once
 while `/settle` is answering and once as the response starts, restarts it and presents the same payment (with a
 `payment-identifier` id if your route advertises that extension). Your server must not call `/settle` again or answer
 402, and must either deliver once from its idempotency record or refuse and name the transaction or payment id so it
@@ -102,9 +110,18 @@ and the faulty builds each check catches are in `example/` and `test/`, and
 [docs/USING.md](https://github.com/atsp-protocol/x402-conformance/blob/main/docs/USING.md#checks-you-call-from-code) has
 a complete example.
 
+**In tests.** `x402-conformance-svm/testing` runs R0-R10 against a server you start in-process.
+`runConformance({ start: (facilitatorUrl) => ({ url, close? }), network?, deadlineMs?, via? })` returns a report and never
+throws for a failing server; `start` may also return a promise. `expect.extend(x402Matchers)` adds
+`toPassX402Conformance()` and `toBeValidX402Challenge()` for vitest and jest, and `assertX402Conformance(report)` throws
+the same message for node:test. `saveReport(report, { dir?, share?, stack? })` writes the report to `dir`, else
+`X402CONF_REPORT_DIR`, else `./x402-conformance`, with `share: true` also an anonymised corpus case, and returns the paths
+and the share link. `checkPaymentRequired(url)` is exported here too.
+
 **Exit codes.** 0 all pass; 1 a check failed; 2 usage error, or the run couldn't complete (a port in use, your server
-exited or never answered); 3 unsupported (your server offers no network the probe grades). `--help` and `--version`
-exit 0.
+exited or never answered); 3 unsupported: your server offers no network the probe grades, or a check could not run
+(R11f without `@x402/extensions` and `viem`); an unsupported result takes precedence over a failed one. `--help` and
+`--version` exit 0.
 
 In GitHub Actions use the action at the repository root:
 

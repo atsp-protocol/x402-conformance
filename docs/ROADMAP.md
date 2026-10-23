@@ -2,9 +2,10 @@
 
 **Where it stands.** 1.5.0 is the current release (2026-10-23), and it is still marked experimental. S0 to S4 check
 a facilitator's `GET /supported`; S5 and F1 to F12 run against fault-injected facilitator doubles (and F1 to F6 over
-real `/verify` and `/settle` on Solana devnet); P1 to P7 check any paid URL's 402 answer with one unpaid GET; R0 to
-R11f, R14 and R20 put a misbehaving facilitator in front of your own paid route on Solana devnet or Base Sepolia from
-the CLI and the Action, and R12, R13, R15, R16, R16a and R22 to R24 do the same from code; C1 to C3 grade a client; and
+real `/verify` and `/settle` on Solana devnet); P1 to P7 check any paid URL's 402 answer with one unpaid GET; R0 to R10,
+R14 and R20 put a misbehaving facilitator in front of your own paid route on Solana devnet or Base Sepolia from the CLI
+and the Action, R11 and R11a to R11f check payment-to-request binding on that route, and R12, R13, R15, R16, R16a and
+R22 to R24 run from code; C1 to C3 grade a client; and
 the Lean models cover the credit rule, nonces, timeouts, `settlement_pending` and concurrent settles. There are no
 public users yet. [RELEASES.md](RELEASES.md) lists every release and what it added.
 
@@ -13,10 +14,11 @@ F11, P6, P7, the extended F5, R11a to R11f with their faulty builds, evidence v2
 the corpus (A6), the pytest plugin, the MCP server, the Docker image and the adoption items A1, A2, A3 and A5. 1.5.0
 adds thirteen checks, each with a passing control and a faulty build it catches: S5, F12, R12, R13, R15, R16, R16a,
 R22, R23, R24, C1, C2 and C3 (contract tasks XC-17, XC-39 to XC-46, done, and XC-47 for S5, proposed), the generated
-interdependency map with the docs-versus-code gate (XC-23, done) and the signed release tasks XC-30 and XC-31. Not
-started, and moved to the 1.6.0 release task XC-48: R17 to R19 (XC-18), the implementation matrix (XC-19), the R20
-corpus case (XC-22), the n-replica Lean models (XC-24), the framework quickstarts (XC-26), docs examples run by CI
-(XC-27), the compatibility matrix (XC-28) and the mutation matrix with the false-positive register (XC-29).
+interdependency map with the docs-versus-code gate (XC-23, done), the n-replica Lean models (XC-24), the R20 corpus
+case (XC-22) and the release tasks XC-30 (done) and XC-31. The 1.6.0 release task XC-48 lists the eight tasks that were
+open when 1.5.0 was planned; XC-22 and XC-24 landed before the tag. Still open: R17 to R19 (XC-18), the implementation
+matrix (XC-19), the framework quickstarts (XC-26), docs examples run by CI (XC-27), the compatibility matrix (XC-28)
+and the mutation matrix with the false-positive register (XC-29).
 
 **Where it's going.** Having many checks is not the same as covering the security boundary that matters. The question
 a seller actually needs answered is: *does this payment authorise this request, is what was bought actually
@@ -138,7 +140,7 @@ from the server's own matching.
 Sepolia, the oracle survives the malformed-amount table, the extended F5, F11, P6 and P7 ship with controls and faulty builds, and
 the credibility gate is green, and A1, A2, A3, A5, A6 (seeded) and the v1.4 parts of A4, A7 and A8 ship with it.
 
-## v1.5: concurrency, delivery and an implementation matrix (1.5.0 released 2026-10-23 with R12, R13, R15, R16, R16a, R20 and R22 to R24; R17 to R19 and the matrix are in 1.6.0)
+## v1.5: concurrency, delivery and an implementation matrix (1.5.0 released 2026-10-23 with R12, R13, R15, R16, R16a, R22 to R24 and the n-replica Lean models; R17 to R19 and the matrix are in 1.6.0)
 
 ### P0. One payment, one grant
 
@@ -163,6 +165,7 @@ hundreds of grants where the server did not record the payment identity atomical
   The contract task for it is XC-21.
 - **Lean:** extend the settlement model to n replicas, and prove that a shared atomic check-and-set admits at most one
   grant while partitioned caches admit more. As with today's models, this proves the rule, not anyone's code.
+  **Delivered** in 1.5.0: `lean/X402Conformance/Replicas.lean` (XC-24).
 
 ### P1. Payment versus delivery
 
@@ -225,7 +228,7 @@ contribute to. The v1.4 items ship with v1.4, because they decide whether anyone
 
 | id | what | done when | release |
 |---|---|---|---|
-| A1 | **Zero-config one-liners.** `npx -y x402-conformance-svm demo` and `pipx run --spec x402-conformance x402conf demo` start a local mock target (a stock `@x402/express` server and the facilitator double on loopback), run the checks and print the results | under 60 s on a laptop or a GitHub-hosted runner, with no wallet, keys, funds or network beyond the package download; tested in CI | v1.4 |
+| A1 | **Zero-config one-liners.** `npx -y x402-conformance-svm demo` and `pipx run --spec x402-conformance x402conf demo` start a local mock target (a bundled x402 V2 resource server on `@x402/core` behind the facilitator double on loopback for the Node demo; a bundled mock facilitator and paid route for the Python demo), run the checks and print the results | under 60 s on a laptop or a GitHub-hosted runner, with no wallet, keys, funds or network beyond the package download; tested in CI | v1.4 |
 | A2 | **A 3-line GitHub Action**, with a PR summary comment and SARIF | `uses:` plus `resource-url` and `start` is a complete job; an opt-in sticky comment on the pull request lists what failed, with the fix hint for each; SARIF lands in code scanning as it does today | v1.4 |
 | A3 | **Friendly failure messages.** Every failed check prints one line saying what failed, the likely cause and the fix, with a link to its [FIXES.md](FIXES.md) entry | a test fails the build if any check id has no fix hint | v1.4 |
 | A4 | **Framework adapters and quickstarts.** A minimal paid route plus the workflow file, per framework, each run in CI: Express, Hono and Next first; FastAPI, Flask and Go next | each quickstart goes from clone to a first result in under 5 minutes, and its CI job is green | Express, Hono, Next in v1.4; FastAPI, Flask, Go in v1.5 |
@@ -294,7 +297,7 @@ XC-08 to XC-46 and XC-48 (XC-38 was never used). XC-47 (S5) is proposed in
 | id | deliverable | acceptance (summary) | status |
 |---|---|---|---|
 | M1 | **Devnet runner.** F1 to F6 run over real x402 V2 `/verify` and `/settle` against a facilitator on Solana devnet that I host myself, using throwaway devnet keypairs | `x402conf devnet` exits 0 against the self-hosted reference facilitator; each F check also fails against a fault-injected build; the devnet evidence is committed with hashes | devnet run done (1.1.0), [evidence/devnet](../evidence/devnet): F1, F2, F3, F5 and F6 pass, every fault-injected build is caught, and F4 fails on the reference facilitator (memo not tracked across transactions), so the exit-0 criterion is not met yet |
-| M2 | **Facilitator matrix.** Results pages for at least 3 facilitators that offer Solana devnet, run only with each operator's permission | `evidence/matrix/` holds at least 3 facilitator reports; any failures go through the 90-day disclosure in [SECURITY.md](../SECURITY.md) first | open: waiting on operator permission |
+| M2 | **Facilitator matrix.** Results pages for at least 3 facilitators that offer Solana devnet, run only with each operator's permission | `evidence/matrix/` holds at least 3 facilitator reports; any failures go through the 90-day disclosure in [SECURITY.md](../SECURITY.md) first | open: no operator has been asked yet |
 | M3 | **Lean models extended.** Timeouts, `settlement_pending` reconciliation, and concurrent settles over a shared cache | New theorems build in CI with only standard axioms; each theorem is linked to its F check in [SPEC.md](SPEC.md) | done (1.0.0) |
 | M4 | **Drop-in CI action.** A GitHub Action plus a TypeScript runner for resource servers built on `@x402/svm` (and, since 1.3.0, `@x402/evm`) | The action runs F1 to F6 in another repo's CI, and an example repo is green | done (1.0.0) |
 | M5 | **Maintenance for 6 months.** Issues, spec updates and fixes | Monthly: open issues are triaged within 7 days and CI stays green on the current spec | ongoing since 1.0.0 |

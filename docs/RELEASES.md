@@ -1,7 +1,8 @@
 # Releases
 
 Every release of x402-conformance, with what it added and where it is published. [CHANGELOG.md](../CHANGELOG.md) has
-the full entry for each change; this page is the summary per release. Each GitHub release carries
+the full entry for each change, [RELEASES.md](../RELEASES.md) at the repository root is the same history as one table,
+and [COVERAGE.md](COVERAGE.md) is what the suite covers today; this page is the narrative per release. Each GitHub release carries
 `RELEASE-SUMS-<tag>.json`, the SHA-256 of every published artefact, and `RELEASE-SUMS-<tag>.dsse.json`, that manifest
 signed with my owner key (`guard/owner.pub`). Release tags from v1.4.0 on are signed with my SSH release key, and the
 `v1` tag always points at the latest 1.x release.
@@ -48,8 +49,14 @@ and the docs-versus-code gate.
   edge; `--check` fails CI on a stale map, `--drift` on a doc that disagrees with the code, `--versions` on a version
   string that disagrees, and `--gate` fails a pull request that changes a component without updating or acknowledging
   its downstream docs, contracts and tests.
+- Lean: `Replicas.lean` models n replicas and proves that a shared atomic check-and-set admits at most one grant while
+  partitioned caches admit a double grant (XC-24).
+- The R20 corpus case from a stock `@x402/express` server with no idempotency record, and `retry-server.ts` runs
+  standalone (XC-22).
 - Contract: XC-39 to XC-46 signed and claimed, XC-23 and XC-30 claimed, XC-31 amended so 1.5.0 ships the checks that are
-  built, and XC-48 added for the 1.6.0 build list. XC-47 (S5) is proposed, unsigned.
+  built, and XC-48 added for the 1.6.0 list; XC-22 and XC-24 from that list landed before the tag. XC-47 (S5) is
+  proposed, unsigned.
+- `RELEASES.md` (the release map) and `docs/COVERAGE.md`.
 - Dev dependencies: vitest 4.1.12.
 
 ## 1.4.0

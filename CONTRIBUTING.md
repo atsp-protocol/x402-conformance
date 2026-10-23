@@ -11,7 +11,7 @@ Thanks for helping. This project is experimental. Review happens in the open, th
 - **A failing run worth keeping?** Run it with `--share` to write an anonymised corpus case, then submit it with the
   "Share a corpus case" issue form. [corpus/README.md](corpus/README.md) explains the format.
 
-- **New checks.** Open an issue with the "check proposal" template. Quote the exact x402 spec text and its section. Every check needs a test that fails against a faulty double and passes against the reference.
+- **New checks.** Open an issue with the "check proposal" template. Quote the exact x402 spec text and its section. Every check needs a test that fails against a faulty build (a double, a server or a client) and passes against a stock control.
 - **[Proofline](https://github.com/Optitransfer/proofline).** Scope and acceptance criteria live in `proofline.json`. A pull request that adds work outside every task's scope fails the `vv` job. Contract changes are proposed in a PR, and the owner re-signs them.
 - **Downstream docs, contracts and tests.** On a pull request CI runs `python3 tools/interdeps.py --gate --base origin/<base>`. It fails when your change leaves a doc, contract or test component directly downstream neither touched nor acknowledged, and lists the rest for review. If you checked one and it needs no change, add a line `Interdeps-Ack: <component>[, <component>] - <reason>` to a commit message or the pull request body.
 - **Before you push,** run the local checks:

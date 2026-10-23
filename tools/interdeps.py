@@ -243,6 +243,7 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
     ("interdeps", "code", ("tools/interdeps.py",), "this map's generator, drift check and PR gate"),
     ("interdeps-map", "doc", ("docs/INTERDEPENDENCY.md",), "this map"),
     ("interdeps-tests", "test", ("tests/test_interdeps.py",), "the generator's tests"),
+    ("coverage", "code", ("tools/build_coverage.py",), "the generator of the check table in docs/COVERAGE.md"),
     ("contract", "contract", ("proofline.json", "proofline.json.sig", "guard/owner.pub"),
      "the owner-signed contract, its signature and key"),
     ("proposals", "contract", ("docs/proposals/**",), "proposed, unsigned contract addenda"),
@@ -276,7 +277,7 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
     ("corpus-schemas", "data", ("corpus/*.schema.json",), "the corpus case and report schemas"),
     ("corpus", "data", ("corpus/**",), "the corpus of anonymised cases and its fixtures"),
     ("evidence", "data", ("evidence/**",), "hashed evidence from live and devnet runs"),
-    ("readme", "doc", ("README.md",), "the project README"),
+    ("readme", "doc", ("README.md", "RELEASES.md"), "the project README and the release map"),
     ("changelog", "doc", ("CHANGELOG.md",), "the changelog"),
     ("docs", "doc", ("docs/**",), "architecture, spec mapping, threat model, usage, adoption, matrix and roadmap"),
     ("community", "doc", ("CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", ".github/ISSUE_TEMPLATE/**",
@@ -290,7 +291,8 @@ GATE_KINDS = ("doc", "contract", "test")
 U, R = "update", "review"
 EDGES: list[tuple[str, str, str]] = [
     ("interdeps", "interdeps-map", U), ("interdeps", "interdeps-tests", R), ("interdeps", "ci", R),
-    ("interdeps-tests", "ci", R), ("contract", "interdeps-map", U), ("contract", "vv", R), ("contract", "vv-doc", R),
+    ("interdeps-tests", "ci", R), ("coverage", "interdeps-map", U), ("coverage", "docs", U), ("coverage", "py-tests", R),
+    ("catalog", "coverage", R), ("contract", "interdeps-map", U), ("contract", "vv", R), ("contract", "vv-doc", R),
     ("contract", "claims", R), ("proposals", "interdeps-map", U), ("proposals", "contract", R),
     ("claims", "interdeps-map", U), ("claims", "vv", R), ("vv", "ci", R), ("vv", "vv-doc", R),
     ("catalog", "interdeps-map", U), ("catalog", "ts-catalog", U), ("catalog", "docs", R), ("catalog", "readme", R),
