@@ -16,6 +16,10 @@
   fails a server that answers 2xx, calls `/settle` or sends a `PAYMENT-RESPONSE`. The control is
   `ts/example/head-server.ts`; the `head_settles` build fails, on Solana devnet and Base Sepolia
   (`ts/test/head.test.ts`). The contract task is XC-18 (AC02).
+- R16a, an unpaid `HEAD` gets the same 402 as `GET` (`probeUnpaidHead`): it fails a paid route whose unpaid `HEAD`
+  is not answered 402 with a `PAYMENT-REQUIRED` offer. The control is `ts/example/head-unpaid-server.ts`; the
+  `head_bypass` build (a paywall that matches only `GET`) fails, on Solana devnet and Base Sepolia
+  (`ts/test/head-unpaid.test.ts`).
 ## 1.4.0 (2026-10-22)
 - R14, a crash between a successful `/settle` and the response (`x402conf-svm probe --crash`, Action `crash: "true"`).
   The probe kills the server while `/settle` is answering and again as the response starts, restarts it (the `--start`

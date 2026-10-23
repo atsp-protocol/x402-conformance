@@ -344,6 +344,16 @@ client for headers only, and a client or crawler that probes with `HEAD` pays fo
 answer 402 asking the client to retry as `GET`, without calling `/verify` or `/settle`.
 `ts/example/head-server.ts` shows one way to do it.
 
+## R16a
+**What failed.** The probe sent an unpaid `HEAD` to your paid `GET` route. Your server did not answer it 402 with a
+`PAYMENT-REQUIRED` offer; usually it answered 200, which means the protected handler ran with no payment.
+**Why it matters.** Many routers serve `HEAD` from the `GET` handler (RFC 9110 §9.3.2: the same response without the
+content). A paywall that matches routes by the exact method then misses `HEAD`, and anyone can run the handler, read
+its status and headers and trigger its side effects for free.
+**How to fix it.** Match `HEAD` against the `GET` route in the payment layer, so an unpaid `HEAD` gets the same 402
+and `PAYMENT-REQUIRED` header as `GET` and never reaches the handler. `ts/example/head-unpaid-server.ts` shows one way
+to do it.
+
 ## R20
 **What failed.** The route did not answer 402 with an `exact` offer the probe could pay, so R20 graded nothing.
 **Why it matters.** R20a and R20b need one paid attempt to time out and be retried.
