@@ -1,5 +1,11 @@
 # Changelog
 ## Unreleased
+- `tools/interdeps.py` generates `docs/INTERDEPENDENCY.md` from `proofline.json`, the unmerged addenda,
+  `vv/claims.json`, the check catalogue and the tree, with a mermaid graph of the tasks. `--check` fails when the
+  committed map is stale; `--drift` fails when a doc names a check id, CLI flag or Action input the code doesn't have,
+  when the code has one no doc names, or when the package versions disagree; `--versions X.Y.Z` fails unless every
+  package is at X.Y.Z. CI runs `--check` and `--drift`, and `tests/test_interdeps.py` shows each kind of drift is
+  caught. The `ts/README.md` now documents the R11 binding flags, which no doc named. The contract task is XC-23.
 - R15, no settlement when the paid handler fails (`probeDelivery`): the probe pays a route that answers 5xx, one that
   redirects and one that throws, and fails a server that calls `/settle` for any of them or sends a
   `PAYMENT-RESPONSE`. The control is `ts/example/delivery-server.ts`, which settles only after a 2xx; the
