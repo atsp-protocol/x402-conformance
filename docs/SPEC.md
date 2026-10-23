@@ -83,6 +83,8 @@ Limitation: a facilitator that never sees the requirements (settle-by-transactio
 | `resolved_final`, `failed_never_pending`, `failed_never_credits` | A failure confirmed on chain is terminal and never credited (F8) | same |
 | `concurrent_nodup` | Any interleaving of concurrent settles over one shared credited set credits each transaction at most once (F3) | same |
 | `racy_not_nodup` | A check-then-insert on a stale read double-credits, so the rule must be atomic (F3) | same |
+| `shared_cas_at_most_one_grant` | Across n replicas sharing one atomic check-and-set, any interleaving of requests grants each payment at most once (R12, R13) | `lean/X402Conformance/Replicas.lean` |
+| `partitioned_caches_admit_double_grant`, `partitioned_grants_not_nodup` | Two replicas that each check only their own cache both grant the same payment, so a per-process record is not a record (R13) | same |
 
 All of these use only standard axioms: `propext`, plus `Quot.sound` for `racy_not_nodup` (`lean/Axioms.lean`, checked in CI). They are models of the rule the suite
 checks. They are not proofs about any particular facilitator's code.
