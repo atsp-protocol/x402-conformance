@@ -3319,7 +3319,10 @@
      "ts/mcp/server.json",
      "CHANGELOG.md",
      "README.md",
-     "docs/**"
+     "docs/**",
+     "RELEASES.md",
+     "tools/build_coverage.py",
+     "tests/test_coverage_doc.py"
     ]
    },
    "criteria": [
@@ -4751,7 +4754,10 @@
      "ts/mcp/server.json",
      "CHANGELOG.md",
      "README.md",
-     "docs/**"
+     "docs/**",
+     "RELEASES.md",
+     "tools/build_coverage.py",
+     "tests/test_coverage_doc.py"
     ]
    },
    "criteria": [
