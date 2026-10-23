@@ -16,6 +16,10 @@
   now runs standalone. The contract task is XC-22.
 - MCP: `x402_explain_check` finds the fix section of a check whose id has a lowercase suffix (R11a to R11f, R16a, R20a,
   R20b); the heading lookup used to upper-case the id.
+- `x402-conformance-mcp` depends on zod 4.6.6: Dependabot flagged 4.1.12 for memory exhaustion while validating oversized
+  constrained collections, and the MCP server validates every tool input with zod. The `x402-conformance-svm` and devnet
+  lockfiles resolve zod 3.25.76 through `@x402/core`'s `^3.24.2` range, which no 4.x satisfies; that pin moves when
+  upstream's does.
 - `tools/interdeps.py` no longer writes a per-component file count into the map, so a pull request that adds a file no
   longer stales the committed map of every other open pull request (#52).
 - The MCP server is published to the MCP Registry as `io.github.atsp-protocol/x402-conformance` on each GitHub release
