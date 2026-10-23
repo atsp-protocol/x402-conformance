@@ -32,6 +32,8 @@ jobs:
       - run: PYTHONPATH=src python -m unittest discover -s tests -v
       - name: The interdependency map is current and the docs match the code
         run: python3 tools/interdeps.py --check && python3 tools/interdeps.py --drift
+      - name: The compatibility matrix matches the committed implementation-matrix runs
+        run: python3 tools/compat_matrix.py --check
       - run: PYTHONPATH=src python -m x402conf offline > /dev/null
       - run: cd evidence/2026-10-20 && sha256sum -c SHA256SUMS
   interdeps-gate:

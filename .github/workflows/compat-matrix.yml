@@ -1,0 +1,61 @@
+name: compat-matrix
+# The compatibility matrix (XC-28), regenerated on a schedule and by hand: every row of evidence/impl-matrix/ is
+# probed again the same way as impl-matrix.yml does, the fresh runs are hashed, docs/compat-matrix.json and the table
+# in docs/MATRIX.md are rebuilt from them, and the result is uploaded as an artifact with the diff against what is
+# committed. Nothing is pushed from here and nothing contacts a third party.
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: The committed matrix matches the committed runs
+        run: python3 tools/compat_matrix.py --check
+      - name: Build the probe and the stock TypeScript examples
+        run: cd ts && npm ci --no-audit --no-fund && npx tsc -p .
+      - name: The stock Python SDK and the 2.27.0 Express packages, pinned
+        run: |
+          pip install "x402[fastapi,flask,evm,svm]==2.25.0" uvicorn==0.38.0 flask==3.1.3
+          mkdir -p "$RUNNER_TEMP/x402-2.27.0" && cd "$RUNNER_TEMP/x402-2.27.0"
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund @x402/express@2.27.0 @x402/core@2.27.0 @x402/svm@2.27.0 @x402/evm@2.27.0 express@4.22.3
+          cp "$GITHUB_WORKSPACE/ts/dist/example/express-server.js" express-server.mjs
+      - name: Probe every row again
+        run: |
+          for row in $(ls evidence/impl-matrix); do
+            case "$row" in
+              express-2.28.0) port=47501; start="PORT=$port node ts/dist/example/express-server.js" ;;
+              express-2.27.0) port=47505; start="cd $RUNNER_TEMP/x402-2.27.0 && PORT=$port node express-server.mjs" ;;
+              hono-2.28.0)    port=47502; start="PORT=$port node ts/dist/example/hono-server.js" ;;
+              fastapi-2.25.0) port=47503; start="PORT=$port python examples/python/fastapi_server.py" ;;
+              flask-2.25.0)   port=47504; start="PORT=$port python examples/python/flask_server.py" ;;
+              *) echo "no start command for $row"; exit 1 ;;
+            esac
+            node ts/dist/src/cli.js probe --resource "http://127.0.0.1:$port/paid" --port 0 --start "$start" \
+              --out "evidence/impl-matrix/$row/run.json" || echo "$row: the probe exited non-zero"
+            (cd "evidence/impl-matrix/$row" && sha256sum run.json README.md > SHA256SUMS)
+          done
+      - name: Rebuild the matrix from the fresh runs
+        run: |
+          python3 tools/compat_matrix.py --write
+          python3 tools/compat_matrix.py --check
+          git --no-pager diff --stat
+          git --no-pager diff -- docs/compat-matrix.json docs/MATRIX.md > "$RUNNER_TEMP/compat-matrix.diff" || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compat-matrix
+          path: |
+            docs/compat-matrix.json
+            docs/MATRIX.md
+            evidence/impl-matrix
+            ${{ runner.temp }}/compat-matrix.diff
