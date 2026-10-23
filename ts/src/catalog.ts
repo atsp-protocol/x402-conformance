@@ -182,6 +182,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "R20b": {
   "profile": "security-profile",
   "basis": "a retry resending the same signed payment is settled once and gets the original result"
+ },
+ "C2": {
+  "profile": "security-profile",
+  "basis": "given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific"
  }
 };
 

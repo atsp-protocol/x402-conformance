@@ -164,4 +164,10 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
              "basis": "a retry resending the same signed payment is settled once and gets the original result",
              "controls": [_TS_RETRY, "ts:R20b client control: the stock @x402/fetch client"],
              "faulty": ["ts:R20b settle_both: with no record", "ts:R20b client resign_on_timeout"]},
+    "C2": {"profile": "security-profile",
+           "basis": "given several offers a client pays one within its own networks and maximum amount, not the first; "
+                    "V2 12.1: spending controls are implementation-specific",
+           "controls": ["ts:C2 control: the stock x402Client pays the offer within its networks and maximum"],
+           "faulty": ["ts:C2 first_offer: a client that signs the first offer outside its policy is caught",
+                      "ts:C2 ignore_max: a client that signs an offer above its maximum is caught"]},
 }

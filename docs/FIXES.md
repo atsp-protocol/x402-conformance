@@ -330,3 +330,16 @@ paid result is lost. A client that re-signs with no key leaves a server nothing 
 **How to fix it.** Server: serve a resent payment from the idempotency record above. Client: generate one payment id per
 logical request and append it in `onBeforePaymentCreation` (`appendPaymentIdentifierToExtensions`), or resend the
 same `PAYMENT-SIGNATURE` on retry.
+
+## C2
+**What failed.** Given several offers, the client signed one outside its own policy: an offer on a network outside
+its configured set, or one for more than its maximum amount, listed before an offer it could pay. Or it paid nothing,
+although an offer within its policy was there.
+**Why it matters.** The server decides what goes in `accepts` and in what order. A client that signs the first offer
+pays on whatever network and for whatever amount is listed first, not what it was configured to pay. V2 leaves
+spending controls to the implementation (§12.1), so the client has to enforce its own.
+**How to fix it.** Filter `accepts` by your own configuration before you choose: keep offers on your configured
+networks and at or below your maximum, choose among those, and pay nothing if none is left. With `@x402/core`'s
+`x402Client`, register your scheme clients only for the networks you configured (registration is its network scope),
+not a wildcard, and keep spend controls on with a per-payment cap (`setSpendControls({ allowedAssets: [{ network,
+asset, maxAmountPerPayment }] })`, an atomic amount). `ts/example/client-offers-clients.ts` shows one way to do it.

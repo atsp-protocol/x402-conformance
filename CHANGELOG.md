@@ -1,4 +1,14 @@
 # Changelog
+## Unreleased
+- C2, a client pays an offer within its own policy (`checkClientOfferPolicy`): given several offers a client must
+  choose one on its configured networks and within its maximum amount, not the first, and never sign for a network
+  outside its set. A recording proxy puts two decoys before the route's offer in the 402 (the same offer on a network
+  outside the client's set, and one on its network above its maximum), answers a payment for a decoy with 402 so
+  nothing settles, and reads which offer the client signed. The stock `x402Client` with `@x402/fetch`, registered only
+  for its network and capped with spend controls, passes; a client that signs the first offer and one that ignores its
+  maximum are caught, on Solana devnet and Base Sepolia (`ts/test/client-offers.test.ts`). A fix section is in
+  [docs/FIXES.md](docs/FIXES.md#c2).
+
 ## 1.4.0 (2026-10-22)
 - R14, a crash between a successful `/settle` and the response (`x402conf-svm probe --crash`, Action `crash: "true"`).
   The probe kills the server while `/settle` is answering and again as the response starts, restarts it (the `--start`
