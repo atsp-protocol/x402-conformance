@@ -1,0 +1,4 @@
+# How truedone runs a changed test on the base and head of a pull request (red-green).
+# TypeScript specs under ts/: install, build from a clean dist (emitting even when the spec's imports don't exist yet,
+# as on the base side), and run the compiled spec. Python tests: pytest with the package on the path.
+test: if [ -f package.json ]; then npm ci --silent --no-audit --no-fund && rm -rf dist && { npx tsc -p . --noEmitOnError false || true; } && node --test --test-reporter=junit --test-reporter-destination={report} $(for f in {files}; do echo dist/${f%.ts}.js; done); else PYTHONPATH=src python3 -m pytest --junitxml={report} {files}; fi

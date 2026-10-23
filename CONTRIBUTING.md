@@ -18,6 +18,7 @@ Thanks for helping. This project is experimental. Review happens in the open, th
       (cd ts && npm ci && npm test)
       (cd ts/mcp && npm ci && npm test)
       (cd lean && lake build) && python3 tools/lean_axioms.py
+      python3 tools/interdeps.py && python3 tools/interdeps.py --drift   # regenerate docs/INTERDEPENDENCY.md, then check the docs match the code
       python3 tools/vv.py verify --pre-merge     # on a branch; plain `verify` is the strict run on main
 
   CI runs the Python tests on 3.10, 3.12 and 3.13 and the TypeScript tests on Node 20, 22 and 24.
