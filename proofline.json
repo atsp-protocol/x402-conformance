@@ -3222,10 +3222,10 @@
     {
      "id": "XC-30-AC01",
      "mandatory": true,
-     "statement": "Every version string is 1.4.0 and the MCP package depends on x402-conformance-svm ^1.4.0",
+     "statement": "Every version string is 1.4.0 in the tree of tag v1.4.0 and the MCP package depends on x402-conformance-svm ^1.4.0",
      "verifier": {
       "type": "command",
-      "cmd": "python3 tools/interdeps.py --versions 1.4.0",
+      "cmd": "python3 tools/interdeps.py --versions 1.4.0 --at v1.4.0",
       "expect_exit": 0,
       "timeout_s": 60
      }
@@ -3329,10 +3329,10 @@
     {
      "id": "XC-31-AC01",
      "mandatory": true,
-     "statement": "Every version string is 1.5.0",
+     "statement": "Every version string is 1.5.0 in the tree of tag v1.5.0",
      "verifier": {
       "type": "command",
-      "cmd": "python3 tools/interdeps.py --versions 1.5.0",
+      "cmd": "python3 tools/interdeps.py --versions 1.5.0 --at v1.5.0",
       "expect_exit": 0,
       "timeout_s": 60
      }
@@ -4764,10 +4764,10 @@
     {
      "id": "XC-48-AC01",
      "mandatory": true,
-     "statement": "Every version string is 1.6.0",
+     "statement": "Every version string is 1.6.0 in the tree of tag v1.6.0",
      "verifier": {
       "type": "command",
-      "cmd": "python3 tools/interdeps.py --versions 1.6.0",
+      "cmd": "python3 tools/interdeps.py --versions 1.6.0 --at v1.6.0",
       "expect_exit": 0,
       "timeout_s": 60
      }
