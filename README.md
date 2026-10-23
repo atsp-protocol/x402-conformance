@@ -21,15 +21,6 @@ Project page with the checks and the latest results: https://atsp-protocol.githu
 
 ## 60-second quickstart
 
-> **Before 1.4.0 is published:** this page describes `main`. The released 1.3.1 packages and the `@v1` Action already
-> have `live`, `resource`, `offline`, `report`, `devnet`, `probe --resource` and the Action inputs `facilitators`,
-> `facilitator-auth-host`, `resources`, `resource-url`, `start`, `network`, `port`, `offline`, `results-dir` and
-> `fail-on-error`. Everything else here ships in 1.4.0: both `demo` commands, R11 and the `binding-*` inputs, F11, P6,
-> P7, `pr-comment`, `report --badge`, `--share`, `x402conf-svm resource`, the test helpers, the MCP server, the Docker
-> image and the GitLab template. Until then, run those from a clone (`cd ts && npm ci && npm run build && node
-> dist/src/cli.js demo`, or `PYTHONPATH=src python3 -m x402conf demo`). [CHANGELOG.md](CHANGELOG.md) lists what is
-> unreleased.
-
 See it work first, with nothing to set up: no project, no wallet, no chain, a few seconds each.
 
 ```
