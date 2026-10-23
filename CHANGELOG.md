@@ -1,5 +1,12 @@
 # Changelog
 ## Unreleased
+- R12, parallel requests with one payment identifier (`probeParallel`): the probe sends eight requests at once with the
+  same payment-identifier id and a fresh payment each, and fails a server that settles more than one of them or serves
+  one that doesn't name the settlement. R13, two replicas (`probeReplicas`): the same id goes to one replica, then the
+  other, then both at once, and the service must settle it once in all. The control is `ts/example/replica-server.ts`
+  (an idempotency record that reserves the key before it awaits, shared by both replicas); the `check_then_set` build
+  and a per-process record each fail, on Solana devnet and Base Sepolia (`ts/test/concurrency.test.ts`). The contract
+  task is XC-17 (AC01, AC02).
 - R15, no settlement when the paid handler fails (`probeDelivery`): the probe pays a route that answers 5xx, one that
   redirects and one that throws, and fails a server that calls `/settle` for any of them or sends a
   `PAYMENT-RESPONSE`. The control is `ts/example/delivery-server.ts`, which settles only after a 2xx; the
