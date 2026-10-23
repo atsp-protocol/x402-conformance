@@ -330,3 +330,13 @@ paid result is lost. A client that re-signs with no key leaves a server nothing 
 **How to fix it.** Server: serve a resent payment from the idempotency record above. Client: generate one payment id per
 logical request and append it in `onBeforePaymentCreation` (`appendPaymentIdentifierToExtensions`), or resend the
 same `PAYMENT-SIGNATURE` on retry.
+
+## C1
+**What failed.** The client was answered 402 with payment requirements and handed that 402 to its caller as a
+successful response: it neither paid and retried nor raised an error. This happens when the client's status check
+accepts every status and its payment step only runs for statuses the check rejects.
+**Why it matters.** The caller takes the payment-required answer for the resource it asked for. It gets no content and
+no error, so nothing tells it the request was never paid for or served.
+**How to fix it.** Run the payment step on every 402 with a `PAYMENT-REQUIRED` header before any status check, whatever
+that check accepts. If the client can't or won't pay (no matching scheme, over budget), raise a payment-required error
+instead of returning the 402. The stock `@x402/fetch` wrapper does this (see `ts/example/client-status-clients.ts`).

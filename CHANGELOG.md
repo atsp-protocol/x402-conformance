@@ -1,4 +1,12 @@
 # Changelog
+## Unreleased
+- C1, a client never hands a 402 to its caller as a success. `checkClientHandles402` runs a client once through a
+  recording proxy in front of a paid route behind the facilitator double. It passes when the client pays and gets a
+  2xx, or rejects with an error, and fails when the client resolves with the 402. The stock `@x402/fetch` client, the
+  same client with a policy that declines the price, and a client that pays a 402 before its status check pass; a
+  client whose status check accepts every status and whose payment step only runs for rejected statuses is caught
+  (`ts/test/client-status.test.ts`, Solana devnet and Base Sepolia). A fix section is in
+  [docs/FIXES.md](docs/FIXES.md#c1).
 ## 1.4.0 (2026-10-22)
 - R14, a crash between a successful `/settle` and the response (`x402conf-svm probe --crash`, Action `crash: "true"`).
   The probe kills the server while `/settle` is answering and again as the response starts, restarts it (the `--start`

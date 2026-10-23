@@ -164,4 +164,13 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
              "basis": "a retry resending the same signed payment is settled once and gets the original result",
              "controls": [_TS_RETRY, "ts:R20b client control: the stock @x402/fetch client"],
              "faulty": ["ts:R20b settle_both: with no record", "ts:R20b client resign_on_timeout"]},
+    "C1": {"profile": "security-profile",
+           "basis": "V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client "
+                    "pays and retries or raises an error",
+           "controls": ["ts:C1 control: the stock @x402/fetch client pays the 402 and gets the content",
+                        "ts:C1 control: a stock @x402/fetch client whose policy declines the price rejects",
+                        "ts:C1 control: a client whose status check passes every status but pays a 402 before the check"],
+           "faulty": ["ts:C1 accept_any_status: a client whose status check passes 402 through unpaid is caught",
+                      "ts:C1 gate: a URL that is not a paid route fails the check",
+                      "ts:C1 gate: a client that rejects before it receives a 402 does not pass"]},
 }
