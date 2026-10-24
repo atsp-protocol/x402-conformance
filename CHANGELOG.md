@@ -5,6 +5,11 @@
 - The mutation matrix: `tools/mutation_matrix.py` resolves every faulty build in the catalogue the way the credibility
   test does and writes `docs/site/mutation-matrix.json` (each check, its profile, each faulty build with `caught` and how),
   byte-identical for one tree; CI checks it, and the false-positive register exists. The contract task is XC-29.
+- R17, R18 and R19 (`probeCacheLeak`, `probePending`, `probeFlows`): a shared cache in front of the paid route must not
+  serve the paid content to an unpaid request; a pending, late or unanswered settlement never serves before the payment
+  is final and serves once after it; the upfront and escrow flows are checked, each with a passing control and faulty
+  builds. The
+  flaky port race in the CLI tests (#67) is fixed by `ts/test/ports.ts`. The contract task is XC-18.
 
 ## 1.5.0 (2026-10-23)
 - The contract: XC-39 to XC-46 (R16a, R22, R23, R24, C1, C2, C3, F12) are signed and claimed (#55), XC-23 is claimed
