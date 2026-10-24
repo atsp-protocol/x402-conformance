@@ -1,7 +1,11 @@
 {
   "name": "x402-conformance-quickstart-next",
   "private": true,
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
     "@x402/core": "2.28.0",
     "@x402/evm": "2.28.0",
@@ -11,5 +15,20 @@
     "next": "16.4.3",
     "react": "19.2.4",
     "react-dom": "19.2.4"
+  },
+  "overrides": {
+    "zod": "4.6.6",
+    "uuid": "11.1.1",
+    "decode-uri-component": "0.5.1",
+    "ws": "8.22.0",
+    "@walletconnect/socket-transport": {
+      "ws": "7.5.13"
+    },
+    "@walletconnect/jsonrpc-ws-connection": {
+      "ws": "7.5.13"
+    },
+    "@walletconnect/utils": {
+      "bn.js": "4.12.5"
+    }
   }
 }

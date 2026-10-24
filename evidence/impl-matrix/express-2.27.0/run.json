@@ -1,13 +1,13 @@
 {
- "tool": "x402-conformance-svm 1.4.0",
+ "tool": "x402-conformance-svm 1.5.0",
  "evidence": "x402-conformance-evidence/2",
  "versions": {
-  "x402-conformance-svm": "1.4.0",
+  "x402-conformance-svm": "1.5.0",
   "node": "23.7.0"
  },
- "run_at": "2026-10-23T20:26:20.777Z",
+ "run_at": "2026-10-24T13:37:43.400Z",
  "resource": "http://127.0.0.1:47505/paid",
- "facilitator_double": "http://127.0.0.1:59030",
+ "facilitator_double": "http://127.0.0.1:54022",
  "results": [
   {
    "check": "R0 unpaid request: 402 with a PAYMENT-REQUIRED header offering a network the probe grades",
@@ -106,7 +106,7 @@
    "status": "pass",
    "detail": {
     "status": 502,
-    "body": "{\"error\":\"Facilitator settle returned invalid JSON: {\\\"success\\\":true,\\\"transaction\\\":\\\"double-tx-a40c6602-216\\\",\\\"netwo"
+    "body": "{\"error\":\"Facilitator settle returned invalid JSON: {\\\"success\\\":true,\\\"transaction\\\":\\\"double-tx-156eec0b-216\\\",\\\"netwo"
    },
    "profile": "resilience",
    "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
@@ -145,7 +145,7 @@
     "decoded": {
      "success": true,
      "payer": "double-payer",
-     "transaction": "double-tx-b16c871c-216",
+     "transaction": "double-tx-5cd16fc0-216",
      "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
     }
    },

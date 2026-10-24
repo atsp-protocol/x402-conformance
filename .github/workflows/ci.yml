@@ -224,7 +224,7 @@ jobs:
         with: { python-version: "3.12" }
       - uses: actions/setup-go@v5
         if: matrix.framework == 'go'
-        with: { go-version: "1.24", cache-dependency-path: examples/go/go.sum }
+        with: { go-version-file: examples/go/go.mod, cache-dependency-path: examples/go/go.sum }
       - name: Clone to a first result
         run: sh tools/quickstart.sh ${{ matrix.framework }}
       - name: The result is a pass on every check
