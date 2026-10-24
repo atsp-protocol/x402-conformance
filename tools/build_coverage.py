@@ -47,6 +47,7 @@ RUNS["R14"] = "`x402conf-svm probe --crash`, Action `crash`"
 for _i in ("R20", "R20a", "R20b"):
     RUNS[_i] = "`x402conf-svm probe --retry`, Action `retry`; `checkClientRetry` for clients"
 LIB = {"R12": "probeParallel", "R13": "probeReplicas", "R15": "probeDelivery", "R16": "probeHead", "R16a": "probeUnpaidHead",
+       "R17": "probeCacheLeak", "R18": "probePending", "R19": "probeFlows",
        "R22": "probeStatus", "R23": "probeAbort", "R24": "probeMalformedHeader", "C1": "checkClientHandles402",
        "C2": "checkClientOfferPolicy", "C3": "checkClientKeepsV2"}
 for _i, _fn in LIB.items():

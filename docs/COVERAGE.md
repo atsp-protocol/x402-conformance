@@ -8,16 +8,16 @@ says which release added what, and [SPEC.md](SPEC.md) quotes the spec text behin
 
 <!-- generated from src/x402conf/spec.py by tools/build_coverage.py; edit RUNS there, not this block -->
 
-## Checks: 58 in the catalogue
+## Checks: 61 in the catalogue
 
 - **S**: Facilitator, `GET /supported` (S0 to S4 live; S5 offline): S0, S1, S2, S3, S4, S5 (6 checks)
 - **P**: Any paid URL's 402 answer, one unpaid GET: P1, P2, P3, P4, P5, P6, P7 (7 checks)
 - **F**: Facilitator safety, against doubles offline and on devnet: F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12 (12 checks)
-- **R**: Resource server behind the facilitator double: R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R11a, R11b, R11c, R11d, R11e, R11f, R12, R13, R14, R15, R16, R16a, R20, R20a, R20b, R22, R23, R24 (30 checks)
+- **R**: Resource server behind the facilitator double: R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R11a, R11b, R11c, R11d, R11e, R11f, R12, R13, R14, R15, R16, R16a, R17, R18, R19, R20, R20a, R20b, R22, R23, R24 (33 checks)
 - **C**: Client, through a recording proxy: C1, C2, C3 (3 checks)
 
-By profile: 31 normative (the spec says MUST), 17 security
-profile (a hardening rule the spec leaves open), 10 resilience (behaviour under failure).
+By profile: 32 normative (the spec says MUST), 18 security
+profile (a hardening rule the spec leaves open), 11 resilience (behaviour under failure).
 Every check has at least one control that passes and one faulty build it catches, and CI runs every one of them
 (`tests/test_offline.py`, `ts/test/`).
 
@@ -69,6 +69,9 @@ Every check has at least one control that passes and one faulty build it catches
 | R15 | normative | V2 6.1: in the authorization flow funds move only after the resource completes successfully; a failed, redirected or thrown request is not settled | library only: `probeDelivery` from `x402-conformance-svm` | 1 | 2 |
 | R16 | security-profile | RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to deliver and is not settled | library only: `probeHead` from `x402-conformance-svm` | 1 | 1 |
 | R16a | security-profile | the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402 | library only: `probeUnpaidHead` from `x402-conformance-svm` | 1 | 1 |
+| R17 | security-profile | RFC 9111: a shared cache may store a 200 that is not private or no-store and does not vary on the request header that decided it, so a paid response must say so or the next caller gets it for free | library only: `probeCacheLeak` from `x402-conformance-svm` | 1 | 2 |
+| R18 | resilience | V2 9: settlement_pending carries the transaction so the caller can reconcile; a pending, late or unanswered settlement ends served once after it is final, or refused with the payment surfaced | library only: `probePending` from `x402-conformance-svm` | 1 | 2 |
+| R19 | normative | V2 6.1: at least one check MUST run before the resource executes, and a server MUST reject an unsupported flow; on an upfront or escrow offer the check that gates execution is the settle | library only: `probeFlows` from `x402-conformance-svm` | 1 | 2 |
 | R20 | security-profile | control: the route answers 402 with an exact offer the probe can pay | `x402conf-svm probe --retry`, Action `retry`; `checkClientRetry` for clients | 1 | 1 |
 | R20a | security-profile | payment-identifier: a retry with the same id and a fresh payment is not charged again | `x402conf-svm probe --retry`, Action `retry`; `checkClientRetry` for clients | 1 | 2 |
 | R20b | security-profile | a retry resending the same signed payment is settled once and gets the original result | `x402conf-svm probe --retry`, Action `retry`; `checkClientRetry` for clients | 2 | 2 |
@@ -93,7 +96,7 @@ Every check has at least one control that passes and one faulty build it catches
 | `exact` scheme | yes | the only scheme the doubles implement; SVM and EVM |
 | `upto` scheme | partly | P7 reads `extra.paymentFlow` on an `upto` offer; no `upto` settlement is driven |
 | `batch-settlement` scheme | no | planned, see [ROADMAP.md](ROADMAP.md) |
-| `upfront` and `escrow` flows | no in 1.5.0 | R19 is in the 1.6.0 task XC-48 |
+| `upfront` and `escrow` flows | yes, from code | R19 (`probeFlows`): the settle gates execution on an `upfront` or `escrow` offer and an unsupported flow is rejected |
 | Mainnet, any chain | never | the suite never pays or signs on mainnet |
 | Other chains (Algorand, Polygon and the rest) | read-only | S0 to S4 and P1 to P7 read any facilitator's `/supported` and any paid URL's 402, whatever the network; nothing is paid |
 
@@ -110,7 +113,7 @@ Every check has at least one control that passes and one faulty build it catches
 
 | stack | where | checks |
 |---|---|---|
-| `@x402/express` 2.28.0 | `ts/example/express-server.ts` and the binding, retry, crash, status, delivery, head and replica servers | R0 to R11f, R12 to R16a, R20, R22 to R24, on both networks |
+| `@x402/express` 2.28.0 | `ts/example/express-server.ts` and the binding, retry, crash, status, delivery, head, replica, cache, pending and flow servers | R0 to R11f, R12 to R19, R20, R22 to R24, on both networks |
 | `@x402/hono` 2.28.0 | `ts/example/hono-server.ts`, the vitest quickstart | R0 to R10 |
 | `@x402/core` with `node:http` | `ts/example/crash-server.ts`, the corpus case | R14 |
 | `@x402/fetch` client | the C1, C2, C3 and R20 client checks | C1 to C3, R20b |
@@ -139,7 +142,6 @@ not anyone's code.
 
 ## Not covered
 
-- Caches and late settlement (R17, R18) and the `upfront` and `escrow` flows (R19): the 1.6.0 task XC-48 (XC-18).
 - The implementation matrix with Flask, Next and Go rows, framework quickstarts, docs examples run by CI, the
   compatibility matrix and the mutation matrix with the false-positive register: XC-48 (XC-19, XC-26 to XC-29).
 - The MCP transport, settlement preemption (Permit2), the `upto` and `batch-settlement` schemes, A2A and discovery,
