@@ -119,3 +119,12 @@ export async function startRetryServer(facilitatorUrl: string, fault: RetryFault
     close: () => new Promise((ok) => { http.closeAllConnections(); http.close(() => ok()); }),
   };
 }
+
+// Run directly (as the CLI's --start command does): PORT, RETRY_FAULT and EXAMPLE_NETWORK, with the facilitator
+// named by X402_FACILITATOR_URL.
+const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/").split("/").pop() ?? "");
+if (isMain && process.env.X402_FACILITATOR_URL) {
+  startRetryServer(process.env.X402_FACILITATOR_URL, (process.env.RETRY_FAULT ?? "") as RetryFault,
+    process.env.EXAMPLE_NETWORK ?? DEVNET, Number(process.env.PORT ?? 4021))
+    .then((s) => console.log(JSON.stringify({ listening: s.url })));
+}

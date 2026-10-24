@@ -2,8 +2,6 @@
 // SIGKILLs its process group at the crash point and starts it again with the same store file.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import http from "node:http";
-import type { AddressInfo } from "node:net";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -11,17 +9,10 @@ import { describe, test } from "node:test";
 import { BASE_SEPOLIA, DEVNET, startDouble } from "../src/double.js";
 import { probe } from "../src/probe.js";
 import { probeCrash, SpawnedServer, base58, paymentRef } from "../src/crash.js";
+import { freePort, withPorts } from "./ports.js";
 
 const CLI = new URL("../src/cli.js", import.meta.url).pathname;
 const SERVER = new URL("../example/crash-server.js", import.meta.url).pathname;
-
-async function freePort(): Promise<number> {
-  const s = http.createServer();
-  await new Promise<void>((ok) => s.listen(0, "127.0.0.1", ok));
-  const p = (s.address() as AddressInfo).port;
-  await new Promise<void>((ok) => s.close(() => ok()));
-  return p;
-}
 
 async function up(url: string): Promise<void> {
   for (let i = 0; i < 100; i++) {
@@ -121,11 +112,14 @@ describe("R14 from the CLI", { concurrency: true }, () => {
 
   test("R14 the CLI runs the crash check with --crash and --start, and fails a faulty server", async () => {
     for (const [fault, code] of [["", 0], ["memory_record", 1]] as const) {
-      const port = await freePort();
-      const store = join(mkdtempSync(join(tmpdir(), "x402c-r14-")), "store.json");
-      const out = join(mkdtempSync(join(tmpdir(), "x402c-r14-")), "resource-server.json");
-      const r = await cli(["probe", "--resource", `http://127.0.0.1:${port}/paid`, "--port", "0", "--crash", "--out", out,
-        "--start", `PORT=${port} CRASH_STORE=${store} CRASH_FAULT=${fault} node ${SERVER}`]);
+      // Each attempt gets its own store and results file: a run on a taken port must not leave records behind.
+      let out = "";
+      const r = await withPorts(1, ([port]) => {
+        const store = join(mkdtempSync(join(tmpdir(), "x402c-r14-")), "store.json");
+        out = join(mkdtempSync(join(tmpdir(), "x402c-r14-")), "resource-server.json");
+        return cli(["probe", "--resource", `http://127.0.0.1:${port}/paid`, "--port", "0", "--crash", "--out", out,
+          "--start", `PORT=${port} CRASH_STORE=${store} CRASH_FAULT=${fault} node ${SERVER}`]);
+      });
       assert.equal(r.code, code, r.err + r.out);
       const doc = JSON.parse(readFileSync(out, "utf8"));
       const r14 = doc.results.find((x: any) => x.check.startsWith("R14"));
@@ -137,23 +131,25 @@ describe("R14 from the CLI", { concurrency: true }, () => {
     }
   });
   test("R14 the CLI crashes and restarts a server it did not start with --crash-kill and --crash-restart", async () => {
-    const port = await freePort();
-    const dir = mkdtempSync(join(tmpdir(), "x402c-r14-"));
-    const double = await freePort();
-    const env = `X402_FACILITATOR_URL=http://127.0.0.1:${double} PORT=${port} CRASH_STORE=${dir}/store.json`;
-    const startCmd = `${env} nohup node ${SERVER} >/dev/null 2>&1 & echo $! > ${dir}/pid`;
-    await new Promise<void>((ok, fail) => spawn(startCmd, { shell: true, stdio: "ignore" })
-      .on("exit", (c) => c === 0 ? ok() : fail(new Error(String(c)))));
-    try {
-      const r = await cli(["probe", "--resource", `http://127.0.0.1:${port}/paid`, "--port", String(double), "--crash",
-        "--crash-kill", `kill -9 $(cat ${dir}/pid); while kill -0 $(cat ${dir}/pid) 2>/dev/null; do sleep 0.05; done`,
-        "--crash-restart", startCmd]);
-      assert.equal(r.code, 0, r.err + r.out);
-      const r14 = lastDoc(r.out).results.find((x: any) => x.check.startsWith("R14"));
-      assert.equal(r14.pass, true, JSON.stringify(r14, null, 1));
-    } finally {
-      try { process.kill(Number(readFileSync(join(dir, "pid"), "utf8")), "SIGTERM"); } catch { /* already gone */ }
-    }
+    // The server is started here, before the CLI exists, so the double's port has to be chosen in advance: this is
+    // the one CLI run that cannot use --port 0. Each attempt starts its own server and stops it before the next.
+    const r = await withPorts(2, async ([port, double]) => {
+      const dir = mkdtempSync(join(tmpdir(), "x402c-r14-"));
+      const env = `X402_FACILITATOR_URL=http://127.0.0.1:${double} PORT=${port} CRASH_STORE=${dir}/store.json`;
+      const startCmd = `${env} nohup node ${SERVER} >/dev/null 2>&1 & echo $! > ${dir}/pid`;
+      await new Promise<void>((ok, fail) => spawn(startCmd, { shell: true, stdio: "ignore" })
+        .on("exit", (c) => c === 0 ? ok() : fail(new Error(String(c)))));
+      try {
+        return await cli(["probe", "--resource", `http://127.0.0.1:${port}/paid`, "--port", String(double), "--crash",
+          "--crash-kill", `kill -9 $(cat ${dir}/pid); while kill -0 $(cat ${dir}/pid) 2>/dev/null; do sleep 0.05; done`,
+          "--crash-restart", startCmd]);
+      } finally {
+        try { process.kill(Number(readFileSync(join(dir, "pid"), "utf8")), "SIGTERM"); } catch { /* already gone */ }
+      }
+    });
+    assert.equal(r.code, 0, r.err + r.out);
+    const r14 = lastDoc(r.out).results.find((x: any) => x.check.startsWith("R14"));
+    assert.equal(r14.pass, true, JSON.stringify(r14, null, 1));
   });
   test("R14 usage: --crash needs --resource and a way to restart the server", async () => {
     for (const args of [["probe", "--resource", "http://127.0.0.1:1/paid", "--crash"],

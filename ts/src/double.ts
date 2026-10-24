@@ -42,13 +42,17 @@ export interface Double {
   close(): Promise<void>;
 }
 
-function txOf(body: any): string {
-  const p = body?.paymentPayload?.payload ?? {};
+/** The transaction the double reports for a payment payload (the inner `payload` of a PaymentPayload): the same string
+ * on every /settle of the same payment, so a probe can tell whether a server surfaced it. */
+export function doubleTransaction(payload: any): string {
+  const p = payload ?? {};
   const t = String(p.transaction ?? p.signature ?? p.authorization?.nonce ?? "");
   let h = 0;
   for (const c of t) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return `double-tx-${h.toString(16)}-${t.length}`;
 }
+
+const txOf = (body: any): string => doubleTransaction(body?.paymentPayload?.payload);
 
 /** Thrown by startDouble when its port is taken, so callers can report it instead of crashing. */
 export class PortInUseError extends Error {
