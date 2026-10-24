@@ -24,8 +24,8 @@
 - Dependencies: every open Dependabot alert on the default branch is cleared (38 on 2026-10-24, all in the example
   apps and the probe's lockfiles). `examples/go` moves `golang.org/x/crypto` to 0.52.0 (which needs `go 1.25.0`, so the
   go directive and CI's Go setup follow), `go-ethereum` to 1.17.0, `gnark-crypto` 0.18.1, `klauspost/compress` 1.18.7,
-  `quic-go` 0.59.1, `gorilla/websocket` 1.5.3, `mongo-driver` 1.17.7, `x/net` 0.55.0 and `edwards25519` 1.1.1 while the
-  Go SDK pin is unchanged. The Node lockfiles (`ts/`, the devnet runner, the Express, Hono and Next quickstarts) carry
+  `quic-go` 0.59.1, `gorilla/websocket` 1.5.3, `mongo-driver` 1.17.7, `x/net` 0.55.0, `edwards25519` 1.1.1 and the
+  OpenTelemetry modules to 1.41.0 while the Go SDK pin is unchanged. The Node lockfiles (`ts/`, the devnet runner, the Express, Hono and Next quickstarts) carry
   `zod` 4.6.6 through an override, which reverses the 1.5.0 decision to leave the SDK's `zod` 3 pin alone; the Next
   quickstart also moves `uuid` to 11.1.1, `decode-uri-component` to 0.5.1, `ws` to 8.22.0 and 7.5.13 under their
   parents and `bn.js` to 4.12.5 under `@walletconnect/utils`. The SDK pins (`@x402/*` 2.28.0, Python 2.25.0, the Go
