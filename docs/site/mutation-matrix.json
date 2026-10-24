@@ -516,6 +516,60 @@
    ],
    "profile": "security-profile"
   },
+  "R17": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R17 catches a server whose paid response is public and cacheable' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R17 catches a server whose paid response is public and cacheable"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R17 catches a server that says nothing about caching' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R17 catches a server that says nothing about caching"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R18": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R18 catches a server that serves on settlement_pending' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R18 catches a server that serves on settlement_pending"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R18 catches a server that refuses a pending or lost settlement without naming the payment' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R18 catches a server that refuses a pending or lost settlement without naming the payment"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "R19": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R19 catches a server that runs the handler before any check' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R19 catches a server that runs the handler before any check"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R19 catches a server that takes a payment signed for a flow it never offered' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R19 catches a server that takes a payment signed for a flow it never offered"
+    }
+   ],
+   "profile": "normative"
+  },
   "R2": {
    "caught": 2,
    "faults": [
@@ -859,6 +913,6 @@
    "profile": "normative"
   }
  },
- "generated_from": "e234c809645d9d80269d6251973655e4f75aede66876c22bfde25813a0375030",
+ "generated_from": "4f51c95fb0679f737d5bb794fcb7a7cf54dde36499c49f26ca76aa7cbf322f60",
  "schema": "x402-conformance.mutation-matrix/1"
 }

@@ -98,6 +98,9 @@ them.
 | R15 | `probeDelivery({ error, redirect, throws }, double)` | not settle, and send no `PAYMENT-RESPONSE`, when the paid handler answers 5xx, redirects or throws |
 | R16 | `probeHead(url, double)` | not settle a paid `HEAD`: no 2xx, no `/settle` call, no `PAYMENT-RESPONSE` |
 | R16a | `probeUnpaidHead(url)` | answer an unpaid `HEAD` with the same 402 and `PAYMENT-REQUIRED` offer as `GET` |
+| R17 | `probeCacheLeak(url, double)` | mark the paid response `private` or `no-store`, or vary it on the payment header, so a shared cache in front of the route never serves the paid content to an unpaid request (RFC 9111) |
+| R18 | `probePending(url, double)` | never serve while a settlement is pending, late or unanswered, serve once after it is final, and surface the transaction on every refusal (V2 section 9) |
+| R19 | `probeFlows(url, double)` | on an `upfront` or `escrow` offer, settle before the resource executes and reject an unsupported flow (V2 section 6.1) |
 | R22 | `probeStatus(routes, double)`, each route `{ url, status, headers? }` | keep the handler's 2xx status and headers on the paid response: a 201 stays a 201 with its `Location` |
 | R23 | `probeAbort(url, double)` | not charge a client that disconnects while `/settle` is in flight, or charge it once and give a resend of the same payment the settled result |
 | R24 | `probeMalformedHeader(url, double)` | answer five malformed `PAYMENT-SIGNATURE` values with 402 or 400 and a structured error, never a 5xx, a dropped connection or the content |
