@@ -216,6 +216,34 @@ class Interdeps(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn("not 0.0.0", out)
 
+    def test_versions_at_a_ref_read_that_ref_not_the_working_tree(self) -> None:
+        # A release task's version criterion names a tag; the check must hold after the next bump, so it reads the tag.
+        with open(os.path.join(ROOT, "pyproject.toml"), encoding="utf-8") as h:
+            m = re.search(r'^version\s*=\s*"([^"]+)"', h.read(), re.M)
+        assert m
+        current = m.group(1)
+        g = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-C", self.copy]
+        subprocess.run([*g, "init", "-q"], check=True)
+        subprocess.run([*g, "add", "-A"], check=True)
+        subprocess.run([*g, "commit", "-q", "-m", "release"], check=True)
+        subprocess.run([*g, "tag", "vtest"], check=True)
+        f = os.path.join(self.copy, "ts", "mcp", "package.json")
+        with open(f, encoding="utf-8") as h:
+            p = json.load(h)
+        p["version"] = "0.0.1"
+        with open(f, "w", encoding="utf-8") as h:
+            json.dump(p, h)
+        rc, out = run("--versions", current, root=self.copy)
+        self.assertEqual(rc, 1, out)  # the working tree moved on
+        rc, out = run("--versions", current, "--at", "vtest", root=self.copy)
+        self.assertEqual(rc, 0, out)  # the tag still is the release
+        self.assertIn("at vtest", out)
+        rc, out = run("--versions", "0.0.1", "--at", "vtest", root=self.copy)
+        self.assertEqual(rc, 1, out)
+        rc, out = run("--versions", current, "--at", "no-such-ref", root=self.copy)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("no versioned files", out)
+
     # ---------------- files, components and the PR gate ----------------
     def test_every_tracked_file_is_in_a_component(self) -> None:
         sys.path.insert(0, os.path.join(ROOT, "tools"))
@@ -236,7 +264,8 @@ class Interdeps(unittest.TestCase):
 
         g = I.gate(["src/x402conf/spec.py"], "")
         self.assertEqual(g["changed"], ["catalog"])
-        self.assertEqual(g["missing"], ["changelog", "docs", "interdeps-map", "py-tests", "readme", "vv-doc"])
+        self.assertEqual(g["missing"],
+                         ["changelog", "docs", "interdeps-map", "mutation-matrix", "py-tests", "readme", "vv-doc"])
         self.assertIn("ts-catalog", g["review"])  # code downstream: review only
         self.assertIn("ts-tests", g["review"])  # two steps out: review only
         self.assertEqual(I.gate(["docs/USING.md"], "")["missing"], ["interdeps-map", "readme", "site"])

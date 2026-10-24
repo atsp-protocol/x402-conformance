@@ -1,0 +1,170 @@
+{
+ "schema": "x402-conformance.compat-matrix/1",
+ "rows": [
+  {
+   "row": "express-2.27.0",
+   "stack": "express",
+   "version": "2.27.0",
+   "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "tool": "x402-conformance-svm 1.4.0",
+   "run_at": "2026-10-23T20:26:20.777Z",
+   "run": "evidence/impl-matrix/express-2.27.0/run.json",
+   "sums": "evidence/impl-matrix/express-2.27.0/SHA256SUMS",
+   "sha256": {
+    "run.json": "f0d407726f53fe753142c786235b4d6e5fa89c6487bb060ca1b1f78ca22fc5d3",
+    "README.md": "39e130928f870b1a75ee93506add25943d4c217fa1e75436a198e318342c86b3"
+   },
+   "summary": {
+    "checks": 11,
+    "failed": 0,
+    "failed_ids": [],
+    "unsupported": false
+   },
+   "checks": {
+    "R0": "pass",
+    "R1": "pass",
+    "R2": "pass",
+    "R3": "pass",
+    "R4": "pass",
+    "R5": "pass",
+    "R6": "pass",
+    "R7": "pass",
+    "R8": "pass",
+    "R9": "pass",
+    "R10": "pass"
+   }
+  },
+  {
+   "row": "express-2.28.0",
+   "stack": "express",
+   "version": "2.28.0",
+   "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "tool": "x402-conformance-svm 1.4.0",
+   "run_at": "2026-10-23T20:19:58.435Z",
+   "run": "evidence/impl-matrix/express-2.28.0/run.json",
+   "sums": "evidence/impl-matrix/express-2.28.0/SHA256SUMS",
+   "sha256": {
+    "run.json": "4450b5e1783f3ce997c452bd284ae7a1aaf0caf9fffd0f4f21226c148dada294",
+    "README.md": "2809aa745a4e166938712831087ce89a0c9f68a63a3c1d4e7b6ba4e0f93f5edd"
+   },
+   "summary": {
+    "checks": 11,
+    "failed": 0,
+    "failed_ids": [],
+    "unsupported": false
+   },
+   "checks": {
+    "R0": "pass",
+    "R1": "pass",
+    "R2": "pass",
+    "R3": "pass",
+    "R4": "pass",
+    "R5": "pass",
+    "R6": "pass",
+    "R7": "pass",
+    "R8": "pass",
+    "R9": "pass",
+    "R10": "pass"
+   }
+  },
+  {
+   "row": "fastapi-2.25.0",
+   "stack": "fastapi",
+   "version": "2.25.0",
+   "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "tool": "x402-conformance-svm 1.4.0",
+   "run_at": "2026-10-23T20:22:01.259Z",
+   "run": "evidence/impl-matrix/fastapi-2.25.0/run.json",
+   "sums": "evidence/impl-matrix/fastapi-2.25.0/SHA256SUMS",
+   "sha256": {
+    "run.json": "de0969cd88e47f820bd18eac37049b0e516be6043064e93b3fd9e2bc22730675",
+    "README.md": "1aa3b203fe15f3dd4c16054ee6ddf9cefc4506efe7ddfd24260406593f3ca0c9"
+   },
+   "summary": {
+    "checks": 11,
+    "failed": 0,
+    "failed_ids": [],
+    "unsupported": false
+   },
+   "checks": {
+    "R0": "pass",
+    "R1": "pass",
+    "R2": "pass",
+    "R3": "pass",
+    "R4": "pass",
+    "R5": "pass",
+    "R6": "pass",
+    "R7": "pass",
+    "R8": "pass",
+    "R9": "pass",
+    "R10": "pass"
+   }
+  },
+  {
+   "row": "flask-2.25.0",
+   "stack": "flask",
+   "version": "2.25.0",
+   "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "tool": "x402-conformance-svm 1.4.0",
+   "run_at": "2026-10-23T20:25:16.124Z",
+   "run": "evidence/impl-matrix/flask-2.25.0/run.json",
+   "sums": "evidence/impl-matrix/flask-2.25.0/SHA256SUMS",
+   "sha256": {
+    "run.json": "eae4e6e5f705b44573e81554c8c90af2cd7f550c5c86ddd1963abb8b93b24332",
+    "README.md": "a766850bcfbcf7139a8e0dd3c99ff45ad50ac21ebc07ecb20926edf87abc8ba0"
+   },
+   "summary": {
+    "checks": 11,
+    "failed": 0,
+    "failed_ids": [],
+    "unsupported": false
+   },
+   "checks": {
+    "R0": "pass",
+    "R1": "pass",
+    "R2": "pass",
+    "R3": "pass",
+    "R4": "pass",
+    "R5": "pass",
+    "R6": "pass",
+    "R7": "pass",
+    "R8": "pass",
+    "R9": "pass",
+    "R10": "pass"
+   }
+  },
+  {
+   "row": "hono-2.28.0",
+   "stack": "hono",
+   "version": "2.28.0",
+   "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "tool": "x402-conformance-svm 1.4.0",
+   "run_at": "2026-10-23T20:20:59.893Z",
+   "run": "evidence/impl-matrix/hono-2.28.0/run.json",
+   "sums": "evidence/impl-matrix/hono-2.28.0/SHA256SUMS",
+   "sha256": {
+    "run.json": "0f7d7f4ba3d5d616fbded6a5e804e4399049178ba96bd74deead193b5737f290",
+    "README.md": "275241da96f2aa5a0c0c9e7cca23762d013705e0e6c5533c94d64564b5553bb5"
+   },
+   "summary": {
+    "checks": 11,
+    "failed": 0,
+    "failed_ids": [],
+    "unsupported": false
+   },
+   "checks": {
+    "R0": "pass",
+    "R1": "pass",
+    "R2": "pass",
+    "R3": "pass",
+    "R4": "pass",
+    "R5": "pass",
+    "R6": "pass",
+    "R7": "pass",
+    "R8": "pass",
+    "R9": "pass",
+    "R10": "pass"
+   }
+  }
+ ]
+}

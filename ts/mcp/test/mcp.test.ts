@@ -93,6 +93,9 @@ describe("MCP server over stdio", () => {
     const t = text(await client.callTool({ name: "x402_explain_check", arguments: { id: "R3" } }));
     assert.match(t, /^## R3/);
     assert.match(t, /FIXES\.md#r3/);
+    const low = text(await client.callTool({ name: "x402_explain_check", arguments: { id: "R11a" } }));
+    assert.match(low, /^## R11a/);
+    assert.match(low, /FIXES\.md#r11a/);
     const bad: any = await client.callTool({ name: "x402_explain_check", arguments: { id: "Z9" } });
     assert.equal(bad.isError, true);
   });

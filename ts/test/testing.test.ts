@@ -2,8 +2,6 @@
 // and the CLI's resource command and --share. Every run is on loopback against the facilitator double.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import http from "node:http";
-import type { AddressInfo } from "node:net";
 import { mkdtempSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -15,17 +13,10 @@ import { assertX402Conformance, runConformance, saveReport, x402Matchers, checkP
 import { startExample } from "../example/server.js";
 import { startStockExpress } from "../example/express-server.js";
 import { startStockHono } from "../example/hono-server.js";
+import { withPorts } from "./ports.js";
 
 const CLI = new URL("../src/cli.js", import.meta.url).pathname;
 
-/** A port the OS just handed out, so it is free and never one that fetch refuses (such as 5060 or 6000). */
-async function freePort(): Promise<number> {
-  const s = http.createServer();
-  await new Promise<void>((ok) => s.listen(0, "127.0.0.1", ok));
-  const port = (s.address() as AddressInfo).port;
-  await new Promise<void>((ok) => s.close(() => ok()));
-  return port;
-}
 function cli(args: string[], env: Record<string, string> = {}, cwd?: string): Promise<{ code: number; out: string; err: string }> {
   return new Promise((ok) => {
     const p = spawn(process.execPath, [CLI, ...args], { env: { ...process.env, ...env }, cwd });
@@ -134,11 +125,10 @@ describe("CLI: resource and --share", () => {
   });
   test("--share on a failing probe writes the anonymised case and prints the link, sending nothing", async () => {
     const dir = mkdtempSync(join(tmpdir(), "x402c-"));
-    const port = String(await freePort());
-    const doublePort = String(await freePort());
     const server = new URL("../example/server.js", import.meta.url).pathname;
-    const r = await cli(["probe", "--resource", `http://127.0.0.1:${port}/paid`, "--port", doublePort,
-      "--start", `PORT=${port} EXAMPLE_FAULT=serve_on_any_settle ${process.execPath} ${server}`, "--out", join(dir, "p.json"), "--share"]);
+    const r = await withPorts(2, ([port, doublePort]) => cli(["probe", "--resource", `http://127.0.0.1:${port}/paid`,
+      "--port", String(doublePort), "--start", `PORT=${port} EXAMPLE_FAULT=serve_on_any_settle ${process.execPath} ${server}`,
+      "--out", join(dir, "p.json"), "--share"]));
     assert.equal(r.code, 1, r.err);
     const c = JSON.parse(readFileSync(join(dir, "p.case.json"), "utf8"));
     assert.equal(c.target, "loopback");

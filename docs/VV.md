@@ -222,13 +222,13 @@ verifies `proofline.json.sig` against `guard/owner.pub`. Anyone can repeat that 
 | XC-29 | R-CRED | XC-29-AC04: The project page shows the mutation matrix | `docs/site/index.html` must be present for `mutation-matrix\.json` | CI `vv` receipt |
 | XC-29 | R-CRED | XC-29-AC05: Every changed file is inside this task's scope | changed files ⊆ scope.allow | CI `vv` receipt |
 | XC-29 | R-CRED | XC-29-AC06: Committed and pushed to main | HEAD on origin/main | CI `vv` receipt |
-| XC-30 | R-RELEASE | XC-30-AC01: Every version string is 1.4.0 and the MCP package depends on x402-conformance-svm ^1.4.0 | `python3 tools/interdeps.py --versions 1.4.0` | CI `vv` receipt |
+| XC-30 | R-RELEASE | XC-30-AC01: Every version string is 1.4.0 in the tree of tag v1.4.0 and the MCP package depends on x402-conformance-svm ^1.4.0 | `python3 tools/interdeps.py --versions 1.4.0 --at v1.4.0` | CI `vv` receipt |
 | XC-30 | R-RELEASE | XC-30-AC02: CHANGELOG has a 1.4.0 section | `CHANGELOG.md` must be present for `^## 1\.4\.0 ` | CI `vv` receipt |
 | XC-30 | R-RELEASE | XC-30-AC03: The pre-release README note is removed | `README.md` must be absent for `Before 1\.4\.0 is published` | CI `vv` receipt |
 | XC-30 | R-RELEASE | XC-30-AC04: Tags v1.4.0 and corpus-v1.4 are on origin (pushed by the owner) | `git ls-remote --exit-code --tags origin refs/tags/v1.4.0 refs/tags/corpus-v1.4 \| test $(wc -l) -eq 2` | CI `vv` receipt |
 | XC-30 | R-RELEASE | XC-30-AC05: Every changed file is inside this task's scope | changed files ⊆ scope.allow | CI `vv` receipt |
 | XC-30 | R-RELEASE | XC-30-AC06: Committed and pushed to main | HEAD on origin/main | CI `vv` receipt |
-| XC-31 | R-RELEASE | XC-31-AC01: Every version string is 1.5.0 | `python3 tools/interdeps.py --versions 1.5.0` | CI `vv` receipt |
+| XC-31 | R-RELEASE | XC-31-AC01: Every version string is 1.5.0 in the tree of tag v1.5.0 | `python3 tools/interdeps.py --versions 1.5.0 --at v1.5.0` | CI `vv` receipt |
 | XC-31 | R-RELEASE | XC-31-AC02: CHANGELOG has a 1.5.0 section | `CHANGELOG.md` must be present for `^## 1\.5\.0 ` | CI `vv` receipt |
 | XC-31 | R-RELEASE | XC-31-AC03: Tags v1.5.0 and corpus-v1.5 are on origin (pushed by the owner) | `git ls-remote --exit-code --tags origin refs/tags/v1.5.0 refs/tags/corpus-v1.5 \| test $(wc -l) -eq 2` | CI `vv` receipt |
 | XC-31 | R-RELEASE | XC-31-AC04: Every changed file is inside this task's scope | changed files ⊆ scope.allow | CI `vv` receipt |
@@ -324,7 +324,7 @@ verifies `proofline.json.sig` against `guard/owner.pub`. Anyone can repeat that 
 | XC-46 | R-F12 | XC-46-AC04: docs/FIXES.md has the F12 section | `docs/FIXES.md` must be present for `^## F12$` | CI `vv` receipt |
 | XC-46 | R-F12 | XC-46-AC05: Every changed file is inside this task's scope | changed files ⊆ scope.allow | CI `vv` receipt |
 | XC-46 | R-F12 | XC-46-AC06: Committed and pushed to main | HEAD on origin/main | CI `vv` receipt |
-| XC-48 | R-RELEASE | XC-48-AC01: Every version string is 1.6.0 | `python3 tools/interdeps.py --versions 1.6.0` | CI `vv` receipt |
+| XC-48 | R-RELEASE | XC-48-AC01: Every version string is 1.6.0 in the tree of tag v1.6.0 | `python3 tools/interdeps.py --versions 1.6.0 --at v1.6.0` | CI `vv` receipt |
 | XC-48 | R-RELEASE | XC-48-AC02: CHANGELOG has a 1.6.0 section | `CHANGELOG.md` must be present for `^## 1\.6\.0 ` | CI `vv` receipt |
 | XC-48 | R-RELEASE | XC-48-AC03: Tags v1.6.0 and corpus-v1.6 are on origin (pushed by the owner) | `git ls-remote --exit-code --tags origin refs/tags/v1.6.0 refs/tags/corpus-v1.6 \| test $(wc -l) -eq 2` | CI `vv` receipt |
 | XC-48 | R-RELEASE | XC-48-AC04: Every changed file is inside this task's scope | changed files ⊆ scope.allow | CI `vv` receipt |

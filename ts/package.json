@@ -1,6 +1,6 @@
 {
   "name": "x402-conformance-svm",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Resource-server checks for x402 V2: a facilitator double with fault modes and a probe that proves your paid route never serves content on a /settle timeout, a broken answer, settlement_pending or a duplicate (R0-R10), binds each payment to the request it pays for (R11), and checks any 402 answer (P1-P7). Test matchers for vitest, jest and node:test, and a no-setup demo. Solana devnet and Base Sepolia (exact).",
   "license": "Apache-2.0",
   "author": "Ryan Gillespie / Optitransfer",

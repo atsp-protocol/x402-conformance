@@ -17,7 +17,7 @@ them sends anything anywhere unless you ask it to.
 Every entry point names itself in the report's `via` field and in the User-Agent of the requests it makes
 (`x402-conformance/<version> (+https://github.com/atsp-protocol/x402-conformance; via=<entry point>)`). That's the only
 identifier: no machine or user ID, and no telemetry. It lets shared cases and committed reports be counted per
-ecosystem.
+ecosystem. `runConformance` without `via` reports `testing`.
 
 | entry point | `via` | install |
 |---|---|---|
@@ -36,6 +36,19 @@ ecosystem.
 
 ## Command line
 
+Try it with nothing of your own: each of these runs against a bundled mock on loopback, never the network. CI runs
+them from the docs (see [Examples that CI runs](#examples-that-ci-runs)).
+
+<!-- runnable: cli subst="npx -y x402-conformance-svm=node ts/dist/src/cli.js;pipx run --spec x402-conformance x402conf=python3 -m x402conf" -->
+```
+npx -y x402-conformance-svm demo                                     # R0-R10 against a bundled mock server
+pipx run --spec x402-conformance x402conf demo                       # S1-S4, P1-P7 against a bundled mock, then F1-F11
+pipx run --spec x402-conformance x402conf offline                    # the F1-F11 self-test on its own
+npx -y x402-conformance-svm demo --fault serve_on_any_settle         # a faulty server: exits 1 with a fix link per check
+```
+
+Then your own endpoints:
+
 ```
 x402conf resource https://your.api/paid                              # P1-P7, one unpaid GET (Python)
 npx -y x402-conformance-svm resource --url https://your.api/paid      # the same P1-P7, in Node
@@ -47,8 +60,9 @@ npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start 
 one. Both CLIs produce identical cases from the same report; CI checks both against
 [one fixture](../corpus/fixtures).
 
-The Node `resource` command is a port of the Python one with the same check IDs; CI runs both on 29 answers and
-fails if they ever disagree. `--share` on a failing run writes `<out>.case.json` and prints the issue link.
+The Node `resource` command is a port of the Python one with the same check IDs; CI runs both on 37 answers and
+fails if they ever disagree. `--share` writes the case next to `--out`, with `.json` replaced by `.case.json` (or `./x402-conformance-case.json`
+without `--out`), and prints the issue link when a check failed.
 
 ## GitHub Actions
 
@@ -57,6 +71,7 @@ JUnit for test summaries.
 
 ## vitest
 
+<!-- runnable: ts -->
 ```ts
 // x402.spec.ts
 import { expect, test } from "vitest";
@@ -86,6 +101,7 @@ The matchers follow the `expect.extend` contract vitest and jest share, so the v
 
 ## node:test and other runners
 
+<!-- runnable: ts -->
 ```ts
 import { test } from "node:test";
 import { assertX402Conformance, runConformance, saveReport } from "x402-conformance-svm/testing";
@@ -100,6 +116,37 @@ test("x402", async () => {
 `saveReport(report, { share: true, stack: { framework: "hono", sdk: "@x402/hono", sdk_version: "2.28.0" } })` also
 writes the anonymised case and returns the issue link.
 
+## Checks you call from code
+
+Since 1.5.0, `x402-conformance-svm` also exports R12, R13, R15, R16, R16a, R22, R23 and R24 for your server and C1,
+C2 and C3 for your client, as functions. The CLIs, the Action, `runConformance`, the pytest plugin and the MCP server
+don't run them, so call them from your own test. Each one takes the facilitator double from `startDouble()`, except
+`probeUnpaidHead`, and your server or client must use the double's `url` as its facilitator:
+
+```ts
+import { explain, makeReport, probeHead, probeMalformedHeader, probeUnpaidHead, startDouble } from "x402-conformance-svm";
+
+const double = await startDouble(0);
+const server = await startMyServer(double.url); // takes a facilitator URL, returns { url, close }
+const results = [
+  ...(await probeUnpaidHead(server.url)),              // R16a
+  ...(await probeHead(server.url, double)),            // R16
+  ...(await probeMalformedHeader(server.url, double)), // R24
+];
+await server.close();
+await double.close();
+const report = makeReport("resource-server", server.url, results, "library");
+if (report.summary.failed) throw new Error(explain(report));
+```
+
+The others take the same double: `probeParallel(url, double)` (R12), `probeReplicas(urlA, urlB, double)` (R13, one
+route on two replicas), `probeDelivery({ error, redirect, throws }, double)` (R15, routes that answer 5xx, redirect and
+throw), `probeStatus(routes, double)` (R22, routes by name, each `{ url, status, headers? }`) and `probeAbort(url,
+double)` (R23). A client check takes your client as a function that fetches a URL, pays and returns the final
+`Response`, and returns one result: `checkClientHandles402(client, url, double)` (C1), `checkClientOfferPolicy(client,
+url, double, { networks, maxAmount })` (C2) and `checkClientKeepsV2(client, url, double)` (C3). The
+[README](../README.md#what-it-catches) says what each one checks.
+
 ## Hono, Express and other servers
 
 Any server works if its facilitator URL comes from configuration. CI runs the stock `@x402/hono`
@@ -109,11 +156,12 @@ use the CLI's `--start` or the Action.
 
 ## MCP: Claude, Cursor and other MCP clients
 
+<!-- runnable: json -->
 ```json
 { "mcpServers": { "x402-conformance": { "command": "npx", "args": ["-y", "x402-conformance-mcp"] } } }
 ```
 
-Seven tools: `x402_check_payment_required` (P1-P7), `x402_demo` (the whole suite on a built-in demo server, no wallet),
+Seven tools: `x402_check_payment_required` (P1-P7), `x402_demo` (P1-P7 and R0-R10 on a built-in demo server, no wallet),
 `x402_start_facilitator_double`, `x402_probe_resource_server` (R0-R10, loopback only) and
 `x402_stop_facilitator_double`, `x402_explain_check` (the FIXES.md section) and `x402_share_case` (an anonymised case
 and the issue link; it sends nothing). Listed in the MCP registry as `io.github.atsp-protocol/x402-conformance`. CI
@@ -121,6 +169,7 @@ drives the server over real stdio with the MCP SDK client. [ts/mcp/README.md](..
 
 ## Vercel AI SDK
 
+<!-- runnable: ts -->
 ```ts
 import { x402ConformanceTools } from "x402-conformance-mcp/ai-sdk";
 await generateText({ model, tools: x402ConformanceTools(), prompt: "Is the 402 answer at https://api.example.com/paid valid?" });
@@ -131,6 +180,7 @@ before paying an unfamiliar endpoint is the common use. CI runs a tool call thro
 
 ## LangChain and LangGraph
 
+<!-- runnable: ts -->
 ```ts
 import { x402ConformanceTools } from "x402-conformance-mcp/langchain";
 const agent = createReactAgent({ llm, tools: x402ConformanceTools() });
@@ -155,6 +205,7 @@ it and runs every one of these against the reference and a faulty server.
 
 ## GitLab CI and other CI systems
 
+<!-- runnable: gitlab -->
 ```yaml
 include:
   - remote: https://raw.githubusercontent.com/atsp-protocol/x402-conformance/v1/ts/ci/gitlab/x402-conformance.gitlab-ci.yml
@@ -174,16 +225,18 @@ template's script inside the image, as GitLab would, against a passing and a fau
 
 Installing `x402-conformance` registers a pytest plugin, so any suite gets the `x402` fixture:
 
+<!-- runnable: python -->
 ```python
 def test_my_402_answer(x402):
-    x402.assert_passed(x402.check_payment_required("http://127.0.0.1:8000/paid"))      # P1-P5, in Python
+    x402.assert_passed(x402.check_payment_required("http://127.0.0.1:8000/paid"))      # P1-P7, in Python
 
 def test_never_serves_before_settlement(x402):
     report = x402.probe("http://127.0.0.1:4020/paid", start="uvicorn app:app --port 4020")  # R0-R10
     x402.assert_passed(report)
 ```
 
-`probe` runs the Node probe (`x402conf-svm` on PATH, `X402CONF_SVM`, or `npx`), which starts the facilitator double
+`probe` runs the Node probe (the command in `X402CONF_SVM` if it is set, else `x402conf-svm` on PATH, else
+`npx -y x402-conformance-svm` at the plugin's own version), which starts the facilitator double
 and your server with `X402_FACILITATOR_URL`; your app must use it as its facilitator. A failed check fails the test
 with its detail and fix link. `--x402-report-dir DIR` keeps every report, and `--x402-share` writes anonymised cases
 and lists the links to submit them in the terminal summary. Nothing is sent. CI runs the plugin against the stock
@@ -206,3 +259,11 @@ It exits 0 only when the probe ran, every check passed and the run took under 30
 seconds. Each `examples/<framework>/` is also the smallest working copy of that integration: copy it, change the
 route and the `payTo`, and point `X402_FACILITATOR_URL` at your facilitator. CI runs all six quickstarts on every
 push (the `quickstarts` job).
+
+## Examples that CI runs
+
+A fenced example whose previous line is `<!-- runnable: <kind> -->` is run or checked by `python3 tools/doc_examples.py
+--run` in CI, so a broken example fails the build. The marker is an HTML comment, invisible on the page. `cli` runs
+each command from the tree root against the bundled mock, with `subst="old=new"` mapping a published command to the
+tree's own build; `actions` and `gitlab` parse the YAML and check the inputs and variables against `action.yml` and
+the GitLab template; `python`, `ts` and `json` check that the block parses. `--list` prints the marked examples.

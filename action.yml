@@ -98,7 +98,7 @@ inputs:
     default: "4402"
   offline:
     description: >-
-      Also run the F1-F11 self-test of the suite against its reference and fault-injected doubles. It checks the suite,
+      Also run the F1-F12 and S5 self-test of the suite against its reference and fault-injected doubles. It checks the suite,
       not your code. On by default in 1.x for compatibility; set "false" to skip it.
     required: false
     default: "true"
@@ -132,7 +132,7 @@ outputs:
     value: ${{ inputs.results-dir }}
   badge:
     description: >-
-      <results-dir>/badge.json, a shields.io endpoint badge (label "x402 conformance", pass n/n or n failing). Publish
+      <results-dir>/badge.json, a shields.io endpoint badge (label "x402 conformance", pass n/n, n failing, fail or unsupported). Publish
       it anywhere public and use https://img.shields.io/endpoint?url=<its URL>.
     value: ${{ inputs.results-dir }}/badge.json
   pr-comment:
@@ -238,7 +238,7 @@ runs:
         if [ -n "$X402C_CRASH_RESTART" ]; then args+=(--crash-restart "$X402C_CRASH_RESTART"); fi
         # The exit code is read from the results file by the summary step; a missing file is a failure there.
         "$node_dir/bin/node" "$GITHUB_ACTION_PATH/ts/dist/src/cli.js" "${args[@]}" > /dev/null || true
-    - name: Offline self-test F1-F11
+    - name: Offline self-test F1-F12 and S5
       if: inputs.offline == 'true'
       shell: bash
       env:
