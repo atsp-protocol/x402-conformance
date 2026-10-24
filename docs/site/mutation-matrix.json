@@ -1,0 +1,864 @@
+{
+ "checks": {
+  "C1": {
+   "caught": 3,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'C1 accept_any_status: a client whose status check passes 402 through unpaid is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:C1 accept_any_status: a client whose status check passes 402 through unpaid is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'C1 gate: a URL that is not a paid route fails the check' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:C1 gate: a URL that is not a paid route fails the check"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'C1 gate: a client that rejects before it receives a 402 does not pass' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:C1 gate: a client that rejects before it receives a 402 does not pass"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "C2": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'C2 first_offer: a client that signs the first offer outside its policy is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:C2 first_offer: a client that signs the first offer outside its policy is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'C2 ignore_max: a client that signs an offer above its maximum is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:C2 ignore_max: a client that signs an offer above its maximum is caught"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "C3": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'C3 v1_fallback: a client that pays the V1 offer when V2 is present is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:C3 v1_fallback: a client that pays the V1 offer when V2 is present is caught"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "F1": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the open_on_malformed double, through check_safety: F1 fails",
+     "kind": "fault",
+     "ref": "fault:open_on_malformed"
+    },
+    {
+     "caught": true,
+     "how": "the lenient_amounts double, through check_safety: F1 fails",
+     "kind": "fault",
+     "ref": "fault:lenient_amounts"
+    }
+   ],
+   "profile": "normative"
+  },
+  "F10": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the cross_request_replay double, through check_safety: F10 fails",
+     "kind": "fault",
+     "ref": "fault:cross_request_replay"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "F11": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the verify_commits double, through check_safety: F11 fails",
+     "kind": "fault",
+     "ref": "fault:verify_commits"
+    }
+   ],
+   "profile": "normative"
+  },
+  "F12": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the trust_kind double, through check_safety: F12 fails",
+     "kind": "fault",
+     "ref": "fault:trust_kind"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "F2": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the accept_dust double, through check_safety: F2 fails",
+     "kind": "fault",
+     "ref": "fault:accept_dust"
+    }
+   ],
+   "profile": "normative"
+  },
+  "F3": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the no_dup_cache double, through check_safety: F3 fails",
+     "kind": "fault",
+     "ref": "fault:no_dup_cache"
+    }
+   ],
+   "profile": "normative"
+  },
+  "F4": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the no_memo_check double, through check_safety: F4 fails",
+     "kind": "fault",
+     "ref": "fault:no_memo_check"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "F5": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the success_before_final double, through check_safety: F5 fails",
+     "kind": "fault",
+     "ref": "fault:success_before_final"
+    },
+    {
+     "caught": true,
+     "how": "the pending_without_tx double, through check_safety: F5 fails",
+     "kind": "fault",
+     "ref": "fault:pending_without_tx"
+    }
+   ],
+   "profile": "normative"
+  },
+  "F6": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the guard_credit_on_error guard, through check_safety: F6 fails",
+     "kind": "guard",
+     "ref": "guard:guard_credit_on_error"
+    }
+   ],
+   "profile": "normative"
+  },
+  "F7": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the burn_on_pending double, through check_safety: F7 fails",
+     "kind": "fault",
+     "ref": "fault:burn_on_pending"
+    }
+   ],
+   "profile": "normative"
+  },
+  "F8": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the stuck_pending double, through check_safety: F8 fails",
+     "kind": "fault",
+     "ref": "fault:stuck_pending"
+    }
+   ],
+   "profile": "normative"
+  },
+  "F9": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the guard_trust_any_status guard, through check_safety: F9 fails",
+     "kind": "guard",
+     "ref": "guard:guard_trust_any_status"
+    },
+    {
+     "caught": true,
+     "how": "the guard_give_up_after_error guard, through check_safety: F9 fails",
+     "kind": "guard",
+     "ref": "guard:guard_give_up_after_error"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "P1": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_p1_served_without_payment: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_p1_served_without_payment"
+    }
+   ],
+   "profile": "normative"
+  },
+  "P2": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_p2_missing_header: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_p2_missing_header"
+    }
+   ],
+   "profile": "normative"
+  },
+  "P3": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_p3_p4_p5_field_problems: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_p3_p4_p5_field_problems"
+    }
+   ],
+   "profile": "normative"
+  },
+  "P4": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_p3_p4_p5_field_problems: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_p3_p4_p5_field_problems"
+    }
+   ],
+   "profile": "normative"
+  },
+  "P5": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_p3_p4_p5_field_problems: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_p3_p4_p5_field_problems"
+    },
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_p_svm_needs_fee_payer: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_p_svm_needs_fee_payer"
+    }
+   ],
+   "profile": "normative"
+  },
+  "P6": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_p6_header_budget: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_p6_header_budget"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "P7": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_p7_payment_flow_declared: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_p7_payment_flow_declared"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R0": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves without payment is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves without payment is caught"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R1": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that is not using the double fails R1' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that is not using the double fails R1"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R10": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves without PAYMENT-RESPONSE is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves without PAYMENT-RESPONSE is caught"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R11": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R11 control: a server that never serves a paid route is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R11 control: a server that never serves a paid route is caught"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R11a": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled \"R11a R11b: a server that settles against the client's\" exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R11a R11b: a server that settles against the client's"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R11b": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled \"R11a R11b: a server that settles against the client's\" exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R11a R11b: a server that settles against the client's"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R11c": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled \"R11c R11d: a server that prices from the client's\" exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R11c R11d: a server that prices from the client's"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R11d": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled \"R11c R11d: a server that prices from the client's\" exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R11c R11d: a server that prices from the client's"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R11e": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R11e: a server whose route matching sees the decoded path' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R11e: a server whose route matching sees the decoded path"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R11f": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled \"R11f: a SIWX server that records the client's resource.url is caught\" exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R11f: a SIWX server that records the client's resource.url is caught"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R12": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R12 catches a non-atomic check-then-set' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R12 catches a non-atomic check-then-set"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R13": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R13 catches a per-process in-memory cache' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R13 catches a per-process in-memory cache"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "R14": {
+   "caught": 3,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R14 catches a server whose idempotency record is in memory only' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R14 catches a server whose idempotency record is in memory only"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R14 catches a server that writes its record only after /settle returns' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R14 catches a server that writes its record only after /settle returns"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R14 catches a server that refuses after a restart without surfacing the payment' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R14 catches a server that refuses after a restart without surfacing the payment"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "R15": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R15 catches a server that settles before the handler runs (settle_first)' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R15 catches a server that settles before the handler runs (settle_first)"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R15 catches a server that settles anything below 400' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R15 catches a server that settles anything below 400"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R16": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R16 catches a server that settles a paid HEAD as if it were a GET (head_settles)' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R16 catches a server that settles a paid HEAD as if it were a GET (head_settles)"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R16a": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R16a catches a paywall that matches only GET' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R16a catches a paywall that matches only GET"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R2": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves after /verify and ignores /settle is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves after /verify and ignores /settle is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves whatever /settle answers is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves whatever /settle answers is caught"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R20": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R20 control: a URL that is not a paid route fails the control' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R20 control: a URL that is not a paid route fails the control"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R20a": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R20a settle_both: a server with no idempotency record' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R20a settle_both: a server with no idempotency record"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R20a key_by_payment: a record keyed by the payment' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R20a key_by_payment: a record keyed by the payment"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R20b": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R20b settle_both: with no record' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R20b settle_both: with no record"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R20b client resign_on_timeout' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R20b client resign_on_timeout"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R22": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R22 catches a server that rewrites the paid response to 200' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R22 catches a server that rewrites the paid response to 200"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R22 gate: a 3xx expectation is refused and nothing is paid' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R22 gate: a 3xx expectation is refused and nothing is paid"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R23": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R23 record_on_delivery: a server that records the result only once the response' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R23 record_on_delivery: a server that records the result only once the response"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R23 settle_both: a server with no idempotency record' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R23 settle_both: a server with no idempotency record"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "R24": {
+   "caught": 3,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R24 decode_unchecked: a server that throws on a malformed payment header' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R24 decode_unchecked: a server that throws on a malformed payment header"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R24 drop_on_bad_header: a server that drops the connection' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R24 drop_on_bad_header: a server that drops the connection"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R24 gate: a URL that is not a paid route fails and grades nothing' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R24 gate: a URL that is not a paid route fails and grades nothing"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "R3": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves after /verify and ignores /settle is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves after /verify and ignores /settle is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves whatever /settle answers is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves whatever /settle answers is caught"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "R4": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves after /verify and ignores /settle is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves after /verify and ignores /settle is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves whatever /settle answers is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves whatever /settle answers is caught"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "R5": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves after /verify and ignores /settle is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves after /verify and ignores /settle is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves whatever /settle answers is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves whatever /settle answers is caught"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "R6": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves after /verify and ignores /settle is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves after /verify and ignores /settle is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves whatever /settle answers is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves whatever /settle answers is caught"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "R7": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves after /verify and ignores /settle is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves after /verify and ignores /settle is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves whatever /settle answers is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves whatever /settle answers is caught"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "R8": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves after /verify and ignores /settle is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves after /verify and ignores /settle is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves whatever /settle answers is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves whatever /settle answers is caught"
+    }
+   ],
+   "profile": "normative"
+  },
+  "R9": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves after /verify and ignores /settle is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves after /verify and ignores /settle is caught"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'a server that serves whatever /settle answers is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:a server that serves whatever /settle answers is caught"
+    }
+   ],
+   "profile": "normative"
+  },
+  "S0": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_s0_unreachable_is_a_check: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_s0_unreachable_is_a_check"
+    }
+   ],
+   "profile": "normative"
+  },
+  "S1": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_s1_shape: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_s1_shape"
+    },
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_s1_mixed_versions_need_v2_shape: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_s1_mixed_versions_need_v2_shape"
+    }
+   ],
+   "profile": "normative"
+  },
+  "S2": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_s2_non_caip2: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_s2_non_caip2"
+    }
+   ],
+   "profile": "normative"
+  },
+  "S3": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_s3_v1_name_in_v2: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_s3_v1_name_in_v2"
+    }
+   ],
+   "profile": "normative"
+  },
+  "S4": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_s4_bad_fee_payer: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_s4_bad_fee_payer"
+    },
+    {
+     "caught": true,
+     "how": "tests.test_live.Live.test_s4_fee_payer_not_signer: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_live.Live.test_s4_fee_payer_not_signer"
+    }
+   ],
+   "profile": "normative"
+  },
+  "S5": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the advertise_unhandled double, through check_safety: S5 fails",
+     "kind": "fault",
+     "ref": "fault:advertise_unhandled"
+    },
+    {
+     "caught": true,
+     "how": "the reasonless_invalid double, through check_safety: S5 fails",
+     "kind": "fault",
+     "ref": "fault:reasonless_invalid"
+    }
+   ],
+   "profile": "normative"
+  }
+ },
+ "generated_from": "e234c809645d9d80269d6251973655e4f75aede66876c22bfde25813a0375030",
+ "schema": "x402-conformance.mutation-matrix/1"
+}

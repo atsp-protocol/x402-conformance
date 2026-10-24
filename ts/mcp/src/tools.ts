@@ -33,7 +33,7 @@ const fixesPath = new URL("../FIXES.md", import.meta.url);
 function fixSection(id: string): string | null {
   let md: string;
   try { md = readFileSync(fixesPath, "utf8"); } catch { return null; }
-  const re = new RegExp(`^## ${id.replace(/[^A-Za-z0-9]/g, "")}\\s*$([\\s\\S]*?)(?=^## |$(?![\\s\\S]))`, "m");
+  const re = new RegExp(`^## ${id.replace(/[^A-Za-z0-9]/g, "")}\\s*$([\\s\\S]*?)(?=^## |$(?![\\s\\S]))`, "mi");
   const m = md.match(re);
   return m ? `## ${id}\n${m[1].trim()}` : null;
 }
@@ -133,7 +133,7 @@ export const explainTool: ToolDef<{ id: z.ZodString }> = {
   input: { id: z.string().regex(/^[A-Za-z]{1,2}[0-9X]{0,2}[a-z]?$/).describe("Check id, e.g. R3 or P5") },
   readOnly: true,
   async run({ id }) {
-    const s = fixSection(id.toUpperCase());
+    const s = fixSection(id);
     if (!s) throw new Error(`no check ${id}; see ${LINKS.fixes}`);
     return { text: `${s}\n\nFull text: ${LINKS.fixes}#${id.toLowerCase()}`, data: { id, text: s } };
   },

@@ -4,10 +4,11 @@ One section per check. Each failed check in the job summary, in SARIF (GitHub co
 its section here. [SPEC.md](SPEC.md) quotes the spec text behind each check. These are fixes for the property a check
 tests. Passing a check is evidence about that property only, not certification of conformance to x402.
 
-Checks run in four places: **S** checks read a facilitator's `GET /supported`; **P** checks read the 402 answer of a
-paid URL; **F** checks drive a facilitator (a double offline, or a facilitator you run on devnet) and the
-resource-server guard in front of it; **R** checks put a facilitator double in front of your resource server and
-request your paid route.
+Checks run in five places: **S** checks read a facilitator's `GET /supported`, and S5, which runs offline with the F
+checks, also sends `/verify` once for each kind it lists; **P** checks read the 402 answer of a paid URL; **F** checks
+drive a facilitator (a double offline, or a facilitator you run on devnet) and the resource-server guard in front of
+it; **R** checks put a facilitator double in front of your resource server and request your paid route; **C** checks
+put a recording proxy in front of a paid route and grade the client that pays it.
 
 Severity: an **error** fails the run (with `--fail-on-error` or in the Action); a **warning** is reported and never
 fails it. A probe result of **unsupported** means nothing was graded.
@@ -53,7 +54,8 @@ fail to settle, or a fee payer clients can't verify.
 
 ## S5
 **What failed.** A kind that `/supported` advertises got no structured `/verify` answer: the call raised or answered
-5xx, the connection dropped, or the answer was `isValid: false` with no `invalidReason`.
+5xx, the connection dropped, or the answer was `isValid: false` with no `invalidReason`. S5 also fails when
+`/supported` itself fails or lists no kinds, because nothing could be graded.
 **Why it matters.** A resource server and its clients read `/supported` to choose a kind and expect `/verify` to give
 a verdict for it. A kind that errors at `/verify` looks supported but fails every payment, and a refusal with no reason
 can't be acted on.
@@ -72,7 +74,7 @@ reject anything lower (SVM exact §1.1, §1.4). Check the mint and destination a
 
 ## F3
 **What failed.** The same payment payload settled successfully twice, or a resource server served it twice.
-**Why it matters.** A replayed `X-PAYMENT` header buys the resource twice for one payment.
+**Why it matters.** A replayed payment (the `PAYMENT-SIGNATURE` header in V2, `X-PAYMENT` in V1) buys the resource twice for one payment.
 **How to fix it.** Keep a duplicate-settlement cache keyed by the transaction (SVM exact, Duplicate Settlement
 Mitigation) and answer `duplicate_settlement` on a hit. Make check-and-insert atomic: a read followed by a separate
 write double-credits under concurrency (see `racy_not_nodup` in the Lean models). Record the key once the outcome is
@@ -124,9 +126,9 @@ This is a bug in the suite, not in your code.
 
 ## F10
 
-The verifier accepted a payload it had already settled under a different PaymentRequirements set — the payment was treated as authorising a request it was never made for.
+**What failed.** The verifier accepted a payload it had already settled under a different PaymentRequirements set, so the payment was treated as authorising a request it was never made for.
 
-Fix: record a requirements hash (canonical JSON of the requirements) for every transaction at first verification, and refuse the same transaction against any different hash. Fail closed when the requirements are missing or malformed. Keep the existing duplicate-settlement and memo checks: a legitimate retry of the same request keeps its idempotency contract, and a fresh payment for the new requirements settles normally.
+**How to fix it.** Record a requirements hash (canonical JSON of the requirements) for every transaction at first verification, and refuse the same transaction against any different hash. Fail closed when the requirements are missing or malformed. Keep the existing duplicate-settlement and memo checks: a legitimate retry of the same request keeps its idempotency contract, and a fresh payment for the new requirements settles normally.
 
 ## F11
 **What failed.** Calling `/verify` changed payment state: a second `/verify` of the same payment failed as a
@@ -182,9 +184,9 @@ scheme text allows omitting it.
 **How to fix it.** Set `extra.paymentFlow` (`"upfront"` or `"escrow"`) on every such offer.
 
 ## F12
-**What failed.** The probe asked your facilitator to verify a well-formed payment on a network it does not advertise in
-`/supported`, and one whose asset address is not a token contract on the network. It answered `isValid: true` for at
-least one, or answered without an `invalidReason`.
+**What failed.** The offline check asked the facilitator to verify a well-formed payment on a network no facilitator
+supports (`x402conf:unsupported`), and one whose asset is an address with no contract code. It answered
+`isValid: true` for at least one, answered without an `invalidReason`, or raised.
 **Why it matters.** A facilitator that trusts the network and asset in the requirements verifies payments it can
 never settle, or "payments" in a token that does not exist. The resource server serves on that verdict, or settles
 against an address with no code and gets a meaningless success.
