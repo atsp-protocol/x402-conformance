@@ -8,7 +8,7 @@ gets the `x402` fixture with no conftest changes:
         report = x402.probe("http://127.0.0.1:4020/paid", start="uvicorn app:app --port 4020")
         x402.assert_passed(report)
 
-check_payment_required runs P1-P5 in Python with one unpaid GET. probe runs R0-R10 through the Node probe
+check_payment_required runs P1-P7 in Python with one unpaid GET. probe runs R0-R10 through the Node probe
 (x402conf-svm, or X402CONF_SVM, or npx), which starts the facilitator double and your server with
 X402_FACILITATOR_URL pointing at it. Every report is the shared x402-conformance.report/1 with via=pytest. Options:
 --x402-report-dir DIR writes each report there; --x402-share also writes anonymised corpus cases and lists the links to
@@ -86,7 +86,7 @@ class X402:
         return report
 
     def check_payment_required(self, url: str, timeout: float = 15) -> dict[str, Any]:
-        """P1-P5 against url: one unpaid GET, never a payment."""
+        """P1-P7 against url: one unpaid GET, never a payment."""
         old = os.environ.get(H.VIA_ENV)
         os.environ[H.VIA_ENV] = VIA
         try:

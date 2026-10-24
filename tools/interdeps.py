@@ -5,6 +5,7 @@
     python3 tools/interdeps.py --check      exit 1 if the committed docs/INTERDEPENDENCY.md is stale
     python3 tools/interdeps.py --drift      exit 1 on drift between the docs and the code (below)
     python3 tools/interdeps.py --versions X.Y.Z   exit 1 unless every package version is X.Y.Z
+    python3 tools/interdeps.py --versions X.Y.Z --at REF   the same, read from the tree of git ref REF (a release tag)
 
 The map lists every contract task (signed in proofline.json, or proposed in an unmerged addendum under
 docs/proposals/) with its dependencies, requirements, scope and status, and every check id with its profile, spec
@@ -212,24 +213,35 @@ def doc_action_inputs(root: str) -> dict[str, set[str]]:
     return out
 
 
-def versions(root: str) -> dict[str, str]:
+def read_at(root: str, ref: str, path: str) -> str:
+    """The file as committed at git ref `ref` (a release tag), or "" when the ref or the path does not exist there."""
+    p = subprocess.run(["git", "-C", root, "show", f"{ref}:{path}"], capture_output=True, text=True)
+    return p.stdout if p.returncode == 0 else ""
+
+
+def versions(root: str, at: str | None = None) -> dict[str, str]:
+    """Every package version string, from the working tree or, with `at`, from the tree of that git ref, so a release
+    task's version criterion is checked against the release it names rather than against whatever is checked out."""
+    def rd(path: str) -> str:
+        return read_at(root, at, path) if at else read(root, path)
+
     v: dict[str, str] = {}
-    m = re.search(r"^version\s*=\s*\"([^\"]+)\"", read(root, "pyproject.toml"), re.M)
+    m = re.search(r"^version\s*=\s*\"([^\"]+)\"", rd("pyproject.toml"), re.M)
     if m:
         v["pyproject.toml"] = m.group(1)
-    m = re.search(r"__version__\s*=\s*\"([^\"]+)\"", read(root, "src/x402conf/__init__.py"))
+    m = re.search(r"__version__\s*=\s*\"([^\"]+)\"", rd("src/x402conf/__init__.py"))
     if m:
         v["src/x402conf/__init__.py"] = m.group(1)
     for f in ("ts/package.json", "ts/mcp/package.json"):
-        if read(root, f):
-            v[f] = json.loads(read(root, f)).get("version", "")
+        if rd(f):
+            v[f] = json.loads(rd(f)).get("version", "")
     for f in ("ts/package-lock.json", "ts/mcp/package-lock.json"):
-        if read(root, f):
-            lock = json.loads(read(root, f))
+        if rd(f):
+            lock = json.loads(rd(f))
             v[f] = lock.get("version", "")
             v[f + " packages[\"\"]"] = lock.get("packages", {}).get("", {}).get("version", "")
-    if read(root, "ts/mcp/server.json"):
-        s = json.loads(read(root, "ts/mcp/server.json"))
+    if rd("ts/mcp/server.json"):
+        s = json.loads(rd("ts/mcp/server.json"))
         v["ts/mcp/server.json"] = s.get("version", "")
         for i, p in enumerate(s.get("packages", [])):
             tag = p.get("identifier", "").rsplit(":", 1)[-1] if p.get("registryType") == "oci" else ""
@@ -243,6 +255,7 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
     ("interdeps", "code", ("tools/interdeps.py",), "this map's generator, drift check and PR gate"),
     ("interdeps-map", "doc", ("docs/INTERDEPENDENCY.md",), "this map"),
     ("interdeps-tests", "test", ("tests/test_interdeps.py",), "the generator's tests"),
+    ("coverage", "code", ("tools/build_coverage.py",), "the generator of the check table in docs/COVERAGE.md"),
     ("contract", "contract", ("proofline.json", "proofline.json.sig", "guard/owner.pub"),
      "the owner-signed contract, its signature and key"),
     ("proposals", "contract", ("docs/proposals/**",), "proposed, unsigned contract addenda"),
@@ -278,7 +291,7 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
     ("corpus-schemas", "data", ("corpus/*.schema.json",), "the corpus case and report schemas"),
     ("corpus", "data", ("corpus/**",), "the corpus of anonymised cases and its fixtures"),
     ("evidence", "data", ("evidence/**",), "hashed evidence from live and devnet runs"),
-    ("readme", "doc", ("README.md",), "the project README"),
+    ("readme", "doc", ("README.md", "RELEASES.md"), "the project README and the release map"),
     ("changelog", "doc", ("CHANGELOG.md",), "the changelog"),
     ("docs", "doc", ("docs/**",), "architecture, spec mapping, threat model, usage, adoption, matrix and roadmap"),
     ("community", "doc", ("CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", ".github/ISSUE_TEMPLATE/**",
@@ -292,7 +305,8 @@ GATE_KINDS = ("doc", "contract", "test")
 U, R = "update", "review"
 EDGES: list[tuple[str, str, str]] = [
     ("interdeps", "interdeps-map", U), ("interdeps", "interdeps-tests", R), ("interdeps", "ci", R),
-    ("interdeps-tests", "ci", R), ("contract", "interdeps-map", U), ("contract", "vv", R), ("contract", "vv-doc", R),
+    ("interdeps-tests", "ci", R), ("coverage", "interdeps-map", U), ("coverage", "docs", U), ("coverage", "py-tests", R),
+    ("catalog", "coverage", R), ("contract", "interdeps-map", U), ("contract", "vv", R), ("contract", "vv-doc", R),
     ("contract", "claims", R), ("proposals", "interdeps-map", U), ("proposals", "contract", R),
     ("claims", "interdeps-map", U), ("claims", "vv", R), ("vv", "ci", R), ("vv", "vv-doc", R),
     ("docs", "doc-examples", R), ("ts-cli", "doc-examples", R), ("py-suite", "doc-examples", R), ("doc-examples", "ci", R),
@@ -603,11 +617,14 @@ def main(argv: list[str]) -> int:
         return 1 if p else 0
     if "--versions" in argv:
         want_v = argv[argv.index("--versions") + 1] if argv.index("--versions") + 1 < len(argv) else ""
-        v = versions(root)
+        at = argv[argv.index("--at") + 1] if "--at" in argv and argv.index("--at") + 1 < len(argv) else None
+        v = versions(root, at)
+        if at and not v:
+            print(f"version: git ref {at} has no versioned files (does the ref exist here?)", file=sys.stderr)
         bad = {f: x for f, x in v.items() if x != want_v}
         for f, x in sorted(bad.items()):
             print(f"version: {f} is {x}, not {want_v}", file=sys.stderr)
-        print(f"{len(v) - len(bad)}/{len(v)} version(s) are {want_v}")
+        print(f"{len(v) - len(bad)}/{len(v)} version(s) are {want_v}" + (f" at {at}" if at else ""))
         return 1 if bad or not v or not want_v else 0
     with open(os.path.join(root, MAP), "w", encoding="utf-8") as f:
         f.write(build(root))

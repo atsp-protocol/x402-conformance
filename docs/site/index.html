@@ -65,7 +65,7 @@ jobs:
       - uses: atsp-protocol/x402-conformance@v1
         with:
           facilitators: https://x402.org/facilitator   # GET /supported only</code></pre>
-<p>With no inputs it runs only the F1-F11 safety suite. To test your own resource server, add
+<p>With no inputs it runs only the self-test of the suite, F1-F12 and S5. To test your own resource server, add
 <code>resource-url</code> (your paid route) and <code>start</code> (the command that starts your server, which receives
 <code>X402_FACILITATOR_URL</code>); servers on Solana devnet and Base Sepolia are graded. To check any paid URL's 402
 answer, on any network, add <code>resources</code>. The Action fails closed: a requested check that can't run fails the
@@ -79,7 +79,7 @@ npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start 
 <pre><code>pip install x402-conformance
 x402conf live https://x402.org/facilitator   # S0-S4, GET /supported only
 x402conf resource https://your.api/paid      # P1-P7, one unpaid GET
-x402conf offline                             # F1-F11 against reference and fault-injected doubles
+x402conf offline                             # F1-F12 and S5 against reference and fault-injected doubles
 x402conf report --dir DIR --sarif out.sarif --junit junit.xml --badge badge.json</code></pre>
 
 <h2>What it checks</h2>
@@ -105,9 +105,20 @@ x402conf report --dir DIR --sarif out.sarif --junit junit.xml --badge badge.json
 <tr><td>F9</td><td>a 503, an HTML page or a truncated <code>/settle</code> answer is credited, or the payment can't be retried</td></tr>
 <tr><td>F10</td><td>a payment is accepted under requirements it wasn't verified for (amount, asset, recipient or network)</td></tr>
 <tr><td>F11</td><td><code>/verify</code> commits payment state: verifying twice consumes the payment (V2 §7.1)</td></tr>
+<tr><td>F12</td><td><code>/verify</code> accepts, or refuses without a reason, a payment on a network the facilitator doesn't advertise or in an asset with no token contract</td></tr>
+<tr><td>S5</td><td>a facilitator's <code>/supported</code> lists no kinds, or a listed kind gets an exception, or <code>isValid: false</code> with no <code>invalidReason</code>, from <code>/verify</code> (graded on the built-in doubles; <code>live</code> sends only <code>GET /supported</code>)</td></tr>
 <tr><td>R0-R10</td><td>your resource server serves paid content under any of these faults, or omits <code>PAYMENT-RESPONSE</code> (probe in <code>ts/</code>, for servers on Solana devnet or Base Sepolia; a stock <code>@x402/express</code> server passes)</td></tr>
 <tr><td>R11</td><td>a payment for one request unlocks another on your server: the cheap route's payment on the dear one (R11a), an altered <code>payTo</code>, asset or network (R11b), the cheaper method (R11c) or query (R11d), an encoded separator or dot segment reaching a paid handler unpaid (R11e), or sign-in-with-x access recorded for the client's <code>resource.url</code> instead of the settled route (R11f)</td></tr>
+<tr><td>R14</td><td>your server, killed between a successful <code>/settle</code> and its response and restarted, settles the same payment again, asks for payment again, or refuses without naming the transaction or payment id. With <code>--crash</code></td></tr>
 <tr><td>R20</td><td>a client that times out before <code>/settle</code> answers and retries pays twice for one request: a fresh payment under the same payment-identifier id is settled again (R20a), or a resent payment loses the result it paid for (R20b). With <code>--retry</code></td></tr>
+<tr><td colspan="2"><em>From code, since 1.5.0: functions exported by <code>x402-conformance-svm</code>, not run by the CLI or the Action</em></td></tr>
+<tr><td>R12, R13</td><td>one payment-identifier id is settled more than once: by eight parallel requests (R12), or across two replicas (R13)</td></tr>
+<tr><td>R15</td><td>a paid request whose handler answers 5xx, redirects or throws is settled or gets a <code>PAYMENT-RESPONSE</code></td></tr>
+<tr><td>R16, R16a</td><td>a paid <code>HEAD</code> gets a 2xx, a <code>/settle</code> call or a <code>PAYMENT-RESPONSE</code> (R16), or an unpaid <code>HEAD</code> doesn't get the 402 that <code>GET</code> gets (R16a)</td></tr>
+<tr><td>R22</td><td>the paid response loses the handler's 2xx status or headers: a 201 or a 202 is rewritten to 200</td></tr>
+<tr><td>R23</td><td>a client that disconnects while <code>/settle</code> is in flight is charged, and a resend of the same payment doesn't get the settled result or is charged again</td></tr>
+<tr><td>R24</td><td>a malformed <code>PAYMENT-SIGNATURE</code> (not base64, not JSON or not an object) gets a 5xx, a dropped connection or the content instead of 402 or 400</td></tr>
+<tr><td>C1-C3</td><td>your client hands a 402 to its caller as a success (C1), signs an offer outside its networks or above its maximum (C2), or pays the V1 offer when the 402 also carries V2 (C3)</td></tr>
 </table>
 
 <h2 id="results">Results</h2>

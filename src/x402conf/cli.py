@@ -2,7 +2,7 @@
 
     x402conf live <facilitator-base-url> ... [--evidence DIR] [--fail-on-error]   S0-S4, GET /supported only
     x402conf resource <paid-url> ... [--fail-on-error] [--share]                  P1-P7, one unpaid GET per URL
-    x402conf offline                                                F1-F11 against the reference and faulty doubles
+    x402conf offline                                                F1-F12 and S5 against the reference and faulty doubles
     x402conf devnet [--faults] [--evidence DIR] ...                  F1-F6 over real /verify and /settle on Solana devnet
     x402conf report [--dir DIR] [--sarif FILE] [--junit FILE] [--fail-on-error]   SARIF 2.1.0 and JUnit XML
 
@@ -311,7 +311,7 @@ def parser() -> argparse.ArgumentParser:
                                         "Docs: https://github.com/atsp-protocol/x402-conformance")
     ap.add_argument("--version", action="version", version=f"x402conf {__version__}")
     sub = ap.add_subparsers(dest="mode", required=True, metavar="{demo,live,resource,offline,report,pr-comment,devnet}")
-    dm = sub.add_parser("demo", help="run S0-S4, P1-P7 and F1-F11 against a bundled mock on loopback, no wallet",
+    dm = sub.add_parser("demo", help="run S0-S4, P1-P7 and F1-F12 and S5 against a bundled mock on loopback, no wallet",
                         description="A first run with nothing to set up: a bundled mock facilitator and paid route on "
                                     "127.0.0.1, then the offline self-test. No wallet, no chain, well under a minute. "
                                     "--fault shows a failing run and its fix links.")
@@ -338,8 +338,8 @@ def parser() -> argparse.ArgumentParser:
     rs.add_argument("--share", action="store_true",
                     help="opt-in: write an anonymised corpus case per URL and print the link to submit a failing one; "
                          "nothing is sent")
-    sub.add_parser("offline", help="F1-F11 against the built-in reference and fault-injected facilitator doubles",
-                   description="Self-test of the suite: F1-F11 against in-process doubles. Exits 1 unless the reference "
+    sub.add_parser("offline", help="F1-F12 and S5 against the built-in reference and fault-injected facilitator doubles",
+                   description="Self-test of the suite: F1-F12 and S5 against in-process doubles. Exits 1 unless the reference "
                                "passes and every fault-injected double is caught. It does not test your code.")
     rp = sub.add_parser("report", help="convert results JSON in a directory to SARIF 2.1.0 and JUnit XML",
                         description="Convert live.json, resource-402.json, resource-server.json and offline.json to "
