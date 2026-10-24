@@ -2,7 +2,7 @@
 
 Devnet results for x402 V2 facilitators on Solana: F1 to F6 over real `/verify` and `/settle`, run by
 `x402conf devnet`. I run it against a third-party facilitator only with that operator's written **permission**,
-and only on devnet. Each report sits in `evidence/matrix/<operator>.json` with its permission record linked below.
+and only on devnet. Each third-party report will sit in `evidence/matrix/<operator>.json` with its permission record linked below.
 
 Disclosure: a failing check in someone else's facilitator goes to that operator privately first. I publish it only
 after a fix or 90 days after the report, whichever is first (SECURITY.md). Until then the row says "under disclosure".
@@ -15,8 +15,10 @@ after a fix or 90 days after the report, whichever is first (SECURITY.md). Until
 | x402.dexter.cash | not yet requested | none | | | | | | | n/a |
 | x402.org/facilitator | not yet requested | none | | | | | | | n/a |
 | facilitator.daydreams.systems | not yet requested | none | | | | | | | n/a |
+| facilitator.goplausible.xyz | not yet requested | none | | | | | | | n/a |
+| facilitator.ultravioletadao.xyz | not yet requested | none | | | | | | | n/a |
 
-These five advertise Solana devnet in `GET /supported` (live run of 2026-10-20). XC-M2 is done when at least
+In the live run of 2026-10-20 ([evidence/2026-10-20-v1.3.0](../evidence/2026-10-20-v1.3.0)), seven named facilitators advertise a V2 `exact` kind on Solana devnet in `GET /supported`: the seven above. One more is withheld in that run. XC-M2 is done when at least
 three facilitators have a report here, each with its permission recorded. No third-party report exists yet.
 
 The F4 failure on the reference is explained in [evidence/devnet](../evidence/devnet): it deduplicates by

@@ -1,0 +1,71 @@
+{
+ "schema": "proofline/1",
+ "status": "merged into proofline.json (signed)",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[XC-31].scope.allow and tasks[XC-48].scope.allow",
+ "about": "The 1.5.0 release adds RELEASES.md at the repository root (the release map), tools/build_coverage.py (the generator of the check table in docs/COVERAGE.md) and tests/test_coverage_doc.py (its test). vv's scope rule requires every tracked file to belong to some task's scope, and no task owned the root map or the generator, so every claimed task failed its scope criterion on the release branch. This amendment adds the three paths to the scope of the release tasks XC-31 (Release 1.5.0) and XC-48 (Release 1.6.0), which own the release documents. No criterion of any task changes. It becomes binding only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub.",
+ "changes": [
+  {
+   "task": "XC-31",
+   "field": "scope.allow",
+   "from": [
+    "pyproject.toml",
+    "src/x402conf/__init__.py",
+    "ts/package.json",
+    "ts/package-lock.json",
+    "ts/mcp/package.json",
+    "ts/mcp/package-lock.json",
+    "ts/mcp/server.json",
+    "CHANGELOG.md",
+    "README.md",
+    "docs/**"
+   ],
+   "to": [
+    "pyproject.toml",
+    "src/x402conf/__init__.py",
+    "ts/package.json",
+    "ts/package-lock.json",
+    "ts/mcp/package.json",
+    "ts/mcp/package-lock.json",
+    "ts/mcp/server.json",
+    "CHANGELOG.md",
+    "README.md",
+    "docs/**",
+    "RELEASES.md",
+    "tools/build_coverage.py",
+    "tests/test_coverage_doc.py"
+   ]
+  },
+  {
+   "task": "XC-48",
+   "field": "scope.allow",
+   "from": [
+    "pyproject.toml",
+    "src/x402conf/__init__.py",
+    "ts/package.json",
+    "ts/package-lock.json",
+    "ts/mcp/package.json",
+    "ts/mcp/package-lock.json",
+    "ts/mcp/server.json",
+    "CHANGELOG.md",
+    "README.md",
+    "docs/**"
+   ],
+   "to": [
+    "pyproject.toml",
+    "src/x402conf/__init__.py",
+    "ts/package.json",
+    "ts/package-lock.json",
+    "ts/mcp/package.json",
+    "ts/mcp/package-lock.json",
+    "ts/mcp/server.json",
+    "CHANGELOG.md",
+    "README.md",
+    "docs/**",
+    "RELEASES.md",
+    "tools/build_coverage.py",
+    "tests/test_coverage_doc.py"
+   ]
+  }
+ ]
+}

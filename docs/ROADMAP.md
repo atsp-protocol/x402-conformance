@@ -1,18 +1,24 @@
 # Roadmap
 
-**Where it stands.** v1.3.1 is the current release, and it is still marked experimental. S0 to S4 check a
-facilitator's `GET /supported`, P1 to P5 check any paid URL's 402 answer with one unpaid GET, F1 to F10 run against
-fault-injected facilitator doubles (and F1 to F6 over real `/verify` and `/settle` on Solana devnet), R0 to R10 put a
-misbehaving facilitator in front of your own paid route on Solana devnet or Base Sepolia, and the Lean models cover the
-credit rule, nonces, timeouts, `settlement_pending` and concurrent settles. There are no public users yet.
+**Where it stands.** 1.5.0 is the current release (2026-10-23), and it is still marked experimental. S0 to S4 check
+a facilitator's `GET /supported`; S5 and F1 to F12 run against fault-injected facilitator doubles (and F1 to F6 over
+real `/verify` and `/settle` on Solana devnet); P1 to P7 check any paid URL's 402 answer with one unpaid GET; R0 to R10,
+R14 and R20 put a misbehaving facilitator in front of your own paid route on Solana devnet or Base Sepolia from the CLI
+and the Action, R11 and R11a to R11f check payment-to-request binding on that route, and R12, R13, R15, R16, R16a and
+R22 to R24 run from code; C1 to C3 grade a client; and
+the Lean models cover the credit rule, nonces, timeouts, `settlement_pending` and concurrent settles. There are no
+public users yet. [RELEASES.md](RELEASES.md) lists every release and what it added.
 
-**On `main`, unreleased (1.4.0).** The fail-closed oracle, F11, P6, P7, the extended F5, R11a to R11f with their
-faulty builds, evidence v2 with the credibility gate, and the adoption items A1, A2, A3 and A5 are merged and green in
-CI. The corpus move (A6), the pytest plugin and the FastAPI example are in review in pull request #14, and R14 (a crash
-between settling and responding) is in review in pull request #17. R20 (retry double-pay) is built on `main`
-(contract task XC-22, proposed, unsigned): the probe's `--retry` flag, the Action's `retry` input and `checkClientRetry`
-for clients; its corpus case waits until `corpus/` is in a signed scope. R12, R13, R15 to R19, the implementation
-matrix, the rest of A4, A7 and A8 are not started. 1.4.0 is published once the v1.4 contract tasks are signed.
+**What 1.5.0 shipped, and what is next.** 1.4.0 (2026-10-22) delivered the v1.4 plan below: the fail-closed oracle,
+F11, P6, P7, the extended F5, R11a to R11f with their faulty builds, evidence v2 with the credibility gate, R14, R20,
+the corpus (A6), the pytest plugin, the MCP server, the Docker image and the adoption items A1, A2, A3 and A5. 1.5.0
+adds thirteen checks, each with a passing control and a faulty build it catches: S5, F12, R12, R13, R15, R16, R16a,
+R22, R23, R24, C1, C2 and C3 (contract tasks XC-17, XC-39 to XC-46, done, and XC-47 for S5, proposed), the generated
+interdependency map with the docs-versus-code gate (XC-23, done), the n-replica Lean models (XC-24), the R20 corpus
+case (XC-22) and the release tasks XC-30 (done) and XC-31. The 1.6.0 release task XC-48 lists the eight tasks that were
+open when 1.5.0 was planned; XC-22 and XC-24 landed before the tag. Still open: R17 to R19 (XC-18), the implementation
+matrix (XC-19), the framework quickstarts (XC-26), docs examples run by CI (XC-27), the compatibility matrix (XC-28)
+and the mutation matrix with the false-positive register (XC-29).
 
 **Where it's going.** Having many checks is not the same as covering the security boundary that matters. The question
 a seller actually needs answered is: *does this payment authorise this request, is what was bought actually
@@ -60,7 +66,7 @@ separately. Passing one profile says nothing about the others.
 
 A security-profile or resilience failure is not a spec violation, and the report says so.
 
-## v1.4: binding and a trustworthy oracle (target: November 2026)
+## v1.4: binding and a trustworthy oracle (1.4.0 released 2026-10-22; the v1.4 parts of A4, A7 and A8 moved to 1.6.0)
 
 ### P0. The suite's own oracle fails closed
 
@@ -102,9 +108,11 @@ from the server's own matching.
 | R11f | with the sign-in-with-x extension: pay the cheap route while `PaymentPayload.resource.url` names the expensive one, then present only a SIWX header on the expensive route | 402: the access record belongs to the route that was priced and settled | security profile, SIWX spec ("has previously paid for the requested resource"). Upstream: [x402#3838](https://github.com/x402-foundation/x402/issues/3838), open, fix proposed in [x402#3840](https://github.com/x402-foundation/x402/pull/3840) |
 | control | a correct payment on each route | served once, with `PAYMENT-RESPONSE` | – |
 
-- **Faulty builds** (in `ts/example/faulty/`): a server that prices from the client's `resource.url`; one that matches
-  routes on the decoded path while the framework routes on the raw one; one that records SIWX access under the
-  payload's URL. Each is caught by the sub-check it targets, and the stock `@x402/express` server passes.
+- **Faulty builds** (modes of `ts/example/binding-server.ts`): `trust_client` verifies and settles against the
+  requirements the client says it accepted, and fails R11a to R11d; `decoded_match` matches paid routes on the decoded
+  path while Express routes on the raw one, and fails R11e; `refuse_paid` never serves a paid request, and fails the
+  R11 control. For R11f, the stock `@x402/extensions` 2.28.0 sign-in-with-x hook records access under the payload's
+  `resource.url`, and fails. The stock `@x402/express` server passes.
 - **F10 is narrowed** to what a facilitator can actually enforce (amount, asset, recipient and network in the
   requirements set a transaction was verified under), and its docs say resource binding is R11's job.
 - **R11f's expectation** is pinned to the upstream outcome. If upstream settles on a different rule, R11f follows the
@@ -132,7 +140,7 @@ from the server's own matching.
 Sepolia, the oracle survives the malformed-amount table, the extended F5, F11, P6 and P7 ship with controls and faulty builds, and
 the credibility gate is green, and A1, A2, A3, A5, A6 (seeded) and the v1.4 parts of A4, A7 and A8 ship with it.
 
-## v1.5: concurrency, delivery and an implementation matrix (target: December 2026)
+## v1.5: concurrency, delivery and an implementation matrix (1.5.0 released 2026-10-23 with R12, R13, R15, R16, R16a, R22 to R24 and the n-replica Lean models; R17 to R19 and the matrix are in 1.6.0)
 
 ### P0. One payment, one grant
 
@@ -142,10 +150,10 @@ hundreds of grants where the server did not record the payment identity atomical
 
 | check | the attempt | must happen | profile |
 |---|---|---|---|
-| R12 | the same payment sent as N parallel requests (N = 2, 8, 32) to one server | at most one 2xx; at most one successful `/settle` | security profile |
-| R13 | the same payment sent in parallel to two replicas behind a loopback round-robin, with and without a shared store | at most one grant across replicas; a server that needs a shared store says so in its result | security profile; the `payment-identifier` extension is the spec's idempotency key, and the SVM duplicate-settlement mitigation describes the same race for facilitators |
+| R12 | the same payment-identifier id sent as eight parallel requests to one server (the `parallel` option, at least 2), each with a fresh payment | at most one successful `/settle`, at least one request served, and every served answer names that settlement | security profile; **delivered**: `probeParallel`, Solana devnet and Base Sepolia |
+| R13 | the same payment-identifier id sent to two replicas, to one, then the other, then both at once, with a fresh payment each time | charged at most once in all, and every served answer names that settlement | resilience: no spec text requires a record shared across replicas; **delivered**: `probeReplicas`, Solana devnet and Base Sepolia |
 | R14 | the server is killed after `/settle` succeeds and before the response is written, restarted, and the payment presented again | no second settlement, no second charge, and a defined outcome: delivered once via an idempotency record, or refused with the transaction surfaced for reconciliation | resilience; **delivered**: `x402conf-svm probe --crash`, Solana devnet and Base Sepolia |
-| R20 | the client times out before `/settle` answers and retries the same request. R20a: the retry carries a fresh payment and the same idempotency key (the `payment-identifier` id, or the server's documented request key). R20b: the retry reuses the same signed payment | R20a: no second charge; the server returns the earlier result or settlement reference. R20b: `/settle` refuses the duplicate and the original result comes back; a client that re-signs a fresh payment for the same request without a key is flagged | security profile. A retry after a timeout, reported publicly by a user, paid twice for one request |
+| R20 | the client times out before `/settle` answers and retries the same request. R20a: the retry carries a fresh payment and the same idempotency key (the `payment-identifier` id, or the server's documented request key). R20b: the retry reuses the same signed payment | R20a: no second charge; the server returns the earlier result or settlement reference. R20b: `/settle` refuses the duplicate and the original result comes back; a client that re-signs a fresh payment for the same request without a key is flagged | security profile. A retry after a timeout, reported publicly by a user, paid twice for one request; **delivered**: `x402conf-svm probe --retry`, Solana devnet and Base Sepolia |
 
 - **Faulty builds:** a per-process in-memory cache (fails R13), a check-then-set without atomicity (fails R12 under
   parallel load), a server that settles again after a restart (fails R14), a server that settles both the original and
@@ -157,6 +165,7 @@ hundreds of grants where the server did not record the payment identity atomical
   The contract task for it is XC-21.
 - **Lean:** extend the settlement model to n replicas, and prove that a shared atomic check-and-set admits at most one
   grant while partitioned caches admit more. As with today's models, this proves the rule, not anyone's code.
+  **Delivered** in 1.5.0: `lean/X402Conformance/Replicas.lean` (XC-24).
 
 ### P1. Payment versus delivery
 
@@ -165,11 +174,25 @@ most of this family normative.
 
 | check | the attempt | must happen | profile |
 |---|---|---|---|
-| R15 | the paid handler fails (5xx), redirects (3xx) or throws | no `/settle`; nothing is charged | normative (V2 §6.1) |
-| R16 | `HEAD` on a paid `GET` route, carrying a payment | not settled: a 402 telling the client to retry as `GET`, and zero `/settle` calls | security profile (RFC 9110 §9.3.2: a `HEAD` response carries no content). Upstream [x402#3810](https://github.com/x402-foundation/x402/issues/3810), open, fix proposed in [x402#3813](https://github.com/x402-foundation/x402/pull/3813) |
+| R15 | the paid handler fails (5xx), redirects (3xx) or throws | no `/settle`; nothing is charged | normative (V2 §6.1); **delivered**: `probeDelivery` |
+| R16 | `HEAD` on a paid `GET` route, carrying a payment | not settled: a 402 telling the client to retry as `GET`, and zero `/settle` calls | security profile (RFC 9110 §9.3.2: a `HEAD` response carries no content). Upstream [x402#3810](https://github.com/x402-foundation/x402/issues/3810), open, fix proposed in [x402#3813](https://github.com/x402-foundation/x402/pull/3813); **delivered**: `probeHead` (R16) and `probeUnpaidHead` (R16a, an unpaid `HEAD` gets the same 402 as `GET`) |
 | R17 | a paid response, then an unpaid request for the same URL through a loopback caching proxy | the unpaid request gets 402; paid responses are marked `Cache-Control: private, no-store` or vary on the payment header | security profile ([Five Attacks on x402](https://arxiv.org/abs/2605.11781), cache leakage) |
 | R18 | `settlement_pending`, then success on the retry; pending until the deadline; success after the server timed out | the outcome is explicit and reconcilable: served once after the payment is final, or refused with the transaction hash surfaced, never served twice | resilience. The Base timeout race in [x402#1062](https://github.com/x402-foundation/x402/issues/1062) is closed upstream through `settlement_pending` and one automatic settle retry; R8 already covers "not served while pending", and R18 covers the recovery path |
 | R19 | for routes using an `upfront` or `escrow` flow | the resource never executes before a check has run, and an unsupported flow is rejected | normative (V2 §6.1: "at least one check … MUST run before the resource executes"; servers "MUST reject unsupported" combinations) |
+
+### Built beyond this plan
+
+| check | what | profile | contract task |
+|---|---|---|---|
+| S5 | every kind `/supported` advertises gets a structured `/verify` answer | normative | XC-47, proposed |
+| F12 | `/verify` rejects an unsupported network or an asset with no token contract | security profile | XC-46, done |
+| R16a | an unpaid `HEAD` on a paid `GET` route gets the same 402 as `GET` | security profile | XC-39, done |
+| R22 | the paid response keeps the handler's 2xx status and headers | normative | XC-40, done |
+| R23 | a client abort during settle is recoverable | security profile | XC-41, done |
+| R24 | a malformed payment header gets a 4xx, never a 5xx | resilience | XC-42, done |
+| C1 | a client never treats a 402 as success | security profile | XC-43, done |
+| C2 | a client pays an offer within its own policy | security profile | XC-44, done |
+| C3 | a client pays V2 and never falls back to V1 when a V2 offer is present | security profile | XC-45, done |
 
 ### P1. Implementation matrix
 
@@ -205,12 +228,12 @@ contribute to. The v1.4 items ship with v1.4, because they decide whether anyone
 
 | id | what | done when | release |
 |---|---|---|---|
-| A1 | **Zero-config one-liners.** `npx -y x402-conformance-svm demo` and `pipx run --spec x402-conformance x402conf demo` start a local mock target (a stock `@x402/express` server and the facilitator double on loopback), run the checks and print the results | under 60 s on a laptop or a GitHub-hosted runner, with no wallet, keys, funds or network beyond the package download; tested in CI | v1.4 |
+| A1 | **Zero-config one-liners.** `npx -y x402-conformance-svm demo` and `pipx run --spec x402-conformance x402conf demo` start a local mock target (a bundled x402 V2 resource server on `@x402/core` behind the facilitator double on loopback for the Node demo; a bundled mock facilitator and paid route for the Python demo), run the checks and print the results | under 60 s on a laptop or a GitHub-hosted runner, with no wallet, keys, funds or network beyond the package download; tested in CI | v1.4 |
 | A2 | **A 3-line GitHub Action**, with a PR summary comment and SARIF | `uses:` plus `resource-url` and `start` is a complete job; an opt-in sticky comment on the pull request lists what failed, with the fix hint for each; SARIF lands in code scanning as it does today | v1.4 |
 | A3 | **Friendly failure messages.** Every failed check prints one line saying what failed, the likely cause and the fix, with a link to its [FIXES.md](FIXES.md) entry | a test fails the build if any check id has no fix hint | v1.4 |
 | A4 | **Framework adapters and quickstarts.** A minimal paid route plus the workflow file, per framework, each run in CI: Express, Hono and Next first; FastAPI, Flask and Go next | each quickstart goes from clone to a first result in under 5 minutes, and its CI job is green | Express, Hono, Next in v1.4; FastAPI, Flask, Go in v1.5 |
 | A5 | **Copy-paste badge.** `x402conf report --badge` writes a shields.io endpoint file from your results, next to the static "tested with" badge | the badge reflects the last run and still says "tested with", never "certified" | v1.4 |
-| A6 | **A public, versioned regression corpus.** One directory per case under `corpus/`: the scenario, the check, the profile, the spec basis or upstream issue, a passing control, a faulty build and the expected outcome, at pinned versions | a case template and an issue form let anyone propose a case; each release tags the corpus (`corpus-v1.4`); a contributed case lands with its control and faulty build, like any check | seeded in v1.4 (F1, F10, F11, R11); open to contributions from v1.4 |
+| A6 | **A public, versioned regression corpus.** One directory per case under `corpus/`: the scenario, the check, the profile, the spec basis or upstream issue, a passing control, a faulty build and the expected outcome, at pinned versions | a case template and an issue form let anyone propose a case; each release tags the corpus (`corpus-v1.4`); a contributed case lands with its control and faulty build, like any check | seeded in v1.4 with one case, `corpus/cases/2026-10-22-R14-x402-core.json` (R14); open to contributions from v1.4 |
 | A7 | **A compatibility matrix regenerated in CI.** The stock servers, at pinned SDK versions, run on a schedule and on every release; the matrix in [MATRIX.md](MATRIX.md) and a JSON copy are rebuilt from those runs, never edited by hand | each row links to the run that produced it; failing rows on stock servers go to maintainers privately first under [SECURITY.md](../SECURITY.md) | TypeScript rows in v1.4; Python and Go rows in v1.5 |
 | A8 | **Docs examples.** Copy-paste examples for each framework and for GitHub Actions, GitLab CI and a plain `make` target | every example is run by CI, so none of them can rot | v1.4 for the A4 frameworks; v1.5 for the rest |
 
@@ -219,11 +242,11 @@ contribute to. The v1.4 items ship with v1.4, because they decide whether anyone
 v1.4 and v1.5 ship as soon as their own criteria pass, still marked experimental. The experimental label comes off,
 and I describe the suite as a dependable x402 safety gate, only when all six of these hold:
 
-- [ ] **Resource binding.** A real protected route rejects resource, amount, recipient and method substitution (R11).
-- [ ] **Concurrency.** Parallel replay, multi-replica and retry tests can't double-grant or double-charge (R12, R13, R20).
+- [x] **Resource binding.** A real protected route rejects resource, amount, recipient and method substitution (R11, 1.4.0).
+- [x] **Concurrency.** Parallel replay, multi-replica and retry tests can't double-grant or double-charge (R12, R13, R20; 1.5.0).
 - [ ] **Delivery recovery.** Timeout, late settlement, failed response, redirect, `HEAD` and retry scenarios have
   explicit, tested outcomes (R14 to R18).
-- [ ] **Test credibility.** Every check catches at least one faulty build and passes a legitimate control, and CI
+- [x] **Test credibility.** Every check catches at least one faulty build and passes a legitimate control, and CI
   enforces it.
 - [ ] **Safe, reproducible evidence.** Pinned versions, clear scope, raw results, hashes and documented
   false-positive handling.
@@ -267,13 +290,14 @@ I count a user, a team or a repo only when it's public or they've said so public
 
 These were my original proposal for taking the suite from a working tool to a standard people rely on. Every milestone
 is a Proofline task in `proofline.json` (XC-M1 to XC-M6), with acceptance criteria that CI verifies. The v1.4 and v1.5
-work above is proposed as new contract tasks in [proposals/contract-addendum-v1.4-v1.5.json](proposals/contract-addendum-v1.4-v1.5.json);
-it becomes binding only once I sign it into `proofline.json`.
+work above, the checks built beyond the plan and the 1.5.0 and 1.6.0 release tasks are signed into `proofline.json` as
+XC-08 to XC-46 and XC-48 (XC-38 was never used). XC-47 (S5) is proposed in
+[proposals/contract-addendum-s5.json](proposals/contract-addendum-s5.json) and becomes binding only once I sign it.
 
 | id | deliverable | acceptance (summary) | status |
 |---|---|---|---|
 | M1 | **Devnet runner.** F1 to F6 run over real x402 V2 `/verify` and `/settle` against a facilitator on Solana devnet that I host myself, using throwaway devnet keypairs | `x402conf devnet` exits 0 against the self-hosted reference facilitator; each F check also fails against a fault-injected build; the devnet evidence is committed with hashes | devnet run done (1.1.0), [evidence/devnet](../evidence/devnet): F1, F2, F3, F5 and F6 pass, every fault-injected build is caught, and F4 fails on the reference facilitator (memo not tracked across transactions), so the exit-0 criterion is not met yet |
-| M2 | **Facilitator matrix.** Results pages for at least 3 facilitators that offer Solana devnet, run only with each operator's permission | `evidence/matrix/` holds at least 3 facilitator reports; any failures go through the 90-day disclosure in [SECURITY.md](../SECURITY.md) first | open: waiting on operator permission |
+| M2 | **Facilitator matrix.** Results pages for at least 3 facilitators that offer Solana devnet, run only with each operator's permission | `evidence/matrix/` holds at least 3 facilitator reports; any failures go through the 90-day disclosure in [SECURITY.md](../SECURITY.md) first | open: no operator has been asked yet |
 | M3 | **Lean models extended.** Timeouts, `settlement_pending` reconciliation, and concurrent settles over a shared cache | New theorems build in CI with only standard axioms; each theorem is linked to its F check in [SPEC.md](SPEC.md) | done (1.0.0) |
 | M4 | **Drop-in CI action.** A GitHub Action plus a TypeScript runner for resource servers built on `@x402/svm` (and, since 1.3.0, `@x402/evm`) | The action runs F1 to F6 in another repo's CI, and an example repo is green | done (1.0.0) |
 | M5 | **Maintenance for 6 months.** Issues, spec updates and fixes | Monthly: open issues are triaged within 7 days and CI stays green on the current spec | ongoing since 1.0.0 |
