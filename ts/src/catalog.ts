@@ -199,6 +199,18 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "security-profile",
   "basis": "the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402"
  },
+ "R17": {
+  "profile": "security-profile",
+  "basis": "RFC 9111: a shared cache may store a 200 that is not private or no-store and does not vary on the request header that decided it, so a paid response must say so or the next caller gets it for free"
+ },
+ "R18": {
+  "profile": "resilience",
+  "basis": "V2 9: settlement_pending carries the transaction so the caller can reconcile; a pending, late or unanswered settlement ends served once after it is final, or refused with the payment surfaced"
+ },
+ "R19": {
+  "profile": "normative",
+  "basis": "V2 6.1: at least one check MUST run before the resource executes, and a server MUST reject an unsupported flow; on an upfront or escrow offer the check that gates execution is the settle"
+ },
  "R20": {
   "profile": "security-profile",
   "basis": "control: the route answers 402 with an exact offer the probe can pay"

@@ -190,6 +190,26 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
                      "without the content, so an unpaid HEAD is answered 402",
             "controls": ["ts:R16a control: a paywall that covers HEAD answers it 402"],
             "faulty": ["ts:R16a catches a paywall that matches only GET"]},
+    "R17": {"profile": "security-profile",
+           "basis": "RFC 9111: a shared cache may store a 200 that is not private or no-store and does not vary on "
+           "the request header that decided it, so a paid response must say so or the next caller gets it "
+           "for free",
+           "controls": ["ts:R17 control: a server that marks paid responses private, no-store leaks nothing"],
+           "faulty": ["ts:R17 catches a server whose paid response is public and cacheable",
+                      "ts:R17 catches a server that says nothing about caching"]},
+    "R18": {"profile": "resilience",
+           "basis": "V2 9: settlement_pending carries the transaction so the caller can reconcile; a pending, late "
+           "or unanswered settlement ends served once after it is final, or refused with the payment "
+           "surfaced",
+           "controls": ["ts:R18 control: a server that refuses while pending, names the payment, and serves once when final"],
+           "faulty": ["ts:R18 catches a server that serves on settlement_pending",
+                      "ts:R18 catches a server that refuses a pending or lost settlement without naming the payment"]},
+    "R19": {"profile": "normative",
+           "basis": "V2 6.1: at least one check MUST run before the resource executes, and a server MUST reject an "
+           "unsupported flow; on an upfront or escrow offer the check that gates execution is the settle",
+           "controls": ["ts:R19 control: an upfront route that settles before the handler runs it once"],
+           "faulty": ["ts:R19 catches a server that runs the handler before any check",
+                      "ts:R19 catches a server that takes a payment signed for a flow it never offered"]},
     "R20": {"profile": "security-profile", "basis": "control: the route answers 402 with an exact offer the probe can pay",
             "controls": [_TS_RETRY], "faulty": ["ts:R20 control: a URL that is not a paid route fails the control"]},
     "R20a": {"profile": "security-profile",

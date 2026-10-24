@@ -10,6 +10,7 @@ import { BASE_SEPOLIA, DEVNET, startDouble } from "../src/double.js";
 import { probe } from "../src/probe.js";
 import { startExample } from "../example/server.js";
 import { startStockExpress } from "../example/express-server.js";
+import { withPorts } from "./ports.js";
 
 const CLI = new URL("../src/cli.js", import.meta.url).pathname;
 const PKG = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
@@ -35,15 +36,6 @@ function cli(args: string[], env: Record<string, string> = {}): Promise<{ code: 
     p.stderr.on("data", (d) => { err += d; });
     p.on("exit", (code) => ok({ code: code ?? -1, out, err }));
   });
-}
-
-/** A port that was free a moment ago, for a server the CLI starts with --start. */
-async function freePort(): Promise<number> {
-  const s = http.createServer();
-  await new Promise<void>((ok) => s.listen(0, "127.0.0.1", ok));
-  const port = (s.address() as AddressInfo).port;
-  await new Promise<void>((ok) => s.close(() => ok()));
-  return port;
 }
 
 async function busyPort(): Promise<{ port: number; close(): Promise<void> }> {
@@ -179,9 +171,8 @@ describe("CLI", () => {
   const lastDoc = (out: string) => JSON.parse(out.slice(out.lastIndexOf('{\n "tool"')));
   test("the CLI passes the example server end to end and exits 0", async () => {
     const ex = join(new URL("../example/server.js", import.meta.url).pathname);
-    const port = await freePort();
-    const r = await cli(["probe", "--resource", `http://127.0.0.1:${port}/paid`, "--port", "0",
-      "--start", `PORT=${port} node ${ex}`]);
+    const r = await withPorts(1, ([port]) => cli(["probe", "--resource", `http://127.0.0.1:${port}/paid`, "--port", "0",
+      "--start", `PORT=${port} node ${ex}`]));
     assert.equal(r.code, 0, r.err + r.out);
     const doc = lastDoc(r.out);
     assert.equal(doc.evidence, "x402-conformance-evidence/2");
@@ -197,11 +188,11 @@ describe("CLI", () => {
         "--by-method", `${b}/item`, "--by-query", `${b}/report?tier=basic,${b}/report?tier=pro`,
         "--param", `${b}/items/{id}/premium`, "--start", `PORT=${port} BINDING_FAULT=${fault} node ${ex}`];
     };
-    const ok = await cli(args("", await freePort()));
+    const ok = await withPorts(1, ([port]) => cli(args("", port)));
     assert.equal(ok.code, 0, ok.err + ok.out);
     const ids = lastDoc(ok.out).results.map((x: any) => x.check.split(" ")[0]);
     assert.deepEqual(ids, ["R11", "R11a", "R11b", "R11c", "R11d", "R11e"]);
-    const bad = await cli(args("trust_client", await freePort()));
+    const bad = await withPorts(1, ([port]) => cli(args("trust_client", port)));
     assert.equal(bad.code, 1, bad.err + bad.out);
     const profiles = lastDoc(bad.out).results.filter((x: any) => !x.pass).map((x: any) => x.profile);
     assert.deepEqual(profiles, ["normative", "normative", "security-profile", "security-profile"]);
