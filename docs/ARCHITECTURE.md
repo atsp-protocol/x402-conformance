@@ -1,6 +1,6 @@
 # Architecture
 
-Status: experimental. The latest release is 1.5.0; this page describes `main`. Expect changes.
+Status: experimental. The latest release is 1.6.0; this page describes `main`. Expect changes.
 
 ```mermaid
 flowchart LR
@@ -8,9 +8,9 @@ flowchart LR
     CLI[x402conf CLI] --> LIVE[Live checks S0-S4<br/>GET /supported only]
     CLI --> RES[402 checks P1-P7<br/>one unpaid GET]
     PROBE[x402conf-svm probe<br/>R0-R11, R14, R20] --> DBL[Facilitator double<br/>loopback, fault modes]
-    LIB[x402-conformance-svm library<br/>R12, R13, R15, R16, R16a, R22-R24, C1-C3] --> DBL
+    LIB[x402-conformance-svm library<br/>R12, R13, R15-R19, R16a, R22-R24, C1-C3] --> DBL
     DBL -->|X402_FACILITATOR_URL| RS[(Your resource server<br/>Solana devnet or Base Sepolia)]
-    CLI --> OFF[Safety checks F1-F12, S5]
+    CLI --> OFF[Safety checks F1-F14, S5]
     OFF --> DOUBLES[Facilitator doubles<br/>Reference + Faulty]
     CLI --> DEVNET[Devnet runner F1-F6<br/>self-hosted or permitted facilitator]
     GUARD[ResourceServerGuard<br/>credit rule] --- OFF

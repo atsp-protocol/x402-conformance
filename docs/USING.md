@@ -119,7 +119,8 @@ writes the anonymised case and returns the issue link.
 ## Checks you call from code
 
 Since 1.5.0, `x402-conformance-svm` also exports R12, R13, R15, R16, R16a, R22, R23 and R24 for your server and C1,
-C2 and C3 for your client, as functions. The CLIs, the Action, `runConformance`, the pytest plugin and the MCP server
+C2 and C3 for your client, as functions, and since 1.6.0 R17, R18 and R19 (`probeCacheLeak`, `probePending`,
+`probeFlows`). The CLIs, the Action, `runConformance`, the pytest plugin and the MCP server
 don't run them, so call them from your own test. Each one takes the facilitator double from `startDouble()`, except
 `probeUnpaidHead`, and your server or client must use the double's `url` as its facilitator:
 

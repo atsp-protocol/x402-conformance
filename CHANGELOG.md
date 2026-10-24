@@ -1,5 +1,20 @@
 # Changelog
-## Unreleased
+## 1.6.0 (2026-10-24)
+- The contract: XC-48, Release 1.6.0, carries the tasks that were still open when 1.5.0 was planned and the two added
+  since: R17 to R19 (XC-18), the implementation matrix (XC-19), the framework quickstarts (XC-26), docs examples run by
+  CI (XC-27), the compatibility matrix (XC-28), the mutation matrix with the false-positive register (XC-29), and F13
+  and F14 (XC-49, XC-50). XC-22 (the R20 corpus case) and XC-24 (the n-replica Lean models) are on XC-48's list and
+  landed before the 1.5.0 tag. XC-49 and XC-50 come from
+  `docs/proposals/contract-addendum-asset-network-substitution.json`, signed into `proofline.json` with this release;
+  every task above is claimed in `vv/claims.json`.
+- F13 and F14, two facilitator checks in the offline suite (`x402conf offline`, the Action's `offline` input). F13: a
+  payment that carries the quoted amount to the quoted recipient but in a different asset is rejected (asset
+  substitution; the faulty `trust_asset` facilitator takes the asset from the requirement on trust). F14: a payment
+  authorized for another network is rejected even when amount, recipient and asset match (facilitator-layer network
+  substitution; the faulty `trust_network` facilitator). Each has a passing control, the faulty build it catches, a fix
+  section in `docs/FIXES.md` and its rows in `docs/COVERAGE.md` and the mutation matrix. F14 checks the facilitator's
+  network binding only: a cross-chain replay of an EIP-3009 signature whose EIP-712 domain omits `chainId` needs a live
+  devnet test and is not covered offline. The contract tasks are XC-49 and XC-50.
 - Every example the docs mark with `<!-- runnable: <kind> -->` is run or checked by CI through
   `tools/doc_examples.py --run`, so a broken example fails the build. The contract task is XC-27.
 - The mutation matrix: `tools/mutation_matrix.py` resolves every faulty build in the catalogue the way the credibility
@@ -21,15 +36,15 @@
   2.28.0, FastAPI and Flask on the Python SDK 2.25.0, Go gin on the Go SDK), and `sh tools/quickstart.sh <framework>`
   takes a clean checkout to a first R0 to R10 result behind the facilitator double, writing
   `examples/<framework>/quickstart-result.json`; the `quickstarts` CI job runs all six. The contract task is XC-26.
-- Dependencies: every open Dependabot alert on the default branch is cleared (38 on 2026-10-24, all in the example
-  apps and the probe's lockfiles). `examples/go` moves `golang.org/x/crypto` to 0.52.0 (which needs `go 1.25.0`, so the
-  go directive and CI's Go setup follow), `go-ethereum` to 1.17.0, `gnark-crypto` 0.18.1, `klauspost/compress` 1.18.7,
+- Dependencies: every open Dependabot alert on the default branch is cleared (38 on 2026-10-24, all in the example apps
+  and the probe's lockfiles). `examples/go` moves `golang.org/x/crypto` to 0.52.0 (which needs `go 1.25.0`, so the go
+  directive and CI's Go setup follow), `go-ethereum` to 1.17.0, `gnark-crypto` 0.18.1, `klauspost/compress` 1.18.7,
   `quic-go` 0.59.1, `gorilla/websocket` 1.5.3, `mongo-driver` 1.17.7, `x/net` 0.55.0, `edwards25519` 1.1.1 and the
-  OpenTelemetry modules to 1.41.0 while the Go SDK pin is unchanged. The Node lockfiles (`ts/`, the devnet runner, the Express, Hono and Next quickstarts) carry
-  `zod` 4.6.6 through an override, which reverses the 1.5.0 decision to leave the SDK's `zod` 3 pin alone; the Next
-  quickstart also moves `uuid` to 11.1.1, `decode-uri-component` to 0.5.1, `ws` to 8.22.0 and 7.5.13 under their
-  parents and `bn.js` to 4.12.5 under `@walletconnect/utils`. The SDK pins (`@x402/*` 2.28.0, Python 2.25.0, the Go
-  SDK) do not change.
+  OpenTelemetry modules to 1.41.0 while the Go SDK pin is unchanged. The Node lockfiles (`ts/`, the devnet runner, the
+  Express, Hono and Next quickstarts) carry `zod` 4.6.6 through an override, which reverses the 1.5.0 decision to leave
+  the SDK's `zod` 3 pin alone; the Next quickstart also moves `uuid` to 11.1.1, `decode-uri-component` to 0.5.1, `ws` to
+  8.22.0 and 7.5.13 under their parents and `bn.js` to 4.12.5 under `@walletconnect/utils`. The SDK pins (`@x402/*`
+  2.28.0, Python 2.25.0, the Go SDK) do not change.
 
 ## 1.5.0 (2026-10-23)
 - The contract: XC-39 to XC-46 (R16a, R22, R23, R24, C1, C2, C3, F12) are signed and claimed (#55), XC-23 is claimed

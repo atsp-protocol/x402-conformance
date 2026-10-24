@@ -9,20 +9,20 @@
     "subfolder": "ts/mcp"
   },
   "websiteUrl": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/USING.md",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "x402-conformance-mcp",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "transport": {
         "type": "stdio"
       }
     },
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/atsp-protocol/x402-conformance:1.5.0",
+      "identifier": "ghcr.io/atsp-protocol/x402-conformance:1.6.0",
       "transport": {
         "type": "stdio"
       }

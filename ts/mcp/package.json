@@ -1,6 +1,6 @@
 {
   "name": "x402-conformance-mcp",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "x402 conformance and safety checks as MCP tools, Vercel AI SDK tools and LangChain tools: check a paid route's 402 answer, prove your server never serves before settlement, explain a failure and share it to the public corpus. Never pays, signs or touches mainnet.",
   "mcpName": "io.github.atsp-protocol/x402-conformance",
   "license": "Apache-2.0",

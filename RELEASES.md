@@ -9,6 +9,7 @@ covers today, check by check, in [docs/COVERAGE.md](docs/COVERAGE.md). Each GitH
 
 | release | date | checks added | other functionality added | contract tasks | published to |
 |---|---|---|---|---|---|
+| [1.6.0](docs/RELEASES.md#160) | 2026-10-24 | R17, R18, R19, F13, F14 | framework quickstarts for six stacks (`tools/quickstart.sh`); docs examples run by CI (`tools/doc_examples.py`); the implementation matrix (`evidence/impl-matrix/`) and the generated compatibility matrix (`tools/compat_matrix.py`); the published mutation matrix and the false-positive register; every Dependabot alert cleared | XC-48 done, closing XC-18, XC-19, XC-26 to XC-29 and XC-49, XC-50 (signed with this release); XC-22 and XC-24 shipped in 1.5.0 | PyPI, npm (svm and mcp), GHCR, MCP Registry, GitHub release, Marketplace `v1` |
 | [1.5.0](docs/RELEASES.md#150) | 2026-10-23 | S5, F12, R12, R13, R15, R16, R16a, R22, R23, R24, C1, C2, C3 | the interdependency map and the docs-versus-code gate (`tools/interdeps.py`); the n-replica Lean models; the R20 corpus case; this release map, docs/RELEASES.md and docs/COVERAGE.md | XC-39 to XC-46 signed and done; XC-23, XC-30 done; XC-31 amended; XC-48 (1.6.0) added | PyPI, npm (svm and mcp), GHCR, MCP Registry, GitHub release, Marketplace `v1` |
 | [1.4.0](docs/RELEASES.md#140) | 2026-10-23 | F11, P6, P7, R11 (R11a to R11f), R14, R20 (R20a, R20b); F5 extended | fail-closed oracle; credibility gate; evidence v2 and one report format; `demo` one-liners; `pr-comment` and `badge`; the corpus and `--share`; `docs/USING.md`; test helpers and matchers; MCP server package; Docker image and GitLab template; pytest plugin; Hono example | v1.5 addendum XC-22 to XC-37 signed; XC-09 to XC-16, XC-17, XC-20, XC-21, XC-25 done | PyPI, npm (svm and mcp), GHCR, MCP Registry, GitHub release |
 | [1.3.1](docs/RELEASES.md#131) | 2026-10-21 | F10 | the verifier records the requirements hash per transaction | XC-08 | PyPI (superseded), npm (deprecated), GitHub release |
@@ -24,7 +25,6 @@ covers today, check by check, in [docs/COVERAGE.md](docs/COVERAGE.md). Each GitH
 
 | release | contract task | carries |
 |---|---|---|
-| 1.6.0 | XC-48 | R17 to R19 (XC-18); the implementation matrix (XC-19); framework quickstarts (XC-26); docs examples run by CI (XC-27); the compatibility matrix (XC-28); the mutation matrix and the false-positive register (XC-29). XC-22 (the R20 corpus case) and XC-24 (the n-replica Lean models) are listed in XC-48 and landed before the 1.5.0 tag |
 | later | XC-32 to XC-37 | dropping the experimental label (the release gate in [docs/ROADMAP.md](docs/ROADMAP.md)); the MCP transport; settlement preemption; the `upto` and `batch-settlement` schemes; A2A and discovery; SIWX normative checks |
 
 ## Checks by release
@@ -40,12 +40,14 @@ covers today, check by check, in [docs/COVERAGE.md](docs/COVERAGE.md). Each GitH
 | F10 | cross-request payment replay at the facilitator | 1.3.1 |
 | F11 | `/verify` committing payment state | 1.4.0 |
 | F12 | `/verify` accepting an unsupported network or a non-contract asset | 1.5.0 |
+| F13, F14 | a payment in a different asset, or authorized for another network, accepted at the quoted amount and recipient | 1.6.0 |
 | R0 to R9 | a resource server serving on a bad `/settle` answer, a timeout, `settlement_pending`, a failure or a duplicate | 1.0.0 |
 | R10 | a missing `PAYMENT-RESPONSE` | 1.3.0 |
 | R11, R11a to R11f | a payment for one route, price, recipient, method, query or SIWX session unlocking another | 1.4.0 |
 | R12, R13 | one payment identifier granting more than once, in parallel or across replicas | 1.5.0 |
 | R14 | a crash between `/settle` and the response settling again | 1.4.0 |
 | R15, R16, R16a | settling a failed handler; settling a paid `HEAD`; an unpaid `HEAD` not answered 402 | 1.5.0 |
+| R17, R18, R19 | a shared cache serving paid content unpaid; serving before a pending settlement is final; an `upfront` or `escrow` route executing before the check | 1.6.0 |
 | R20, R20a, R20b | a client retry paying twice | 1.4.0 |
 | R22, R23, R24 | a rewritten 2xx status; a charged abort; a 5xx on a malformed payment header | 1.5.0 |
 | C1, C2, C3 | a client treating 402 as success, overpaying or paying outside its policy, falling back to V1 | 1.5.0 |

@@ -1,24 +1,22 @@
 # Roadmap
 
-**Where it stands.** 1.5.0 is the current release (2026-10-23), and it is still marked experimental. S0 to S4 check
-a facilitator's `GET /supported`; S5 and F1 to F12 run against fault-injected facilitator doubles (and F1 to F6 over
+**Where it stands.** 1.6.0 is the current release (2026-10-24), and it is still marked experimental. S0 to S4 check
+a facilitator's `GET /supported`; S5 and F1 to F14 run against fault-injected facilitator doubles (and F1 to F6 over
 real `/verify` and `/settle` on Solana devnet); P1 to P7 check any paid URL's 402 answer with one unpaid GET; R0 to R10,
 R14 and R20 put a misbehaving facilitator in front of your own paid route on Solana devnet or Base Sepolia from the CLI
-and the Action, R11 and R11a to R11f check payment-to-request binding on that route, and R12, R13, R15, R16, R16a and
+and the Action, R11 and R11a to R11f check payment-to-request binding on that route, and R12, R13, R15 to R19, R16a and
 R22 to R24 run from code; C1 to C3 grade a client; and
 the Lean models cover the credit rule, nonces, timeouts, `settlement_pending` and concurrent settles. There are no
 public users yet. [RELEASES.md](RELEASES.md) lists every release and what it added.
 
-**What 1.5.0 shipped, and what is next.** 1.4.0 (2026-10-22) delivered the v1.4 plan below: the fail-closed oracle,
-F11, P6, P7, the extended F5, R11a to R11f with their faulty builds, evidence v2 with the credibility gate, R14, R20,
-the corpus (A6), the pytest plugin, the MCP server, the Docker image and the adoption items A1, A2, A3 and A5. 1.5.0
-adds thirteen checks, each with a passing control and a faulty build it catches: S5, F12, R12, R13, R15, R16, R16a,
-R22, R23, R24, C1, C2 and C3 (contract tasks XC-17, XC-39 to XC-46, done, and XC-47 for S5, proposed), the generated
-interdependency map with the docs-versus-code gate (XC-23, done), the n-replica Lean models (XC-24), the R20 corpus
-case (XC-22) and the release tasks XC-30 (done) and XC-31. The 1.6.0 release task XC-48 lists the eight tasks that were
-open when 1.5.0 was planned; XC-22 and XC-24 landed before the tag. Still open: R17 to R19 (XC-18), the implementation
-matrix (XC-19), the framework quickstarts (XC-26), docs examples run by CI (XC-27), the compatibility matrix (XC-28)
-and the mutation matrix with the false-positive register (XC-29).
+**What 1.6.0 shipped, and what is next.** 1.5.0 (2026-10-23) added thirteen checks (S5, F12, R12, R13, R15, R16, R16a,
+R22, R23, R24, C1, C2 and C3), the generated interdependency map with the docs-versus-code gate, the n-replica Lean
+models (XC-24) and the R20 corpus case (XC-22). 1.6.0 closes the release task XC-48: R17 to R19 (XC-18), the
+implementation matrix (XC-19), the framework quickstarts (XC-26), docs examples run by CI (XC-27), the compatibility
+matrix (XC-28), the mutation matrix with the false-positive register (XC-29), and two facilitator checks built from a
+public reviewer's comment, F13 for asset substitution (XC-49) and F14 for network substitution (XC-50); each new check
+has a passing control and a faulty build it catches. Next are XC-32 to XC-37 under
+[Later](#later-breadth-once-the-depth-is-there) and the release gate below.
 
 **Where it's going.** Having many checks is not the same as covering the security boundary that matters. The question
 a seller actually needs answered is: *does this payment authorise this request, is what was bought actually
@@ -140,7 +138,7 @@ from the server's own matching.
 Sepolia, the oracle survives the malformed-amount table, the extended F5, F11, P6 and P7 ship with controls and faulty builds, and
 the credibility gate is green, and A1, A2, A3, A5, A6 (seeded) and the v1.4 parts of A4, A7 and A8 ship with it.
 
-## v1.5: concurrency, delivery and an implementation matrix (1.5.0 released 2026-10-23 with R12, R13, R15, R16, R16a, R22 to R24 and the n-replica Lean models; R17 to R19 and the matrix are in 1.6.0)
+## v1.5: concurrency, delivery and an implementation matrix (1.5.0 released 2026-10-23 with R12, R13, R15, R16, R16a, R22 to R24 and the n-replica Lean models; R17 to R19 and the matrix released in 1.6.0)
 
 ### P0. One payment, one grant
 
@@ -176,16 +174,17 @@ most of this family normative.
 |---|---|---|---|
 | R15 | the paid handler fails (5xx), redirects (3xx) or throws | no `/settle`; nothing is charged | normative (V2 §6.1); **delivered**: `probeDelivery` |
 | R16 | `HEAD` on a paid `GET` route, carrying a payment | not settled: a 402 telling the client to retry as `GET`, and zero `/settle` calls | security profile (RFC 9110 §9.3.2: a `HEAD` response carries no content). Upstream [x402#3810](https://github.com/x402-foundation/x402/issues/3810), open, fix proposed in [x402#3813](https://github.com/x402-foundation/x402/pull/3813); **delivered**: `probeHead` (R16) and `probeUnpaidHead` (R16a, an unpaid `HEAD` gets the same 402 as `GET`) |
-| R17 | a paid response, then an unpaid request for the same URL through a loopback caching proxy | the unpaid request gets 402; paid responses are marked `Cache-Control: private, no-store` or vary on the payment header | security profile ([Five Attacks on x402](https://arxiv.org/abs/2605.11781), cache leakage) |
-| R18 | `settlement_pending`, then success on the retry; pending until the deadline; success after the server timed out | the outcome is explicit and reconcilable: served once after the payment is final, or refused with the transaction hash surfaced, never served twice | resilience. The Base timeout race in [x402#1062](https://github.com/x402-foundation/x402/issues/1062) is closed upstream through `settlement_pending` and one automatic settle retry; R8 already covers "not served while pending", and R18 covers the recovery path |
-| R19 | for routes using an `upfront` or `escrow` flow | the resource never executes before a check has run, and an unsupported flow is rejected | normative (V2 §6.1: "at least one check … MUST run before the resource executes"; servers "MUST reject unsupported" combinations) |
-
+| R17 | a paid response, then an unpaid request for the same URL through a loopback caching proxy | the unpaid request gets 402; paid responses are marked `Cache-Control: private, no-store` or vary on the payment header | security profile ([Five Attacks on x402](https://arxiv.org/abs/2605.11781), cache leakage); **delivered** in 1.6.0: `probeCacheLeak` |
+| R18 | `settlement_pending`, then success on the retry; pending until the deadline; success after the server timed out | the outcome is explicit and reconcilable: served once after the payment is final, or refused with the transaction hash surfaced, never served twice | resilience. The Base timeout race in [x402#1062](https://github.com/x402-foundation/x402/issues/1062) is closed upstream through `settlement_pending` and one automatic settle retry; R8 already covers "not served while pending", and R18 covers the recovery path; **delivered** in 1.6.0: `probePending` |
+| R19 | for routes using an `upfront` or `escrow` flow | the resource never executes before a check has run, and an unsupported flow is rejected | normative (V2 §6.1: "at least one check … MUST run before the resource executes"; servers "MUST reject unsupported" combinations); **delivered** in 1.6.0: `probeFlows` |
 ### Built beyond this plan
 
 | check | what | profile | contract task |
 |---|---|---|---|
 | S5 | every kind `/supported` advertises gets a structured `/verify` answer | normative | XC-47, proposed |
 | F12 | `/verify` rejects an unsupported network or an asset with no token contract | security profile | XC-46, done |
+| F13 | `/verify` rejects a payment in a different asset at the quoted amount and recipient | security profile | XC-49, done in 1.6.0 |
+| F14 | `/verify` rejects a payment authorized for another network when amount, recipient and asset match | security profile | XC-50, done in 1.6.0 |
 | R16a | an unpaid `HEAD` on a paid `GET` route gets the same 402 as `GET` | security profile | XC-39, done |
 | R22 | the paid response keeps the handler's 2xx status and headers | normative | XC-40, done |
 | R23 | a client abort during settle is recoverable | security profile | XC-41, done |
@@ -244,8 +243,8 @@ and I describe the suite as a dependable x402 safety gate, only when all six of 
 
 - [x] **Resource binding.** A real protected route rejects resource, amount, recipient and method substitution (R11, 1.4.0).
 - [x] **Concurrency.** Parallel replay, multi-replica and retry tests can't double-grant or double-charge (R12, R13, R20; 1.5.0).
-- [ ] **Delivery recovery.** Timeout, late settlement, failed response, redirect, `HEAD` and retry scenarios have
-  explicit, tested outcomes (R14 to R18).
+- [x] **Delivery recovery.** Timeout, late settlement, failed response, redirect, `HEAD` and retry scenarios have
+  explicit, tested outcomes (R14 to R18; 1.6.0).
 - [x] **Test credibility.** Every check catches at least one faulty build and passes a legitimate control, and CI
   enforces it.
 - [ ] **Safe, reproducible evidence.** Pinned versions, clear scope, raw results, hashes and documented

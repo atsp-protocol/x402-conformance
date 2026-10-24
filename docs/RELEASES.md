@@ -9,7 +9,8 @@ signed with my owner key (`guard/owner.pub`). Release tags from v1.4.0 on are si
 
 | release | published | tag commit | PyPI `x402-conformance` | npm `x402-conformance-svm` | npm `x402-conformance-mcp` | GHCR image |
 |---|---|---|---|---|---|---|
-| [1.5.0](#150) | 2026-10-23 | the `v1.5.0` tag | 1.5.0 | 1.5.0 | 1.5.0 | `1.5.0`, `1`, `latest` |
+| [1.6.0](#160) | 2026-10-24 | the `v1.6.0` tag | 1.6.0 | 1.6.0 | 1.6.0 | `1.6.0`, `1`, `latest` |
+| [1.5.0](#150) | 2026-10-23 | the `v1.5.0` tag | 1.5.0 | 1.5.0 | 1.5.0 | `1.5.0` |
 | [1.4.0](#140) | 2026-10-23 | `aee0f84a` | 1.4.0 | 1.4.0 | 1.4.0 | `1.4.0` |
 | [1.3.1](#131) | 2026-10-21 | `a2da1a19` | 1.3.1 (superseded) | 1.3.1 (deprecated) | | |
 | [1.3.0](#130) | 2026-10-21 | `74b7d7cd` | 1.3.0 (superseded) | 1.3.0 (deprecated) | | |
@@ -24,6 +25,39 @@ Releases before 1.2.1 were GitHub releases only; 1.2.1 was the first on PyPI and
 package and the container image. The GitHub Action is listed on the Marketplace as
 [x402 Conformance](https://github.com/marketplace/actions/x402-conformance); `uses: atsp-protocol/x402-conformance@v1`
 runs the latest 1.x release.
+
+## 1.6.0
+
+Published 2026-10-24. Five checks added since 1.5.0 (R17, R18, R19, F13, F14), the adoption track (framework
+quickstarts, docs examples run by CI, the implementation and compatibility matrices) and the published mutation matrix;
+it closes the release task XC-48.
+
+- Resource server, from code: **R17** a shared cache in front of the paid route never serves the paid content to an
+  unpaid request (`probeCacheLeak`), **R18** a pending, late or unanswered settlement never serves before the payment is
+  final and serves once after it (`probePending`), **R19** an `upfront` or `escrow` offer settles before the resource
+  executes and an unsupported flow is rejected (`probeFlows`). Contract task XC-18.
+- Facilitator, offline: **F13** a payment in a different asset at the quoted amount and recipient is rejected (asset
+  substitution), **F14** a payment authorized for another network is rejected even when amount, recipient and asset
+  match (facilitator-layer network substitution). F14 does not test a cross-chain replay of the signature itself; that
+  needs a live devnet run. Contract tasks XC-49 and XC-50, signed with this release.
+- Every new check has a control that passes and a faulty build it catches, and a fix section in [FIXES.md](FIXES.md).
+- The implementation matrix (XC-19): `evidence/impl-matrix/` holds five probe runs of R0 to R10 against stock example
+  servers at pinned SDK versions (Express 2.28.0 and 2.27.0, Hono 2.28.0, FastAPI and Flask on the Python SDK 2.25.0),
+  each with its `run.json` and `SHA256SUMS`, rebuilt by `.github/workflows/impl-matrix.yml`.
+- The compatibility matrix (XC-28): `tools/compat_matrix.py` generates [compat-matrix.json](compat-matrix.json) and the
+  table in [MATRIX.md](MATRIX.md) from those runs; `--check` fails CI when either is stale or hand-edited, and a
+  scheduled workflow rebuilds it.
+- Framework quickstarts (XC-26): one minimal paid route each for Express, Hono, Next, FastAPI, Flask and Go gin under
+  `examples/`, and `sh tools/quickstart.sh <framework>` from a clean checkout to a first R0 to R10 result in under 300
+  s; CI runs all six.
+- Docs examples run by CI (XC-27): `tools/doc_examples.py --run` runs or checks every example marked runnable in the
+  README and the docs, so a broken example fails the build.
+- The mutation matrix and the false-positive register (XC-29): `tools/mutation_matrix.py` publishes
+  `docs/site/mutation-matrix.json`, every check against every faulty build, and fails CI when a check catches nothing;
+  [FALSE-POSITIVES.md](FALSE-POSITIVES.md) records every reported false positive.
+- XC-22 (the R20 corpus case) and XC-24 (the n-replica Lean models) are on XC-48's list and shipped in 1.5.0.
+- Dependencies: every open Dependabot alert on the default branch is cleared, all in the example apps and the probe's
+  lockfiles; the SDK pins do not change. `zod` is 4.6.6 in every Node lockfile.
 
 ## 1.5.0
 
