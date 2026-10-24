@@ -1,4 +1,8 @@
 # Changelog
+## Unreleased
+- Every example the docs mark with `<!-- runnable: <kind> -->` is run or checked by CI through
+  `tools/doc_examples.py --run`, so a broken example fails the build. The contract task is XC-27.
+
 ## 1.5.0 (2026-10-23)
 - The contract: XC-39 to XC-46 (R16a, R22, R23, R24, C1, C2, C3, F12) are signed and claimed (#55), XC-23 is claimed
   (#48), XC-30 is claimed, and XC-47 for S5 is proposed, unsigned (#49). XC-31 (this release) is amended to depend on the
