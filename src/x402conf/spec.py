@@ -129,6 +129,17 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
                      "token contract on the network",
             "controls": [_OFF + "test_f12_reference_rejects_unsupported_network_and_asset"],
             "faulty": ["fault:trust_kind"]},
+    "F13": {"profile": "security-profile",
+            "basis": "V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient "
+                     "alone do not bind the asset, so a different mint at the same price is a distinct payment",
+            "controls": [_OFF + "test_f13_reference_rejects_asset_substitution"],
+            "faulty": ["fault:trust_asset"]},
+    "F14": {"profile": "security-profile",
+            "basis": "V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a "
+                     "payment authorized for one network is not valid against a requirement on another, even when "
+                     "amount, asset and payTo match (facilitator-layer network substitution)",
+            "controls": [_OFF + "test_f14_reference_rejects_network_substitution"],
+            "faulty": ["fault:trust_network"]},
     "R0": {"profile": "normative", "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED",
            "controls": [_TS_OK, _TS_STOCK], "faulty": ["ts:a server that serves without payment is caught"]},
     "R1": {"profile": "normative", "basis": "V2 7.2: the resource server settles through its facilitator",

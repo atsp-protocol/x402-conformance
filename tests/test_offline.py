@@ -188,6 +188,34 @@ class Offline(unittest.TestCase):
     def test_f12_trusting_the_requirements_caught(self):
         self.assertEqual(fails(H.check_safety(M.FAULTS["trust_kind"](), M.vectors())), {"F12"})
 
+    def test_f13_reference_rejects_asset_substitution(self):
+        # XC-49-AC01: same amount, same recipient, a different mint is rejected (asset substitution)
+        fac, v = M.Reference(), M.vectors()
+        p, req = v("good"), v("req")
+        self.assertTrue(fac.settle(p, req)["success"])
+        other_mint = dict(p, tx="tx-f13b", memo="m-f13b", mint="So11111111111111111111111111111111111111112")
+        self.assertFalse(fac.verify(other_mint, req)["isValid"])
+        self.assertFalse(fac.settle(other_mint, req)["success"])
+        self.assertNotIn("F13", fails(H.check_safety(M.Reference(), M.vectors())))
+
+    def test_f13_trust_asset_caught(self):
+        # XC-49-AC02: a facilitator that takes the paid asset from the requirement on trust is caught by F13
+        self.assertEqual(fails(H.check_safety(M.FAULTS["trust_asset"](), M.vectors())), {"F13"})
+
+    def test_f14_reference_rejects_network_substitution(self):
+        # XC-50-AC01: the same amount, recipient and asset authorized for another network is rejected (cross-chain replay)
+        fac, v = M.Reference(), M.vectors()
+        p, req = v("good"), v("req")
+        self.assertTrue(fac.settle(p, req)["success"])
+        other_net = dict(p, tx="tx-f14b", memo="m-f14b", net="eip155:84532")
+        self.assertFalse(fac.verify(other_net, req)["isValid"])
+        self.assertFalse(fac.settle(other_net, req)["success"])
+        self.assertNotIn("F14", fails(H.check_safety(M.Reference(), M.vectors())))
+
+    def test_f14_trust_network_caught(self):
+        # XC-50-AC02: a facilitator that takes the authorization's network from the requirement on trust is caught by F14
+        self.assertEqual(fails(H.check_safety(M.FAULTS["trust_network"](), M.vectors())), {"F14"})
+
     def _s5(self, fac):
         r = next((x for x in H.check_safety(fac, M.vectors()) if x["check"].startswith("S5 ")), None)
         self.assertIsNotNone(r, "check_safety gave no S5 result")

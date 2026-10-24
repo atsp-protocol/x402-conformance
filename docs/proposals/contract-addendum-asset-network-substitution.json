@@ -1,0 +1,255 @@
+{
+  "about": "PROPOSED, UNSIGNED. 1.6.0 scope completion: adds the two facilitator checks F13 (XC-49, asset substitution) and F14 (XC-50, network substitution) built from a public reviewer's comment, and amends the 1.6.0 release task XC-48 to depend on them so they are bound to the v1.6.0 tag. Nothing here is binding until merged into proofline.json and signed. Each XC-49/XC-50 criterion fails on the base commit and passes at the commit that adds the check; the XC-48 amendment only extends its depends_on.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "tasks": [
+    {
+      "id": "XC-49",
+      "title": "F13: a payment whose asset differs from the requirement's asset is rejected (asset substitution)",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-08"
+      ],
+      "requirements": [
+        "R-F10"
+      ],
+      "description": "A payment that carries the same amount to the same recipient but settles a different mint is a distinct payment, not the one the route quoted. A verifier that compares only amount and payTo lets the wrong asset through. F13 drives the facilitator with a payment whose on-chain asset differs from the requirement's asset and requires a fail-closed rejection; the faulty double trust_asset takes the asset from the requirement on trust and is caught. V2 5.1.2.",
+      "scope": {
+        "allow": [
+          "src/x402conf/mock.py",
+          "src/x402conf/harness.py",
+          "src/x402conf/spec.py",
+          "tests/test_offline.py",
+          "ts/src/catalog.ts",
+          "tools/build_coverage.py",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-49-AC01",
+          "mandatory": true,
+          "statement": "The reference facilitator rejects a payment in a different mint at the same amount and recipient (asset substitution)",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f13_reference_rejects_asset_substitution"
+          }
+        },
+        {
+          "id": "XC-49-AC02",
+          "mandatory": true,
+          "statement": "F13 catches a facilitator (trust_asset) that takes the paid asset from the requirement on trust",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f13_trust_asset_caught"
+          }
+        },
+        {
+          "id": "XC-49-AC03",
+          "mandatory": true,
+          "statement": "The full offline suite, including every F1-F12 case, passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline"
+          }
+        }
+      ]
+    },
+    {
+      "id": "XC-50",
+      "title": "F14: a payment authorized for another network is rejected (facilitator-layer network substitution)",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-08"
+      ],
+      "requirements": [
+        "R-F10"
+      ],
+      "description": "A payment authorized for one network, presented against a requirement on another at the same amount, recipient and asset, is a network substitution. A verifier that takes the network from the requirement on trust lets it through. F14 drives the facilitator with a payment carrying a different authorized network and requires a fail-closed rejection; the faulty double trust_network takes the network from the requirement on trust and is caught. This closes the facilitator-layer network-substitution gap: the payment stand-in previously carried no network at all. The deeper cross-chain-signature replay, where an EIP-3009 domain omits chainId so one signature is valid on several chains, needs a live signature and is tracked separately, out of the offline doubles' reach. V2 5.1.2 and 11.1.",
+      "scope": {
+        "allow": [
+          "src/x402conf/mock.py",
+          "src/x402conf/harness.py",
+          "src/x402conf/spec.py",
+          "tests/test_offline.py",
+          "ts/src/catalog.ts",
+          "tools/build_coverage.py",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-50-AC01",
+          "mandatory": true,
+          "statement": "The reference facilitator rejects a payment authorized for another network at the same amount, recipient and asset (cross-chain replay)",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f14_reference_rejects_network_substitution"
+          }
+        },
+        {
+          "id": "XC-50-AC02",
+          "mandatory": true,
+          "statement": "F14 catches a facilitator (trust_network) that takes the authorization's network from the requirement on trust",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f14_trust_network_caught"
+          }
+        },
+        {
+          "id": "XC-50-AC03",
+          "mandatory": true,
+          "statement": "The full offline suite, including every F1-F12 case, passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline"
+          }
+        }
+      ]
+    },
+    {
+      "id": "XC-48",
+      "title": "Release 1.6.0: the rest of the v1.5 build list",
+      "phase": "release",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-18",
+        "XC-19",
+        "XC-22",
+        "XC-24",
+        "XC-26",
+        "XC-27",
+        "XC-28",
+        "XC-29",
+        "XC-31",
+        "XC-49",
+        "XC-50"
+      ],
+      "requirements": [
+        "R-RELEASE"
+      ],
+      "description": "As XC-31, for 1.6.0: versions, changelog, corpus-v1.6, once the eight tasks that 1.5.0 shipped without are done: R15 to R19 (XC-18), the implementation matrix (XC-19), the R20 corpus case (XC-22), the n-replica Lean models (XC-24), the framework quickstarts (XC-26), docs examples run by CI (XC-27), the compatibility matrix (XC-28) and the mutation matrix with the false-positive register (XC-29). Publishing stays with the owner.",
+      "scope": {
+        "allow": [
+          "pyproject.toml",
+          "src/x402conf/__init__.py",
+          "ts/package.json",
+          "ts/package-lock.json",
+          "ts/mcp/package.json",
+          "ts/mcp/package-lock.json",
+          "ts/mcp/server.json",
+          "CHANGELOG.md",
+          "README.md",
+          "docs/**",
+          "RELEASES.md",
+          "tools/build_coverage.py",
+          "tests/test_coverage_doc.py"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-48-AC01",
+          "mandatory": true,
+          "statement": "Every version string is 1.6.0 in the tree of tag v1.6.0",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/interdeps.py --versions 1.6.0 --at v1.6.0",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-48-AC02",
+          "mandatory": true,
+          "statement": "CHANGELOG has a 1.6.0 section",
+          "verifier": {
+            "type": "grep",
+            "file": "CHANGELOG.md",
+            "pattern": "^## 1\\.6\\.0 ",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-48-AC03",
+          "mandatory": true,
+          "statement": "Tags v1.6.0 and corpus-v1.6 are on origin (pushed by the owner)",
+          "verifier": {
+            "type": "command",
+            "cmd": "git ls-remote --exit-code --tags origin refs/tags/v1.6.0 refs/tags/corpus-v1.6 | test $(wc -l) -eq 2",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-48-AC04",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-48-AC05",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        },
+        {
+          "id": "XC-48-AC06",
+          "mandatory": true,
+          "statement": "The interdependency map is current and the docs match the code",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/interdeps.py --check && python3 tools/interdeps.py --drift",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-48-AC07",
+          "mandatory": true,
+          "statement": "CHANGELOG's 1.6.0 section names every check it adds (R17, R18, R19) and every task it closes (XC-18, XC-19, XC-22, XC-24, XC-26 to XC-29)",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import re,sys;s=open('CHANGELOG.md').read();i=s.find('\\n## 1.6.0');assert i>=0,'no 1.6.0 section';j=s.find('\\n## ',i+1);t=s[i:j if j>0 else len(s)];m=[c for c in 'R17 R18 R19 XC-18 XC-19 XC-22 XC-24 XC-26 XC-27 XC-28 XC-29'.split() if not re.search('(?<![A-Za-z0-9])'+c+'(?![0-9a-z])',t)];print(m);sys.exit(1 if m else 0)\"",
+            "expect_exit": 0,
+            "timeout_s": 30
+          }
+        },
+        {
+          "id": "XC-48-AC08",
+          "mandatory": true,
+          "statement": "docs/RELEASES.md has a 1.6.0 section naming every check it adds (R17, R18, R19) and every task it closes (XC-18, XC-19, XC-22, XC-24, XC-26 to XC-29)",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import re,sys;s=open('docs/RELEASES.md').read();i=s.find('\\n## 1.6.0');assert i>=0,'no 1.6.0 section';j=s.find('\\n## ',i+1);t=s[i:j if j>0 else len(s)];m=[c for c in 'R17 R18 R19 XC-18 XC-19 XC-22 XC-24 XC-26 XC-27 XC-28 XC-29'.split() if not re.search('(?<![A-Za-z0-9])'+c+'(?![0-9a-z])',t)];print(m);sys.exit(1 if m else 0)\"",
+            "expect_exit": 0,
+            "timeout_s": 30
+          }
+        },
+        {
+          "id": "XC-48-AC09",
+          "mandatory": true,
+          "statement": "README.md names every check 1.6.0 adds",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import re,sys;s=open('README.md').read();t=s;m=[c for c in 'R17 R18 R19'.split() if not re.search('(?<![A-Za-z0-9])'+c+'(?![0-9a-z])',t)];print(m);sys.exit(1 if m else 0)\"",
+            "expect_exit": 0,
+            "timeout_s": 30
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+      ]
+    }
+  ]
+}

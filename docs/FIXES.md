@@ -194,6 +194,26 @@ against an address with no code and gets a meaningless success.
 and that the asset is a known token contract on that network (an allow-list, or a code check against the chain), and
 answer `isValid: false` with a specific reason (`unsupported_network`, `invalid_asset`) when it is not.
 
+## F13
+**What failed.** The offline check asked the facilitator to verify a payment that carried the quoted amount to the
+quoted recipient but settled a different mint. It answered `isValid: true`, or settled it.
+**Why it matters.** The asset is part of what a payment is. A verifier that binds only the amount and the recipient
+accepts a payment in a token the route never priced, so the resource server serves on a payment it did not sell.
+**How to fix it.** In `/verify`, compare the payment's on-chain asset to `PaymentRequirements.asset` and answer
+`isValid: false` when they differ. Do not take the asset from the requirements on trust; read it from the signed
+authorization or the on-chain transfer and require an exact match.
+
+## F14
+**What failed.** The offline check asked the facilitator to verify a payment whose authorized network differed from
+the requirement's network, at the same amount, recipient and asset. It answered `isValid: true`, or settled it.
+**Why it matters.** A verifier that binds only the amount and the recipient lets a payment authorized for one chain
+settle a route priced on another. The sharpest form is a cross-chain signature replay: an EIP-3009 authorization
+whose EIP-712 domain omits `chainId` is cryptographically valid on every chain that shares the token address. This
+check covers the facilitator-side network binding; catching a mis-bound signature itself needs a live devnet test.
+**How to fix it.** In `/verify`, reject a payment whose authorized network is not the requirement's `network`
+(`invalid_payment_requirements`), even when amount, recipient and asset match. Separately, make sure the EIP-712
+domain carries the correct `chainId` so the signature itself cannot be replayed across chains.
+
 ## R0
 **What failed.** An unpaid request to your paid route didn't get a 402 with a decodable `PAYMENT-REQUIRED` header.
 If the header decoded but offered no `exact` payment on Solana devnet or Base Sepolia, the result is **unsupported**

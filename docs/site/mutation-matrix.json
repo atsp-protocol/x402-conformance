@@ -108,6 +108,30 @@
    ],
    "profile": "security-profile"
   },
+  "F13": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the trust_asset double, through check_safety: F13 fails",
+     "kind": "fault",
+     "ref": "fault:trust_asset"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "F14": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the trust_network double, through check_safety: F14 fails",
+     "kind": "fault",
+     "ref": "fault:trust_network"
+    }
+   ],
+   "profile": "security-profile"
+  },
   "F2": {
    "caught": 1,
    "faults": [
@@ -913,6 +937,6 @@
    "profile": "normative"
   }
  },
- "generated_from": "4f51c95fb0679f737d5bb794fcb7a7cf54dde36499c49f26ca76aa7cbf322f60",
+ "generated_from": "e271cbbf856f30147105aa274ffbc9995c4505f52e9dafa4f08ad982c7225771",
  "schema": "x402-conformance.mutation-matrix/1"
 }

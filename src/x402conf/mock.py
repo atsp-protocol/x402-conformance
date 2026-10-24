@@ -23,8 +23,9 @@ def load_fixture(name: str = "devnet") -> Json:
 
 def requirements_hash(req: Json) -> str:
     """The binding a verifier can actually enforce: a stable hash of the exact PaymentRequirements a payload was
-    verified against. The exact scheme binds amount, asset and payTo on chain and the memo binds nonce uniqueness;
-    no scheme field binds the protected resource, so the resource binding lives at the verifier boundary."""
+    verified against. The exact scheme binds amount, asset and payTo on chain, the memo binds nonce uniqueness,
+    and the authorization's domain binds the network it was signed for (chainId); no scheme field binds the
+    protected resource, so the resource binding lives at the verifier boundary."""
     return hashlib.sha256(json.dumps(req, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
@@ -61,7 +62,7 @@ def vectors(fixture: Json | None = None) -> Vectors:
     req: Json = fx["requirements"]
     table: dict[str, Any] = {"req": req}
     for k, v in fx["vectors"].items():
-        table[k] = dict(v, mint=req["asset"], dest=req["payTo"]) if v.get("tx") else dict(v)
+        table[k] = dict(v, mint=req["asset"], dest=req["payTo"], net=req["network"]) if v.get("tx") else dict(v)
     return lambda k: copy.deepcopy(table[k])
 
 
@@ -119,6 +120,11 @@ class Reference:
         kind = self._kind(req)
         if kind is not None:
             return kind
+        if p.get("net") != req["network"]:
+            # the authorization carries the network it was signed for; a payment authorized for another
+            # network (a cross-chain / EIP-3009 cross-domain replay) is not valid here even when amount,
+            # asset and payTo match.
+            return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
         required = self._units(req["amount"])
         if required is None or required <= 0:
             return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
@@ -197,7 +203,8 @@ class Faulty(Reference):
                  stuck_pending: bool = False, cross_request_replay: bool = False,
                  lenient_amounts: bool = False, pending_without_tx: bool = False,
                  verify_commits: bool = False, trust_kind: bool = False, advertise_unhandled: bool = False,
-                 reasonless_invalid: bool = False) -> None:
+                 reasonless_invalid: bool = False, trust_asset: bool = False,
+                 trust_network: bool = False) -> None:
         super().__init__()
         self.open_on_malformed, self.accept_dust = open_on_malformed, accept_dust
         self.no_dup_cache, self.no_memo_check = no_dup_cache, no_memo_check
@@ -208,6 +215,7 @@ class Faulty(Reference):
         self.pending_without_tx, self.verify_commits = pending_without_tx, verify_commits
         self.trust_kind = trust_kind
         self.advertise_unhandled, self.reasonless_invalid = advertise_unhandled, reasonless_invalid
+        self.trust_asset, self.trust_network = trust_asset, trust_network
         self.burned: set[str] = set()
 
     def supported(self) -> Json:
@@ -243,6 +251,14 @@ class Faulty(Reference):
         if prev is not None and prev != requirements_hash(req):
             return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
         return {"isValid": True}
+
+    def _payment_matches(self, p: Any, req: Json) -> Json | None:
+        if isinstance(p, dict) and isinstance(req, dict):
+            if self.trust_asset and "asset" in req:
+                p = dict(p, mint=req["asset"])      # the fault: the paid asset is taken from the requirement on trust
+            if self.trust_network and "network" in req:
+                p = dict(p, net=req["network"])     # the fault: the authorization network is taken on trust
+        return super()._payment_matches(p, req)
 
     def _kind(self, req: Json) -> Json | None:
         # the fault: the network and asset are taken from the requirements on trust
@@ -298,6 +314,8 @@ FAULTS: dict[str, Callable[[], Reference]] = {
     "pending_without_tx": lambda: Faulty(pending_without_tx=True),
     "verify_commits": lambda: Faulty(verify_commits=True),
     "trust_kind": lambda: Faulty(trust_kind=True),
+    "trust_asset": lambda: Faulty(trust_asset=True),
+    "trust_network": lambda: Faulty(trust_network=True),
     "advertise_unhandled": lambda: Faulty(advertise_unhandled=True),
     "reasonless_invalid": lambda: Faulty(reasonless_invalid=True),
 }

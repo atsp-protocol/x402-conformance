@@ -1,7 +1,7 @@
 """The checks.
 
 Live checks (S0-S4) read a facilitator's public GET /supported and nothing else: no signing, no payment, no POST.
-Offline checks (F1-F12) drive a facilitator implementation in-process through /verify and /settle semantics and test
+Offline checks (F1-F14) drive a facilitator implementation in-process through /verify and /settle semantics and test
 the safety properties a resource server depends on. F7 and F8 advance the double's simulated chain between retries of
 the same /settle body; F9 puts a broken transport (a 503, a non-JSON page, a truncated body) between the resource
 server and the facilitator. On devnet they run only against a facilitator its operator
@@ -409,6 +409,43 @@ def _f12(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
     return result(F12, ok, {"unsupported_network": got["network"], "asset_without_code": got["asset"]})
 
 
+F13 = ("F13 a payment whose on-chain asset differs from the requirement's asset is rejected, even when the amount "
+       "and recipient match (V2 5.1.2)")
+
+
+def _f13(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
+    # The same amount to the same recipient, paid in a different mint. A verifier that compares only amount and
+    # payTo lets the wrong asset settle the route.
+    asset = str(req["asset"])
+    other_asset = asset[:-1] + ("2" if asset[-1:] != "2" else "3")
+    p = dict(mk("good"), tx="tx-f13", memo="m-f13", mint=other_asset)
+    v = fac.verify(p, req)
+    s = fac.settle(p, req)
+    rejected = isinstance(v, dict) and v.get("isValid") is False and not _success(s)
+    return result(F13, rejected, {"substituted_mint": other_asset, "verify": v, "settle": s})
+
+
+F14 = ("F14 a payment whose authorized network differs from the requirement's network is rejected, even when "
+       "the amount, recipient and asset match (facilitator-layer network substitution)")
+# A real, well-formed CAIP-2 id that differs from the requirement's network: the authorization carries the network
+# it was signed for, so presenting it against a route on another network is a cross-domain replay.
+OTHER_NETWORK_EVM = "eip155:84532"
+OTHER_NETWORK_SVM = "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+
+
+def _f14(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
+    # The same amount, recipient and asset, carrying a different authorized network. A verifier that does not
+    # bind the payment's network to the requirement lets a payment for one chain settle a route on another.
+    # (The deeper cross-chain-signature replay, an EIP-3009 domain that omits chainId, needs a live signature
+    # and is out of the offline doubles' reach; this check covers the facilitator-side binding.)
+    other_net = OTHER_NETWORK_EVM if not str(req["network"]).startswith("eip155:") else OTHER_NETWORK_SVM
+    p = dict(mk("good"), tx="tx-f14", memo="m-f14", net=other_net)
+    v = fac.verify(p, req)
+    s = fac.settle(p, req)
+    rejected = isinstance(v, dict) and v.get("isValid") is False and not _success(s)
+    return result(F14, rejected, {"authorized_network": other_net, "verify": v, "settle": s})
+
+
 S5 = ("S5 every kind /supported advertises gets a structured /verify answer: valid, or invalid with a reason, never "
       "an error (V2 7.1, 7.3)")
 
@@ -494,6 +531,8 @@ def check_safety(fac: Facilitator, mk: Vectors,
     out.append(_f10(fac, mk, req))
     out.append(_f11(fac, mk, req))
     out.append(_f12(fac, mk, req))
+    out.append(_f13(fac, mk, req))
+    out.append(_f14(fac, mk, req))
     s5 = _s5(fac, mk, req)
     if s5 is not None:
         out.append(s5)

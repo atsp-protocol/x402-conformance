@@ -56,6 +56,8 @@ graph LR
   XC_46["XC-46<br/>F12: /verify rejects an unsupported network or a..."]
   XC_47("XC-47<br/>S5: every kind /supported advertises gets a verd...")
   XC_48["XC-48<br/>Release 1.6.0: the rest of the v1.5 build list"]
+  XC_49("XC-49<br/>F13: a payment whose asset differs from the requ...")
+  XC_50("XC-50<br/>F14: a payment authorized for another network is...")
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -158,6 +160,8 @@ graph LR
   XC_28 --> XC_48
   XC_29 --> XC_48
   XC_31 --> XC_48
+  XC_08 --> XC_49
+  XC_08 --> XC_50
   XC_05 --> XC_M1
   XC_05 --> XC_M2
   XC_05 --> XC_M3
@@ -167,7 +171,7 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_M3,XC_M4 done
-  class XC_47 proposed
+  class XC_47,XC_49,XC_50 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -184,7 +188,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-05 CI: lint, types, tests, Lean, V&V with receipts | integrate | done | XC-02, XC-03 | XC-21, XC-23, XC-M1, XC-M2, XC-M3, XC-M4, XC-M5, XC-M6 | R-CI | 6 (command 2, grep 2, pushed 1, scope 1) | `.github/workflows/**`; `tools/vv.py`; `tools/verify-sig.mjs`; `vv/claims.json` |
 | XC-06 Evidence: first live GET /supported run, hashed and reproducible | verify | done | XC-01 | - | R-EVID | 6 (command 2, file_exists 1, grep 1, pushed 1, scope 1) | `evidence/**`; `tests/test_live.py` |
 | XC-07 Hygiene: no secrets, keys, internal paths or AI attribution; commits by mgillr | release | done | - | - | R-HYG | 3 (metric 1, pushed 1, scope 1) | - |
-| XC-08 Cross-request payment replay and requirement substitution are rejected | implement | signed | XC-02 | XC-09, XC-10 | R-F10 | 8 (command 8) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `docs/SPEC.md`; `docs/FIXES.md` |
+| XC-08 Cross-request payment replay and requirement substitution are rejected | implement | signed | XC-02 | XC-09, XC-10, XC-49, XC-50 | R-F10 | 8 (command 8) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `docs/SPEC.md`; `docs/FIXES.md` |
 | XC-09 Oracle hardening: strict atomic-unit parsing, fail closed | implement | done | XC-02, XC-08 | XC-16, XC-30 | R-ORACLE | 5 (command 3, pushed 1, scope 1) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `ts/src/**`; `ts/test/**` |
 | XC-10 R11 payment-to-request binding on a real resource server | implement | done | XC-M4, XC-08 | XC-16, XC-17, XC-18, XC-19, XC-20, XC-30, XC-37, XC-42 | R-R11 | 9 (command 6, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/harness.py`; `docs/SPEC.md`; `docs/FIXES.md`; `README.md` |
 | XC-11 One report, test-framework entry points and opt-in corpus sharing | implement | done | XC-M4 | XC-12, XC-13, XC-14, XC-30 | R-ADOPT | 7 (command 3, grep 2, pushed 1, scope 1) | `ts/**`; `docs/USING.md`; `corpus/**`; `.github/ISSUE_TEMPLATE/corpus-case.yml` |
@@ -224,6 +228,8 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-46 F12: /verify rejects an unsupported network or an asset with no token contract | implement | done | XC-15 | XC-31 | R-F12 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
 | XC-47 S5: every kind /supported advertises gets a verdict from /verify | implement | proposed | XC-01, XC-02 | - | R-S5 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
 | XC-48 Release 1.6.0: the rest of the v1.5 build list | release | signed | XC-18, XC-19, XC-22, XC-24, XC-26, XC-27, XC-28, XC-29, XC-31 | - | R-RELEASE | 9 (command 6, grep 1, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**`; `RELEASES.md`; `tools/build_coverage.py`; `tests/test_coverage_doc.py` |
+| XC-49 F13: a payment whose asset differs from the requirement's asset is rejected (asset substitution) | implement | proposed | XC-08 | - | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
+| XC-50 F14: a payment authorized for another network is rejected (facilitator-layer network substitution) | implement | proposed | XC-08 | - | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | signed | XC-05 | - | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |
@@ -262,6 +268,8 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | F10 | built | security-profile | V2 5.1.2 and 5.2.2: a payment is verified against the requirements it was quoted under | - | - | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/USING.md, docs/VV.md |
 | F11 | built | normative | V2 7.1: /verify MUST NOT commit payment state | - | XC-15 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts | tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/USING.md, docs/VV.md |
 | F12 | built | security-profile | V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network | - | XC-46 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md |
+| F13 | built | security-profile | V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment | - | XC-49 | src/x402conf/harness.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | docs/COVERAGE.md, docs/FIXES.md |
+| F14 | built | security-profile | V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution) | - | XC-50 | src/x402conf/harness.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | docs/COVERAGE.md, docs/FIXES.md |
 | R0 | built | normative | V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED | - | - | action.yml, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/example/server.ts, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/crash.ts, ts/src/probe.ts, ts/src/testing.ts | tests/test_live.py, tests/test_mutation_matrix.py, ts/test/delivery.test.ts, ts/test/probe.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/MATRIX.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md, ts/mcp/README.md |
 | R1 | built | normative | V2 7.2: the resource server settles through its facilitator | - | - | action.yml, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/crash.ts, ts/src/probe.ts, ts/src/testing.ts | tests/test_offline.py, ts/test/delivery.test.ts, ts/test/probe.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/MATRIX.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md, ts/mcp/README.md |
 | R2 | built | normative | F3, F5, F6, F8 and F9 applied to a running resource server | - | - | action.yml, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/probe.ts, ts/src/testing.ts | tests/check_pytest_plugin.py, ts/mcp/test/mcp.test.ts, ts/test/delivery.test.ts, ts/test/ports.test.ts, ts/test/probe.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/MATRIX.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md, ts/mcp/README.md |

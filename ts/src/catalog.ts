@@ -103,6 +103,14 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "security-profile",
   "basis": "V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network"
  },
+ "F13": {
+  "profile": "security-profile",
+  "basis": "V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment"
+ },
+ "F14": {
+  "profile": "security-profile",
+  "basis": "V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution)"
+ },
  "R0": {
   "profile": "normative",
   "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED"

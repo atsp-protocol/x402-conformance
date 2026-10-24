@@ -8,15 +8,15 @@ says which release added what, and [SPEC.md](SPEC.md) quotes the spec text behin
 
 <!-- generated from src/x402conf/spec.py by tools/build_coverage.py; edit RUNS there, not this block -->
 
-## Checks: 61 in the catalogue
+## Checks: 63 in the catalogue
 
 - **S**: Facilitator, `GET /supported` (S0 to S4 live; S5 offline): S0, S1, S2, S3, S4, S5 (6 checks)
 - **P**: Any paid URL's 402 answer, one unpaid GET: P1, P2, P3, P4, P5, P6, P7 (7 checks)
-- **F**: Facilitator safety, against doubles offline and on devnet: F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12 (12 checks)
+- **F**: Facilitator safety, against doubles offline and on devnet: F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14 (14 checks)
 - **R**: Resource server behind the facilitator double: R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R11a, R11b, R11c, R11d, R11e, R11f, R12, R13, R14, R15, R16, R16a, R17, R18, R19, R20, R20a, R20b, R22, R23, R24 (33 checks)
 - **C**: Client, through a recording proxy: C1, C2, C3 (3 checks)
 
-By profile: 32 normative (the spec says MUST), 18 security
+By profile: 32 normative (the spec says MUST), 20 security
 profile (a hardening rule the spec leaves open), 11 resilience (behaviour under failure).
 Every check has at least one control that passes and one faulty build it catches, and CI runs every one of them
 (`tests/test_offline.py`, `ts/test/`).
@@ -38,6 +38,8 @@ Every check has at least one control that passes and one faulty build it catches
 | F10 | security-profile | V2 5.1.2 and 5.2.2: a payment is verified against the requirements it was quoted under | `x402conf offline` | 1 | 1 |
 | F11 | normative | V2 7.1: /verify MUST NOT commit payment state | `x402conf offline` | 1 | 1 |
 | F12 | security-profile | V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network | `x402conf offline` | 1 | 1 |
+| F13 | security-profile | V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment | `x402conf offline` | 1 | 1 |
+| F14 | security-profile | V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution) | `x402conf offline` | 1 | 1 |
 | P1 | normative | V2 HTTP transport: payment required is signalled with HTTP 402 | `x402conf resource`, `x402conf-svm resource`, Action `resources`, pytest `check_payment_required`, MCP `x402_check_payment_required` | 1 | 1 |
 | P2 | normative | V2 HTTP transport: PAYMENT-REQUIRED carries base64 JSON; V1 5.1 body | `x402conf resource`, `x402conf-svm resource`, Action `resources`, pytest `check_payment_required`, MCP `x402_check_payment_required` | 2 | 1 |
 | P3 | normative | V2 5.1.2: x402Version, resource and accepts are required | `x402conf resource`, `x402conf-svm resource`, Action `resources`, pytest `check_payment_required`, MCP `x402_check_payment_required` | 1 | 1 |
