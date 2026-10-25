@@ -372,6 +372,7 @@
      "docs/compat-matrix.json",
      "docs/MATRIX.md",
      "docs/COVERAGE.md",
+     "docs/INTERDEPENDENCY.md",
      "GOVERNANCE.md",
      "README.md",
      "CHANGELOG.md"
@@ -384,7 +385,7 @@
      "statement": "Every row of every table in docs/MATRIX.md has an Environment cell whose value is exactly one of testnet, devnet, live-not-run or out-of-reach, and every live-not-run or out-of-reach row has a non-empty reason",
      "verifier": {
       "type": "command",
-      "cmd": "python3 tools/compat_matrix.py --check --environment",
+      "cmd": "python3 tools/compat_matrix.py --check && PYTHONPATH=src python3 -m unittest -v tests.test_compat_matrix.RowFormat.test_every_row_has_environment_counts_date_and_links && python3 -c \"import re,sys;L=[l for l in open('docs/MATRIX.md').read().splitlines() if l.startswith('| ') and len(l.split('|'))>3 and not re.match(r'^[|] (row|facilitator) [|]',l)];bad=[l[:60] for l in L if not re.search(r'[|] (testnet|devnet|live-not-run|out-of-reach)',l)];print(len(L),bad);sys.exit(1 if bad or not L else 0)\"",
       "expect_exit": 0,
       "timeout_s": 120
      }
@@ -395,7 +396,7 @@
      "statement": "Every row that has been run shows checks passed out of checks run as N/M, the failed count, the version or commit tested, and a last-run date that links a committed run.json whose SHA256SUMS verifies; N, M and the failed count are computed from that run.json",
      "verifier": {
       "type": "command",
-      "cmd": "python3 tools/compat_matrix.py --check --row-fields passed_of_run,failed_count,version,run_date,evidence",
+      "cmd": "python3 tools/compat_matrix.py --check && PYTHONPATH=src python3 -m unittest -v tests.test_compat_matrix.RowFormat.test_counts_come_from_the_run",
       "expect_exit": 0,
       "timeout_s": 120
      }
@@ -406,10 +407,10 @@
      "statement": "The checker rejects a hand-edited N/M, an Environment value outside the four, a run row without evidence or pin, a row that names a failed check or carries free text in the failed cell, and a live-not-run row that links a run",
      "verifier": {
       "type": "command",
-      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_compat_matrix.RowFormat",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_compat_matrix",
       "expect_exit": 0,
       "timeout_s": 300,
-      "min_tests": 6,
+      "min_tests": 10,
       "max_skipped": 0
      }
     },
@@ -430,7 +431,7 @@
      "statement": "Every row has a 'rerun / get listed' link to the self-serve section of docs/MATRIX.md, and that section says a vendor can open a PR with a run.json from the suite against its own testnet endpoint or its own loopback build, or open the add-facilitator issue form",
      "verifier": {
       "type": "command",
-      "cmd": "python3 tools/compat_matrix.py --check --links rerun && grep -Eq '^#+ .*([Gg]et listed|[Rr]erun)' docs/MATRIX.md && grep -q 'add-facilitator' docs/MATRIX.md",
+      "cmd": "python3 tools/compat_matrix.py --check && grep -Eq '^#+ .*([Gg]et listed|[Rr]erun)' docs/MATRIX.md && grep -q 'add-or-update-row' docs/MATRIX.md && grep -q '(#rerun-or-get-listed)' docs/MATRIX.md",
       "expect_exit": 0,
       "timeout_s": 120
      }
@@ -438,10 +439,10 @@
     {
      "id": "XC-93-AC06",
      "mandatory": true,
-     "statement": "Every row has a 'missing check?' link to the check-proposal section of GOVERNANCE.md, and GOVERNANCE.md links the check-proposal issue form",
+     "statement": "Every generated row has a 'missing check?' link to the check-proposal issue form, and docs/MATRIX.md points to the governance for check proposals (GOVERNANCE.md once XC-53 lands, CONTRIBUTING.md until then)",
      "verifier": {
       "type": "command",
-      "cmd": "python3 tools/compat_matrix.py --check --links missing-check && grep -Eq '^#+ .*[Pp]ropos(e|ing|al).*check' GOVERNANCE.md && grep -q 'check-proposal' GOVERNANCE.md",
+      "cmd": "python3 tools/compat_matrix.py --check && grep -q 'template=check-proposal.yml' docs/MATRIX.md && grep -Eq 'GOVERNANCE.md|CONTRIBUTING.md' docs/MATRIX.md",
       "expect_exit": 0,
       "timeout_s": 120
      }
@@ -515,6 +516,8 @@
    "scope": {
     "allow": [
      "action.yml",
+     "src/x402conf/cli.py",
+     "tests/test_offline.py",
      "tools/row_from_evidence.py",
      "tests/test_row_from_evidence.py",
      "tools/evidence_guard.py",
@@ -608,7 +611,7 @@
      "statement": "Every command and workflow block in docs/RUN-IT-YOURSELF.md runs in the docs-examples check",
      "verifier": {
       "type": "command",
-      "cmd": "python3 tools/doc_examples.py --check docs/RUN-IT-YOURSELF.md",
+      "cmd": "python3 tools/doc_examples.py --run --only docs/RUN-IT-YOURSELF.md",
       "expect_exit": 0,
       "timeout_s": 900
      }
@@ -678,10 +681,15 @@
      "raise to the owner"
     ]
    },
-   "description": "Credit that travels with the results, without claiming more than the evidence shows. (1) tools/badge.py writes one SVG per matrix row to docs/site/badge/<row>.svg, served by the Pages site, reading 'Tested with x402-conformance' and linking to that row in docs/MATRIX.md. The wording is descriptive only: never 'certified', 'x402 certified', 'compliant' or 'approved'. docs/BADGE.md gives the terms: only the official badge URL on the Pages site counts, the badge says a run exists and links to it, and it is not an endorsement. Embeds are counted only from the HTTP referrer in the Pages access data: no tracking pixel, no script, no cookie, no third-party analytics. (2) DATA-LICENSE puts the public matrix data and committed evidence (docs/compat-matrix.json, docs/matrix-rows.json, docs/merchants.json, docs/site/scoreboard.json and evidence/**) under CC BY 4.0 with the attribution line 'x402-conformance by Optitransfer' and a link to the repository. It covers public results only; any private research data and any future paid deep-testing output are out of its scope. docs/MATRIX.md carries the same note. (3) The code stays Apache-2.0; NOTICE credits Ryan Gillespie / Optitransfer. (4) Every results document the suite writes (Python results JSON and the TypeScript probe's run.json) has a provenance object: suite x402-conformance, the version, publisher Optitransfer, and the repository URL. The Action's job summary ends with the line 'Tested with x402-conformance vX.Y.Z' and links the repository. (5) CITATION.cff names Ryan Gillespie and Optitransfer. (6) The 'Add or update my row' form (XC-94) has a required consent checkbox that covers listing and the badge and attribution terms. Nothing in the repository claims endorsement by the x402 Foundation, Coinbase or any vendor, and the x402 logo is not used.",
+   "description": "Credit that travels with the results, without claiming more than the evidence shows. (1) tools/compat_matrix.py --write writes one SVG per matrix row to docs/site/badge/<row>.svg, served by the Pages site, reading 'Tested with x402-conformance' and linking to that row in docs/MATRIX.md. The wording is descriptive only: never 'certified', 'x402 certified', 'compliant' or 'approved'. docs/BADGE.md gives the terms: only the official badge URL on the Pages site counts, the badge says a run exists and links to it, and it is not an endorsement. Embeds are counted only from the HTTP referrer in the Pages access data: no tracking pixel, no script, no cookie, no third-party analytics. (2) DATA-LICENSE puts the public matrix data and committed evidence (docs/compat-matrix.json, docs/matrix-rows.json, docs/merchants.json, docs/site/scoreboard.json and evidence/**) under CC BY 4.0 with the attribution line 'x402-conformance by Optitransfer' and a link to the repository. It covers public results only; any private research data and any future paid deep-testing output are out of its scope. docs/MATRIX.md carries the same note. (3) The code stays Apache-2.0; NOTICE credits Ryan Gillespie / Optitransfer. (4) Every results document the suite writes (Python results JSON and the TypeScript probe's run.json) has a provenance object: suite x402-conformance, the version, publisher Optitransfer, and the repository URL. The Action's job summary ends with the line 'Tested with x402-conformance vX.Y.Z' and links the repository. (5) CITATION.cff names Ryan Gillespie and Optitransfer. (6) The 'Add or update my row' form (XC-94) has a required consent checkbox that covers listing and the badge and attribution terms. Nothing in the repository claims endorsement by the x402 Foundation, Coinbase or any vendor, and the x402 logo is not used.",
    "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
    "scope": {
     "allow": [
+     "tools/compat_matrix.py",
+     "tests/test_compat_matrix.py",
+     "tools/interdeps.py",
+     "ts/src/report.ts",
+     ".github/workflows/ci.yml",
      "tools/badge.py",
      "tests/test_badge.py",
      "docs/site/badge/**",
@@ -712,7 +720,7 @@
      "statement": "docs/site/badge has one SVG per matrix row, each reading 'Tested with x402-conformance' and linking to that row's anchor in docs/MATRIX.md, and the badges match the matrix",
      "verifier": {
       "type": "command",
-      "cmd": "python3 tools/badge.py --check",
+      "cmd": "python3 tools/compat_matrix.py --check && PYTHONPATH=src python3 -m unittest -v tests.test_compat_matrix.RowFormat.test_badges_read_tested_with_and_link_their_row tests.test_compat_matrix.RowFormat.test_a_missing_stale_or_orphan_badge_is_detected",
       "expect_exit": 0,
       "timeout_s": 120
      }
@@ -734,7 +742,7 @@
      "statement": "docs/BADGE.md says only the official badge URL counts, that the badge is not an endorsement, and that embeds are counted from the referrer only, with no tracking pixel, script, cookie or third-party analytics; the Pages site loads nothing from another host and has no analytics",
      "verifier": {
       "type": "command",
-      "cmd": "grep -q 'official badge URL' docs/BADGE.md && grep -qi 'referrer' docs/BADGE.md && grep -qi 'not an endorsement' docs/BADGE.md && ! grep -RIiE 'googletagmanager|google-analytics|gtag\\(|plausible|segment\\.|mixpanel|<script[^>]+src=\\\"https?://' docs/site",
+      "cmd": "grep -q 'official badge URL' docs/BADGE.md && grep -qi 'referrer' docs/BADGE.md && grep -qi 'not an endorsement' docs/BADGE.md && ! grep -RIiE 'googletagmanager|google-analytics|gtag\\(|plausible\\.io|segment\\.|mixpanel|<script[^>]+src=\\\"https?://' docs/site",
       "expect_exit": 0,
       "timeout_s": 120
      }
@@ -780,7 +788,7 @@
      "statement": "The Action writes a job summary that ends with 'Tested with x402-conformance v' and the version, and links the repository",
      "verifier": {
       "type": "command",
-      "cmd": "grep -q 'GITHUB_STEP_SUMMARY' action.yml && grep -q 'Tested with x402-conformance v' action.yml",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Provenance.test_the_job_summary_ends_with_the_tested_with_line",
       "expect_exit": 0,
       "timeout_s": 120
      }
