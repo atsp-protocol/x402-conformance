@@ -1,5 +1,5 @@
 {
- "about": "PROPOSED, UNSIGNED. Four Proofline tasks, XC-91 to XC-94: the .NET / C# SDK x402-dotnet as implementation-matrix rows run locally against testnet fixtures (XC-91), passive 402-challenge rows for 13 public x402 merchant and vendor endpoints (XC-92), and one row format for every matrix row with an Environment column, passed/run counts, run date, evidence and pin, plus rerun and missing-check links (XC-93), and self-serve tooling so any facilitator, SDK, merchant or vendor can run the suite on itself and update its own row (XC-94). Owner's go, 2026-10-25T17:55Z. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner key signs it into proofline.json. Evidence is testnet-only, loopback-only or passive read-only; hosted facilitators are never called and nothing is paid. Estimated effort: 11-13 days.",
+ "about": "PROPOSED, UNSIGNED. Five Proofline tasks, XC-91 to XC-95: the .NET / C# SDK x402-dotnet as implementation-matrix rows run locally against testnet fixtures (XC-91), passive 402-challenge rows for 13 public x402 merchant and vendor endpoints (XC-92), and one row format for every matrix row with an Environment column, passed/run counts, run date, evidence and pin, plus rerun and missing-check links (XC-93), and self-serve tooling so any facilitator, SDK, merchant or vendor can run the suite on itself and update its own row (XC-94), and attribution and credit: a descriptive badge, CC BY 4.0 for public results, provenance in every run, NOTICE and CITATION.cff (XC-95). Owner's go, 2026-10-25T17:55Z, attribution 18:11Z. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner key signs it into proofline.json. Evidence is testnet-only, loopback-only or passive read-only; hosted facilitators are never called and nothing is paid. Estimated effort: 14-16 days.",
  "schema": "proofline/1",
  "status": "proposed",
  "proposed_by": "mgillr",
@@ -646,6 +646,210 @@
     "Testnet only: never use a mainnet CAIP-2 id as a payment target, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the loopback double or my own instance on 127.0.0.1.",
     "Self-serve never widens what the suite does to third parties: a vendor runs it on its own endpoint or build; a 'live' row is GET-only and never pays, and nothing is listed without recorded consent.",
     "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
+   ]
+  },
+  {
+   "id": "XC-95",
+   "title": "Attribution and credit: the 'Tested with x402-conformance' badge, CC BY 4.0 for public results, provenance in every run, NOTICE and CITATION.cff",
+   "phase": "integrate",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-25",
+    "XC-52",
+    "XC-93",
+    "XC-94"
+   ],
+   "requirements": [
+    "R-ADOPT",
+    "R-OPEN"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 3
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "Credit that travels with the results, without claiming more than the evidence shows. (1) tools/badge.py writes one SVG per matrix row to docs/site/badge/<row>.svg, served by the Pages site, reading 'Tested with x402-conformance' and linking to that row in docs/MATRIX.md. The wording is descriptive only: never 'certified', 'x402 certified', 'compliant' or 'approved'. docs/BADGE.md gives the terms: only the official badge URL on the Pages site counts, the badge says a run exists and links to it, and it is not an endorsement. Embeds are counted only from the HTTP referrer in the Pages access data: no tracking pixel, no script, no cookie, no third-party analytics. (2) DATA-LICENSE puts the public matrix data and committed evidence (docs/compat-matrix.json, docs/matrix-rows.json, docs/merchants.json, docs/site/scoreboard.json and evidence/**) under CC BY 4.0 with the attribution line 'x402-conformance by Optitransfer' and a link to the repository. It covers public results only; any private research data and any future paid deep-testing output are out of its scope. docs/MATRIX.md carries the same note. (3) The code stays Apache-2.0; NOTICE credits Ryan Gillespie / Optitransfer. (4) Every results document the suite writes (Python results JSON and the TypeScript probe's run.json) has a provenance object: suite x402-conformance, the version, publisher Optitransfer, and the repository URL. The Action's job summary ends with the line 'Tested with x402-conformance vX.Y.Z' and links the repository. (5) CITATION.cff names Ryan Gillespie and Optitransfer. (6) The 'Add or update my row' form (XC-94) has a required consent checkbox that covers listing and the badge and attribution terms. Nothing in the repository claims endorsement by the x402 Foundation, Coinbase or any vendor, and the x402 logo is not used.",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     "tools/badge.py",
+     "tests/test_badge.py",
+     "docs/site/badge/**",
+     "docs/site/**",
+     "docs/BADGE.md",
+     "DATA-LICENSE",
+     "NOTICE",
+     "CITATION.cff",
+     "src/x402conf/provenance.py",
+     "src/x402conf/cli.py",
+     "src/x402conf/harness.py",
+     "tests/test_offline.py",
+     "ts/src/provenance.ts",
+     "ts/src/cli.ts",
+     "ts/test/provenance.test.ts",
+     "action.yml",
+     ".github/ISSUE_TEMPLATE/add-or-update-row.yml",
+     "docs/MATRIX.md",
+     "docs/**",
+     "README.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-95-AC01",
+     "mandatory": true,
+     "statement": "docs/site/badge has one SVG per matrix row, each reading 'Tested with x402-conformance' and linking to that row's anchor in docs/MATRIX.md, and the badges match the matrix",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/badge.py --check",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC02",
+     "mandatory": true,
+     "statement": "No badge, page or doc uses certification or endorsement wording: no 'certified', 'x402 certified', 'compliant', 'approved by' or 'endorsed by'",
+     "verifier": {
+      "type": "command",
+      "cmd": "! grep -RIiE \"\\bcertified\\b|\\bcompliant\\b|approved by|endorsed by\" docs/site/badge docs/BADGE.md DATA-LICENSE CITATION.cff",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC03",
+     "mandatory": true,
+     "statement": "docs/BADGE.md says only the official badge URL counts, that the badge is not an endorsement, and that embeds are counted from the referrer only, with no tracking pixel, script, cookie or third-party analytics; the Pages site loads nothing from another host and has no analytics",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'official badge URL' docs/BADGE.md && grep -qi 'referrer' docs/BADGE.md && grep -qi 'not an endorsement' docs/BADGE.md && ! grep -RIiE 'googletagmanager|google-analytics|gtag\\(|plausible|segment\\.|mixpanel|<script[^>]+src=\\\"https?://' docs/site",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC04",
+     "mandatory": true,
+     "statement": "DATA-LICENSE is CC BY 4.0 with the attribution line 'x402-conformance by Optitransfer' and the repository link, and says it covers public results only, not private research data or paid deep-testing output; docs/MATRIX.md links it",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'CC BY 4.0' DATA-LICENSE && grep -q 'x402-conformance by Optitransfer' DATA-LICENSE && grep -q 'github.com/atsp-protocol/x402-conformance' DATA-LICENSE && grep -qi 'public results only' DATA-LICENSE && grep -qi 'paid' DATA-LICENSE && grep -q 'DATA-LICENSE' docs/MATRIX.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC05",
+     "mandatory": true,
+     "statement": "LICENSE is still Apache-2.0 and NOTICE credits Ryan Gillespie / Optitransfer",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'Apache License' LICENSE && grep -q 'Version 2.0' LICENSE && grep -q 'Ryan Gillespie / Optitransfer' NOTICE",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC06",
+     "mandatory": true,
+     "statement": "Every results document written by the Python CLI and the TypeScript probe has provenance with suite x402-conformance, the package version, publisher Optitransfer and the repository URL",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Provenance && cd ts && npm ci --silent && npx tsc -p . && node --test --test-name-pattern='provenance' dist/test/*.test.js",
+      "expect_exit": 0,
+      "timeout_s": 900,
+      "min_tests": 2,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-95-AC07",
+     "mandatory": true,
+     "statement": "The Action writes a job summary that ends with 'Tested with x402-conformance v' and the version, and links the repository",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'GITHUB_STEP_SUMMARY' action.yml && grep -q 'Tested with x402-conformance v' action.yml",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC08",
+     "mandatory": true,
+     "statement": "CITATION.cff is a cff-version 1.2.0 file naming Ryan Gillespie and Optitransfer, the title x402-conformance and the repository URL",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q '^cff-version: 1.2.0' CITATION.cff && grep -q 'Gillespie' CITATION.cff && grep -q 'Optitransfer' CITATION.cff && grep -q 'x402-conformance' CITATION.cff",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC09",
+     "mandatory": true,
+     "statement": "The 'Add or update my row' form has a required consent checkbox that covers listing and the badge and attribution terms, and links docs/BADGE.md and DATA-LICENSE",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=.github/ISSUE_TEMPLATE/add-or-update-row.yml && grep -A12 -E 'id: *consent' $f | grep -q 'required: true' && grep -q 'BADGE.md' $f && grep -q 'DATA-LICENSE' $f",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC10",
+     "mandatory": true,
+     "statement": "No file claims endorsement by the x402 Foundation, Coinbase or any vendor, and no x402 logo file is in the repository",
+     "verifier": {
+      "type": "command",
+      "cmd": "! git grep -IiE '(endorsed|approved|certified) by (the )?(x402 foundation|coinbase)' -- . ':!docs/proposals/**' && ! git ls-files | grep -iE 'x402[-_]?logo'",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC11",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-95-AC12",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-95-AC13",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Descriptive wording only until the trademark question is answered: if a criterion seems to need 'certified' or similar, STOP and report.",
+    "The CC BY 4.0 data licence never extends to private research data or paid deep-testing output; if a file of that kind would fall under it, STOP and report."
    ]
   }
  ]
