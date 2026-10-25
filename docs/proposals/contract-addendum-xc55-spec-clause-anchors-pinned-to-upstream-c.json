@@ -1,0 +1,118 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-55, part of the 'cover ALL' decomposition (XC-54 to XC-78) drafted on 2026-10-25 from public sources. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except scope, pushed and the unchanged-suite guards fails on the v1.6.0 tree. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 2-3 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-55",
+      "title": "Spec-clause anchors pinned to upstream commits, a spec-drift report, and a crosswalk to the USENIX 2026 facilitator rules",
+      "phase": "design",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-53"
+      ],
+      "requirements": [
+        "R-GOV",
+        "R-CRED"
+      ],
+      "description": "Extends the XC-53 registry: each check id carries {spec_file, upstream_commit, line_start, line_end, quoted_text_sha256, profile}. tools/spec_anchors.py --check verifies offline against vendored spec snapshots under docs/spec-snapshots/<commit>/; --drift <commit> lists check ids whose anchored text changed (the property the #2776 review and #3396 asked for: a pinned spec version and an exact requirement reference per vector, and a separate optional security profile). docs/crosswalk/usenix-2026.json maps check ids to SR1-SR8 and Server-SR1-SR2 from Wang et al., USENIX Security 2026, citing the paper's public text only.",
+      "scope": {
+        "allow": [
+          "tools/spec_anchors.py",
+          "tests/test_spec_anchors.py",
+          "docs/spec-snapshots/**",
+          "docs/crosswalk/**",
+          "docs/check-ids.json",
+          "src/x402conf/spec.py",
+          ".github/workflows/ci.yml",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-55-AC01",
+          "mandatory": true,
+          "statement": "Every normative check id names an upstream spec file, a pinned x402-foundation/x402 commit and a line anchor whose quoted text matches the file at that commit",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/spec_anchors.py --check --offline",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-55-AC02",
+          "mandatory": true,
+          "statement": "Given a newer upstream spec commit, the drift report lists exactly the check ids whose anchored text changed",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_spec_anchors",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-55-AC03",
+          "mandatory": true,
+          "statement": "Every facilitator check maps to zero or more USENIX Security 2026 rules SR1-SR8 / Server-SR1-SR2, and each of SR1-SR8 is either mapped to a check id or listed as a gap with a task id",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/spec_anchors.py --crosswalk usenix-2026 --check",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-55-AC04",
+          "mandatory": true,
+          "statement": "Security-profile and resilience checks are never labelled normative in docs/check-ids.json",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import json,sys;d=json.load(open('docs/check-ids.json'));bad=[c['id'] for c in d['checks'] if c['profile']=='normative' and not c.get('anchor')];print(bad);sys.exit(1 if bad else 0)\"",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-55-AC05",
+          "mandatory": true,
+          "statement": "CI checks the anchors offline on every push",
+          "verifier": {
+            "type": "grep",
+            "file": ".github/workflows/ci.yml",
+            "pattern": "tools/spec_anchors\\.py --check",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-55-AC06",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-55-AC07",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "A failing third-party result is not published with per-check detail until SECURITY.md's disclosure window clears; if a criterion would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}

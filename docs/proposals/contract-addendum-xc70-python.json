@@ -1,0 +1,108 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-70, part of the 'cover ALL' decomposition (XC-54 to XC-78) drafted on 2026-10-25 from public sources. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except scope, pushed and the unchanged-suite guards fails on the v1.6.0 tree. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 2-3 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-70",
+      "title": "Python: httpx and requests clients, MCP, and the TON/SVM mechanisms",
+      "phase": "verify",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-56",
+        "XC-54"
+      ],
+      "requirements": [
+        "R-MATRIX",
+        "R-ADOPT"
+      ],
+      "description": "Completes Python: client rows and MCP alongside the existing FastAPI and Flask rows.",
+      "scope": {
+        "allow": [
+          "examples/python/**",
+          "tools/compat_matrix.py",
+          "tests/test_compat_matrix.py",
+          "evidence/impl-matrix/**",
+          "docs/compat-matrix.json",
+          "docs/MATRIX.md",
+          "docs/coverage-ledger.json",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-70-AC01",
+          "mandatory": true,
+          "statement": "The implementation matrix has a hashed row for each of: httpx, requests, mcp-py",
+          "verifier": {
+            "type": "command",
+            "cmd": "! python3 tools/compat_matrix.py --check --require zz-no-such-row >/dev/null 2>&1 && python3 tools/compat_matrix.py --check --require httpx,requests,mcp-py && python3 -c \"import json,sys;d=json.load(open('docs/compat-matrix.json'));have={r['stack'] for r in d['rows'] if r.get('sha256',{}).get('run.json') and r.get('sha256',{}).get('README.md')};miss=[s for s in ['httpx', 'requests', 'mcp-py'] if s not in have];print(miss);sys.exit(1 if miss else 0)\"",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-70-AC02",
+          "mandatory": true,
+          "statement": "Each new row runs R0-R10 (servers) or C1-C3 (clients) behind the loopback facilitator double on Base Sepolia and Solana devnet ids, with no chain call",
+          "verifier": {
+            "type": "command",
+            "cmd": "! python3 tools/compat_matrix.py --check --zz-unknown-flag >/dev/null 2>&1 && python3 tools/compat_matrix.py --check --no-chain",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-70-AC03",
+          "mandatory": true,
+          "statement": "Each new SDK surface joins the parity oracle",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/parity_report.py --check evidence/parity --require-sdk xc-70",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-70-AC04",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-70-AC05",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-70-AC06",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "A failing third-party result is not published with per-check detail until SECURITY.md's disclosure window clears; if a criterion would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}

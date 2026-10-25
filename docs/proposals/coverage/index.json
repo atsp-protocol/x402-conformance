@@ -1,0 +1,363 @@
+{
+  "about": "PROPOSED, UNSIGNED. Ordering, dependencies and effort (working days) for XC-54 to XC-78. Nothing here is binding; each task becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. XC-51, XC-52 and XC-53 are prerequisites and are signed first.",
+  "status": "proposed",
+  "prerequisites": [
+    "XC-51",
+    "XC-52",
+    "XC-53"
+  ],
+  "order": [
+    "XC-54",
+    "XC-55",
+    "XC-56",
+    "XC-57",
+    "XC-58",
+    "XC-59",
+    "XC-60",
+    "XC-61",
+    "XC-62",
+    "XC-63",
+    "XC-64",
+    "XC-65",
+    "XC-66",
+    "XC-67",
+    "XC-68",
+    "XC-69",
+    "XC-70",
+    "XC-71",
+    "XC-72",
+    "XC-73",
+    "XC-74",
+    "XC-75",
+    "XC-76",
+    "XC-77",
+    "XC-78"
+  ],
+  "tasks": [
+    {
+      "id": "XC-54",
+      "title": "Coverage ledger: every facilitator, chain, language, scheme, transport and extension has evidence, a task, or a stated out-of-reach reason",
+      "deps": [
+        "XC-52",
+        "XC-53"
+      ],
+      "effort": "2",
+      "slice": "Accountability backbone for 'cover ALL'",
+      "file": "contract-addendum-xc54-coverage-ledger.json",
+      "criteria": 8
+    },
+    {
+      "id": "XC-55",
+      "title": "Spec-clause anchors pinned to upstream commits, a spec-drift report, and a crosswalk to the USENIX 2026 facilitator rules",
+      "deps": [
+        "XC-53"
+      ],
+      "effort": "2-3",
+      "slice": "Lead substrate",
+      "file": "contract-addendum-xc55-spec-clause-anchors-pinned-to-upstream-c.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-56",
+      "title": "Cross-SDK parity oracle: one vector set, every official SDK library, offline, with spec anchors",
+      "deps": [
+        "XC-55"
+      ],
+      "effort": "6-9",
+      "slice": "LEAD",
+      "file": "contract-addendum-xc56-cross-sdk-parity-oracle.json",
+      "criteria": 10
+    },
+    {
+      "id": "XC-57",
+      "title": "Parity backtest on historical cross-SDK fixes, and a nightly read-only shadow run against upstream main",
+      "deps": [
+        "XC-56"
+      ],
+      "effort": "3-4",
+      "slice": "Lead proof",
+      "file": "contract-addendum-xc57-parity-backtest-on-historical-cross-sdk.json",
+      "criteria": 5
+    },
+    {
+      "id": "XC-58",
+      "title": "F15, F16, C4: checks from public findings (malformed input never 5xx, no wildcard network accept, resume never re-pays)",
+      "deps": [
+        "XC-53",
+        "XC-56"
+      ],
+      "effort": "2-3",
+      "slice": "Findings to checks",
+      "file": "contract-addendum-xc58-f15-f16-c4.json",
+      "criteria": 8
+    },
+    {
+      "id": "XC-59",
+      "title": "F17-F19: the USENIX 2026 rules the suite does not test yet (sponsor-cost bounds, re-verify at settle, execution-template allow-list)",
+      "deps": [
+        "XC-55",
+        "XC-51"
+      ],
+      "effort": "4-6",
+      "slice": "USENIX gap",
+      "file": "contract-addendum-xc59-f17-f19.json",
+      "criteria": 8
+    },
+    {
+      "id": "XC-60",
+      "title": "EVM: exact (EIP-3009 and Permit2) verify-only on every SDK-default EVM testnet",
+      "deps": [
+        "XC-51",
+        "XC-54"
+      ],
+      "effort": "4-6",
+      "slice": "chain",
+      "file": "contract-addendum-xc60-evm.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-61",
+      "title": "Solana: verify-only F checks on every SVM-capable self-hosted column",
+      "deps": [
+        "XC-51",
+        "XC-54"
+      ],
+      "effort": "2-3",
+      "slice": "chain",
+      "file": "contract-addendum-xc61-solana.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-62",
+      "title": "Stellar: an exact client and verify-only checks on Stellar testnet",
+      "deps": [
+        "XC-51",
+        "XC-54"
+      ],
+      "effort": "3-4",
+      "slice": "chain",
+      "file": "contract-addendum-xc62-stellar.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-63",
+      "title": "Move chains: Aptos and Sui exact verify-only",
+      "deps": [
+        "XC-51",
+        "XC-54"
+      ],
+      "effort": "4-5",
+      "slice": "chain",
+      "file": "contract-addendum-xc63-move-chains.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-64",
+      "title": "Account chains: NEAR, Hedera, Algorand, Concordium, Keeta, Casper verify-only",
+      "deps": [
+        "XC-51",
+        "XC-54"
+      ],
+      "effort": "6-8",
+      "slice": "chain",
+      "file": "contract-addendum-xc64-account-chains.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-65",
+      "title": "XRPL, TON and Cardano: exact verify-only across every transfer method",
+      "deps": [
+        "XC-51",
+        "XC-54"
+      ],
+      "effort": "5-7",
+      "slice": "chain",
+      "file": "contract-addendum-xc65-xrpl-ton-and-cardano.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-66",
+      "title": "Spec-only families: Starknet, Canton, Lightning as offline profiles, live only where an open implementation exists",
+      "deps": [
+        "XC-54",
+        "XC-55"
+      ],
+      "effort": "3-5",
+      "slice": "chain (partial)",
+      "file": "contract-addendum-xc66-spec-only-families.json",
+      "criteria": 5
+    },
+    {
+      "id": "XC-67",
+      "title": "auth-capture scheme (EVM): capture, void and double-capture checks, settles explicitly allowed on Base Sepolia",
+      "deps": [
+        "XC-35",
+        "XC-54"
+      ],
+      "effort": "4-5",
+      "slice": "scheme (needs settles)",
+      "file": "contract-addendum-xc67-auth-capture-scheme-evm.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-68",
+      "title": "TypeScript: every upstream server and client surface in the matrix",
+      "deps": [
+        "XC-56",
+        "XC-54"
+      ],
+      "effort": "3-4",
+      "slice": "language",
+      "file": "contract-addendum-xc68-typescript.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-69",
+      "title": "Go: gin, echo, net/http servers and the Go client in the matrix",
+      "deps": [
+        "XC-56",
+        "XC-54"
+      ],
+      "effort": "3-5",
+      "slice": "language",
+      "file": "contract-addendum-xc69-go.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-70",
+      "title": "Python: httpx and requests clients, MCP, and the TON/SVM mechanisms",
+      "deps": [
+        "XC-56",
+        "XC-54"
+      ],
+      "effort": "2-3",
+      "slice": "language",
+      "file": "contract-addendum-xc70-python.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-71",
+      "title": "Java: the V1 servlet filter and client under a V1 profile",
+      "deps": [
+        "XC-56",
+        "XC-54"
+      ],
+      "effort": "3-4",
+      "slice": "language",
+      "file": "contract-addendum-xc71-java.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-72",
+      "title": "Third-party SDKs: Rust (x402-rs axum, reqwest), Ruby (x402-rails), Elixir (raxol_payments), PipRail, Mogami Java",
+      "deps": [
+        "XC-56",
+        "XC-54"
+      ],
+      "effort": "5-7",
+      "slice": "language",
+      "file": "contract-addendum-xc72-third-party-sdks.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-73",
+      "title": "Open-source facilitators, batch B (EVM): at least 12 more self-hosted columns",
+      "deps": [
+        "XC-51",
+        "XC-54",
+        "XC-60"
+      ],
+      "effort": "6-8",
+      "slice": "facilitators",
+      "file": "contract-addendum-xc73-open-source-facilitators-batch-b-evm.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-74",
+      "title": "Open-source facilitators, batch C (non-EVM): Sui, NEAR, Stellar, Solana and others",
+      "deps": [
+        "XC-61",
+        "XC-62",
+        "XC-63",
+        "XC-64",
+        "XC-54"
+      ],
+      "effort": "6-8",
+      "slice": "facilitators",
+      "file": "contract-addendum-xc74-open-source-facilitators-batch-c-non-e.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-75",
+      "title": "Extensions: gas sponsoring, offer-and-receipt, builder-code, HTTP message signatures, auth hints",
+      "deps": [
+        "XC-55",
+        "XC-34"
+      ],
+      "effort": "5-7",
+      "slice": "extensions",
+      "file": "contract-addendum-xc75-extensions.json",
+      "criteria": 5
+    },
+    {
+      "id": "XC-76",
+      "title": "Industry matrix v2: a faceted, evidence-only scoreboard with parity and coverage views",
+      "deps": [
+        "XC-52",
+        "XC-54",
+        "XC-55",
+        "XC-56"
+      ],
+      "effort": "3-4",
+      "slice": "matrix",
+      "file": "contract-addendum-xc76-industry-matrix-v2.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-77",
+      "title": "Server and client checks on every chain family the SDKs serve (not only Base Sepolia and Solana)",
+      "deps": [
+        "XC-54",
+        "XC-68",
+        "XC-70"
+      ],
+      "effort": "6-8",
+      "slice": "language x chain",
+      "file": "contract-addendum-xc77-server-and-client-checks-on-every-chain.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-78",
+      "title": "Coverage closure: every inventoried facilitator, chain, language, scheme and extension has evidence or a stated reason",
+      "deps": [
+        "XC-54",
+        "XC-56",
+        "XC-57",
+        "XC-58",
+        "XC-59",
+        "XC-60",
+        "XC-61",
+        "XC-62",
+        "XC-63",
+        "XC-64",
+        "XC-65",
+        "XC-66",
+        "XC-67",
+        "XC-68",
+        "XC-69",
+        "XC-70",
+        "XC-71",
+        "XC-72",
+        "XC-73",
+        "XC-74",
+        "XC-75",
+        "XC-76",
+        "XC-77"
+      ],
+      "effort": "1",
+      "slice": "gate",
+      "file": "contract-addendum-xc78-coverage-closure.json",
+      "criteria": 4
+    }
+  ]
+}
