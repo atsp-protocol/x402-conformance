@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // x402conf-svm probe --resource <url> [--port 4402] [--start "<command>"] [--network auto|<CAIP-2>] [--out file] [--share]
 // x402conf-svm resource --url <url> [--out file] [--share]   (P1-P7, one unpaid GET)
-// x402conf-svm live --url <url> [--min-interval 5] [--max-requests N] [--out file]   (P1-P7, R16a and R24, unpaid, paced)
+// x402conf-svm live --url <url> [--operator-permission REF] [--min-interval 5] [--max-requests N] [--out file]
+//                   (P1-P7, R24 and, on loopback or with --operator-permission, R16a; unpaid, paced)
 // x402conf-svm mcp --url <mcp endpoint> --tool <name> [--arguments JSON] [--no-initialize] [--min-interval 5]
 //                  [--max-requests N] [--out file]   (X1, P3-P5 and P7 on one unpaid tools/call, paced)
 // Starts the facilitator double on 127.0.0.1:<port>, optionally starts your resource server with
@@ -16,7 +17,7 @@ import { anonymise, funnelFooter, shareUrl } from "./corpus.js";
 import { makeReport, VIAS, type Kind, type Via } from "./report.js";
 import { check402, checkPaymentRequired, fetch402 } from "./resource.js";
 import { createPacedFetch, DEFAULT_MIN_INTERVAL_MS, RequestBudgetExceeded, type PacedFetch } from "./pace.js";
-import { probeUnpaidHead } from "./head-unpaid.js";
+import { headNeedsPermission, probeUnpaidHead } from "./head-unpaid.js";
 import { probeMalformedHeader } from "./header.js";
 import { checkMcpSeller } from "./mcp-seller.js";
 import { probeBinding, type BindingTargets } from "./binding.js";
@@ -37,7 +38,7 @@ usage:
                      [--crash] [--crash-kill "<command>" --crash-restart "<command>"]
   x402conf-svm probe <binding options> [--port 4402] [--start "<command>"] [--out file] [--share]
   x402conf-svm resource --url <url> [--min-interval 5] [--max-requests N] [--out file] [--share]
-  x402conf-svm live --url <url> [--min-interval 5] [--max-requests N] [--out file]
+  x402conf-svm live --url <url> [--operator-permission REF] [--min-interval 5] [--max-requests N] [--out file]
   x402conf-svm mcp --url <mcp endpoint> --tool <name> [--arguments '<json>'] [--no-initialize]
                    [--min-interval 5] [--max-requests N] [--out file]
   x402conf-svm demo [--fault ${MOCK_FAULTS.join("|")}] [--out file]
@@ -66,7 +67,10 @@ usage:
   --out       also write the results JSON here (written on errors too)
   --url       (resource) a paid URL; one unpaid GET checks its 402 answer (P1-P7), on any network
               (live) a paid URL on a server you may test: one unpaid GET (P1-P7), one unpaid HEAD (R16a) and one GET per
-              malformed PAYMENT-SIGNATURE (R24, five values): 7 requests. Nothing is paid or signed
+              malformed PAYMENT-SIGNATURE (R24, five values): 7 requests. Nothing is paid or signed. HEAD is not a
+              GET: off loopback R16a runs only with --operator-permission, and is skipped without it
+  --operator-permission  (live) a reference to the operator's written permission for the unpaid HEAD off loopback,
+              for example the matrix row's consent issue URL; recorded in the results
               (mcp) an MCP server over Streamable HTTP, e.g. https://host/mcp: one unpaid tools/call of --tool (X1, and
               P3-P5 and P7 on the PaymentRequired in it), after initialize unless --no-initialize. This POSTs JSON-RPC:
               run it only against a server whose operator agreed. Nothing is paid or signed
@@ -86,7 +90,7 @@ exit codes: 0 all pass, 1 a check failed, 2 usage error or the run could not com
 
 const BINDING = ["cheap", "expensive", "by-method", "by-query", "param", "siwx-cheap", "siwx-expensive"];
 const FLAGS = new Set(["--resource", "--port", "--start", "--out", "--network", "--url", "--crash-kill", "--crash-restart",
-  "--min-interval", "--max-requests", "--tool", "--arguments",
+  "--min-interval", "--max-requests", "--tool", "--arguments", "--operator-permission",
   ...BINDING.map((b) => `--${b}`)]);
 const BOOL = new Set(["--share", "--crash", "--retry", "--no-initialize"]);
 
@@ -144,6 +148,9 @@ function parse(argv: string[]): Record<string, string> | number {
       console.error("x402conf-svm: --arguments must be a JSON object"); return 2;
     }
     return o;
+  }
+  if (o["operator-permission"] !== undefined && o.cmd !== "live") {
+    console.error(`x402conf-svm: --operator-permission goes with live\n\n${USAGE}`); return 2;
   }
   if (o.cmd === "resource" || o.cmd === "live") {
     if (o.cmd === "live" && o.share) { console.error(`x402conf-svm: live takes no --share\n\n${USAGE}`); return 2; }
@@ -227,19 +234,23 @@ async function resourceMain(o: Record<string, string>): Promise<number> {
   return report.summary.failed ? 1 : 0;
 }
 
-/** live: P1-P7 from one unpaid GET, then R16a (one HEAD) and R24 (five malformed headers) on the same URL, every
- * request paced and logged. The first GET is shared, so R16a and R24 do not send their own. Never pays or signs. */
+/** live: P1-P7 from one unpaid GET, then R16a (one HEAD, on loopback or with --operator-permission) and R24 (five
+ * malformed headers) on the same URL, every request paced and logged. The first GET is shared, so R16a and R24 do not
+ * send their own. Never pays or signs. */
 async function liveMain(o: Record<string, string>): Promise<number> {
   const f = pacedFetch(o);
   const doc: Record<string, unknown> = { tool: `x402-conformance-svm ${VERSION}`, evidence: EVIDENCE_FORMAT, provenance: provenance(VERSION),
-    run_at: new Date().toISOString(), target: o.url, mode: "live-unpaid" };
+    run_at: new Date().toISOString(), target: o.url, mode: "live-unpaid",
+    ...(o["operator-permission"] ? { operator_permission: o["operator-permission"] } : {}) };
   let results: Result[] = [];
   const skipped: string[] = [];
+  const head = !headNeedsPermission(o.url, o["operator-permission"]);
   try {
     const answer = await fetch402(o.url, { via: via(), fetch: f });
     results = check402(answer) as Result[];
     if (answer.status === 402) {
-      results.push(...await probeUnpaidHead(o.url, { fetch: f, unpaidGetStatus: answer.status }));
+      if (head) results.push(...await probeUnpaidHead(o.url, { fetch: f, unpaidGetStatus: answer.status }));
+      else skipped.push("R16a: an unpaid HEAD is not a GET; off loopback it needs --operator-permission");
       results.push(...await probeMalformedHeader(o.url, { calls: [] }, { fetch: f, unpaidGetStatus: answer.status }));
     } else {
       skipped.push("R16a and R24: the unpaid GET was not answered 402");

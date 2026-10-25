@@ -58,6 +58,7 @@ RUN_URL = re.compile(r"^https://github\.com/([\w.-]+/[\w.-]+)/actions/runs/([0-9
 CONSENTS = {"listing": "list this project", "data_license": "CC BY 4.0", "testnet_only": "testnet-only probes",
             "badge": "Display the badge in our README with attribution to Optitransfer/x402-conformance"}
 HOOK = ("Free run program", "Install the notify hook")
+UNPAID_HEAD = "also allow one unpaid HEAD request per tier-1 run"  # R16a off loopback needs the operator's permission
 WORDING = re.compile(r"(?i)\bcertified\b|\boverall score\b|\brank(ed|ing)?\b|\b[0-9]{1,3}\s*/\s*100\b|\bscore\s*:")
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 SECRET = re.compile(r"(?i)\b[0-9a-f]{64}\b|-----BEGIN|\bmnemonic\b|\bseed phrase\b|\bprivate key\b|\bsk_live_")
@@ -122,6 +123,7 @@ def from_issue(body: str, issue_url: str, today: str = "") -> tuple[dict[str, ob
         if not ok:
             bad.append(f"consent not given: '{CONSENTS[k]}' must be ticked; nothing is listed without it")
     ticked["hook"] = bool(re.search(r"^- \[[xX]\] .*" + re.escape(HOOK[1]), s.get(HOOK[0], ""), re.M | re.I))
+    ticked["unpaid_head"] = bool(re.search(r"^- \[[xX]\] .*" + re.escape(UNPAID_HEAD), s.get(HOOK[0], ""), re.M | re.I))
     endpoint = s.get(LABELS["testnet_endpoint"], "").strip()
     envs = items(s.get(LABELS["environments"], ""))
     if ticked["hook"] and not (endpoint and "testnet" in envs):
@@ -298,8 +300,8 @@ EXAMPLE = {
     "repo": None, "site": None, "languages": ["TypeScript"], "chains": ["EVM"],
     "networks": ["eip155:84532"], "environment": "testnet", "tier": T.TIER1, "tier_label": T.TIER_LABEL[T.TIER1],
     "version": "1.4.0", "contact": "@example-org", "suite_tag": "v1.7.0", "suite_status": "current",
-    "checks_passed": 6, "checks_applicable": 7, "failed_count": 1, "exercised": 7, "not_applicable": 2,
-    "needs_self_hosted": 70, "na_reasons": {"P9": T.EXTERNAL_NA["P9"], "P10": T.EXTERNAL_NA["P10"]},
+    "checks_passed": 8, "checks_applicable": 9, "failed_count": 1, "exercised": 9, "not_applicable": 2,
+    "needs_self_hosted": 68, "na_reasons": {"P9": T.EXTERNAL_NA["P9"], "P10": T.EXTERNAL_NA["P10"]},
     "last_run": "2026-10-20", "release_alignment": "behind (v1.4.0 tested, v1.5.0 latest)", "stale": False,
     "readme_badge": "shown", "free_run": True, "program_end": "2027-04-20",
     "evidence": "evidence/impl-matrix/<slug>/run.json", "example": True,

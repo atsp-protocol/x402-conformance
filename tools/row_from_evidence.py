@@ -82,13 +82,14 @@ def problems(bundle: str, row: str, consent: str) -> list[str]:
     results = doc.get("results") if isinstance(doc, dict) else None
     probe = isinstance(results, list) and bool(results) and all(
         isinstance(r, dict) and isinstance(r.get("check"), str) and ("status" in r or "pass" in r) for r in results)
-    get_only = (isinstance(doc, dict) and doc.get("mode") == "resource-GET-only" and isinstance(results, list)
+    external = isinstance(doc, dict) and doc.get("mode") in ("resource-GET-only", "resource-unpaid")
+    get_only = (external and isinstance(results, list)
                 and bool(results) and all(isinstance(r, dict) and isinstance(r.get("checks"), list) and r["checks"]
                                           and all(isinstance(c, dict) and isinstance(c.get("check"), str) and "pass" in c
                                                   for c in r["checks"]) for r in results))
     if not (probe or get_only):
         out.append("run.json is not a probe run: it needs results, each with a check and a status (the Action's "
-                   "resource-server.json or x402conf-svm probe --out), or the run queue's external GET-only run "
+                   "resource-server.json or x402conf-svm probe --out), or the run queue's external unpaid run "
                    "(x402conf resource)")
     main = sorted(networks(doc) & MAINNET)
     if main:

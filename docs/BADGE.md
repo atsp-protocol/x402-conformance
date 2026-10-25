@@ -10,7 +10,7 @@ checks passed out of applicable checks and the date:
 
 | tier | left | right |
 |---|---|---|
-| tier 1, run from outside the project's stack against its public testnet endpoint | External-verified · x402-conformance <tag> · Optitransfer | 6/7 checks · 2026-10-20 |
+| tier 1, run from outside the project's stack against its public testnet endpoint | External-verified · x402-conformance <tag> · Optitransfer | 8/9 checks · 2026-10-20 |
 | tier 2, the full suite in the project's own CI, attestation verified | Full suite (self-hosted) · x402-conformance <tag> · Optitransfer | 65/66 checks · 2026-10-22 |
 
 (The counts above are illustrative.) A tier-1 badge covers only the external checks; the row shows how many checks

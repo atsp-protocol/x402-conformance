@@ -52,7 +52,8 @@ Then your own endpoints:
 ```
 x402conf resource https://your.api/paid                              # P1-P7 (and P9), one unpaid GET (Python)
 x402conf resource https://your.api/paid --well-known                 # + P10: the origin's /.well-known/x402, one GET
-npx -y x402-conformance-svm live --url https://your.api/paid --max-requests 7   # P1-P7, R16a, R24: 7 unpaid requests
+npx -y x402-conformance-svm live --url https://your.api/paid --max-requests 7   # P1-P7, R24 (+ R16a, see below)
+x402conf resource https://your.api/paid --well-known --malformed-header      # + R24: five unpaid GETs (Python)
 npx -y x402-conformance-svm resource --url https://your.api/paid      # the same P1-P7, in Node
 npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start "node server.js" --share
 npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start "node server.js" --retry  # + R20
@@ -71,7 +72,10 @@ URL, and how long it waited). A request over the cap is not sent and the check t
 Loopback targets are counted and logged but not spaced, so local servers and CI runs are not slowed down. The JSON
 output records the same log under `pacing`. `x402conf-svm live` sends one unpaid `GET` (P1-P7), one unpaid `HEAD`
 (R16a) and one `GET` per malformed `PAYMENT-SIGNATURE` (R24, five values), and never pays or signs; run it only against
-servers you are allowed to test.
+servers you are allowed to test. `x402conf resource --malformed-header --unpaid-head` is the same in Python, on the
+GET that P1-P7 already sent. A `HEAD` is not a `GET`: off loopback both CLIs send it only with
+`--operator-permission <ref>`, a reference to the operator's written permission (the devnet runner's convention), which
+the results record; without it R16a is skipped and the rest still runs.
 
 `x402conf-svm mcp --url https://host/mcp --tool <name> [--arguments '<json>'] [--no-initialize]` is the same for a paid
 MCP tool over Streamable HTTP: one unpaid `tools/call` (after `initialize` and `notifications/initialized` unless

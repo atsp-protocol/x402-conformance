@@ -102,7 +102,7 @@ def rows(root: str) -> tuple[list[dict[str, object]], list[str]]:
         m = CONSENT_LINE.search(open(readme, encoding="utf-8").read()) if os.path.isfile(readme) else None
         results = run.get("results", [])
         target = ""
-        if run.get("mode") == "resource-GET-only":  # the run queue's external tier-1 run (XC-98): x402conf resource
+        if run.get("mode") in ("resource-GET-only", "resource-unpaid"):  # the queue's tier-1 run (XC-98, XC-110)
             target = next((str(r.get("target")) for r in results if isinstance(r, dict) and r.get("target")), "")
             results = [{"check": c.get("check"), "pass": c.get("pass") is True or c.get("severity") != "error",
                         "status": "pass" if c.get("pass") is True or c.get("severity") != "error" else "fail"}

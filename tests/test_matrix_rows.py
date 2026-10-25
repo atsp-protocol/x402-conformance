@@ -73,7 +73,7 @@ class MatrixRows(unittest.TestCase):
         row = json.load(open(os.path.join(self.root, "matrix", "rows", "example-pay.json")))
         self.assertEqual(row["type"], "sdk")
         self.assertEqual(row["consent"], {"listing": True, "data_license": True, "testnet_only": True, "badge": True,
-                                          "hook": False})
+                                          "hook": False, "unpaid_head": False})
         self.assertIsNone(row["tier"])
         self.assertNotIn("run", row)
         self.assertEqual(row["source_issue"], ISSUE)
@@ -145,6 +145,18 @@ class MatrixRows(unittest.TestCase):
         self.assertNotIn("run", row)  # the queue never runs the project's code: no start command
         from matrix_rows import add_months
         self.assertEqual(row["program_end"], add_months(row["program_start"], 6))
+        self.assertFalse(row["consent"]["unpaid_head"])  # R16a's HEAD is opt-in on its own (XC-110)
+
+    def test_the_unpaid_head_is_a_separate_optional_permission(self) -> None:
+        boxes = ("- [X] Install the notify hook so each new release joins the x402-conformance run queue\n"
+                 "- [X] Optional: also allow one unpaid HEAD request per tier-1 run (R16a, is HEAD paywalled like GET)")
+        rc, out = self.submit(body(**{"Free run program": boxes,
+                                      "Testnet endpoint URL (if any)": "https://sandbox.example.com/paid"}))
+        self.assertEqual(rc, 0, out)
+        row = json.load(open(os.path.join(self.root, "matrix", "rows", "example-pay.json")))
+        self.assertEqual((row["consent"]["hook"], row["consent"]["unpaid_head"]), (True, True))
+        form = open(os.path.join(ROOT, ".github", "ISSUE_TEMPLATE", "matrix-row.yml"), encoding="utf-8").read()
+        self.assertIn("also allow one unpaid HEAD request per tier-1 run", form)
 
     def test_readme_snippet_has_badge_and_attribution_line(self) -> None:
         md = open(os.path.join(ROOT, "docs", "MATRIX.md"), encoding="utf-8").read()

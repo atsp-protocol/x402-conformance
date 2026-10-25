@@ -199,7 +199,8 @@ class Attestation(unittest.TestCase):
         self.assertEqual(set(r), set(T.EXTERNAL))
         c = T.denominator(r, T.TIER1)
         self.assertEqual((c["passed"], c["applicable"], c["failed"], c["not_applicable"], c["needs_self_hosted"]),
-                         (6, 7, 1, 2, len(spec.CATALOG) - len(T.EXTERNAL)))
+                         (8, 9, 1, 2, len(spec.CATALOG) - len(T.EXTERNAL)))
+        self.assertEqual((r["R16a"]["status"], r["R24"]["status"]), ("pass", "pass"))
         self.assertTrue(T.EXTERNAL <= set(spec.CATALOG))
         pin = json.load(open(os.path.join(ROOT, "matrix", "queue", "suite.json")))
         self.assertTrue(set(pin["checks"]) <= set(spec.CATALOG))

@@ -2,7 +2,8 @@
 
 Facilitators, SDKs, merchants and vendors can run x402-conformance on their own code and put the result in the
 [matrix](MATRIX.md) themselves. Run it on your own testnet or devnet endpoint, or on a local build. Never run it on
-mainnet, and never against a facilitator you don't operate. Nothing here pays, and the live checks are GET-only.
+mainnet, and never against a facilitator you don't operate. Nothing here pays, and the live checks are unpaid GETs (plus
+one unpaid HEAD for R16a, only with the operator's permission).
 
 ## CLI
 
@@ -103,7 +104,8 @@ public testnet endpoint, version or commit, a public contact handle (no emails) 
 tier (or both):
 
 1. **External-verified**: tick the notify hook and give the testnet endpoint. The run queue checks it from outside
-   your stack on each new release: unpaid GETs only, paced, never your code.
+   your stack on each new release: P1 to P7, P9, P10 and R24 from unpaid GETs, and R16a from one unpaid HEAD if you
+   tick the box that allows it. At most eight requests, paced, never your code.
 2. **Full suite (self-hosted)**: link a release run of the Action with `attest: true` in your own repository. The
    workflow downloads the attestation, checks its signature (`gh attestation verify`: a workflow in your repository,
    at the attested commit and tag) and its contents (`tools/attestation.py`: the pinned suite, every applicable check
@@ -136,8 +138,8 @@ endpoints.
 ## Free run program
 
 For six months from your consent, free: tier-1 external runs of your public testnet endpoint (one initial run, then
-one per new release), and verification and listing of your tier-2 attestations. Tier-1 runs are unpaid GETs from
-outside your stack, with no hosted facilitator, no mainnet and no spend, and the queue never runs your code. Full
+one per new release), and verification and listing of your tier-2 attestations. Tier-1 runs are unpaid GETs (and one HEAD only if
+you allow it) from outside your stack, with no hosted facilitator, no mainnet and no spend, and the queue never runs your code. Full
 tier-1 results go to you privately first. In return your project is listed with its results and displays the badge in
 its README with attribution to Optitransfer/x402-conformance. You also install the notify hook,
 [templates/x402-conformance-notify.yml](templates/x402-conformance-notify.yml), as

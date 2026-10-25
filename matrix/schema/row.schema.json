@@ -103,7 +103,7 @@
    ],
    "maxLength": 300,
    "pattern": "^https://[A-Za-z0-9.-]+(/[^\\s<>|`]*)?$",
-   "description": "The public testnet paid URL the run queue checks from outside (tier 1): unpaid GETs paced at least 5 s apart, never mainnet"
+   "description": "The public testnet paid URL the run queue checks from outside (tier 1): at most eight unpaid requests (GETs, and one HEAD for R16a only with consent.unpaid_head) paced at least 5 s apart, never mainnet"
   },
   "version": {
    "type": "string",
@@ -138,6 +138,10 @@
     },
     "hook": {
      "description": "Free program: the project installs the notify hook so each published release gets a tier-1 external rerun and its tier-2 attestation verified, for six months",
+     "type": "boolean"
+    },
+    "unpaid_head": {
+     "description": "Optional: the operator allows one unpaid HEAD request per tier-1 run (R16a). It is the operator's permission the queue passes as --operator-permission (the row's consent issue); without it R16a is left to the self-hosted run",
      "type": "boolean"
     }
    }

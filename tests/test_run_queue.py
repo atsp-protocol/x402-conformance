@@ -133,6 +133,18 @@ class RunQueue(unittest.TestCase):
         self.assertEqual((got["slug"], got["repo"], got["endpoint"], got["suite"], got["interval"]),
                          ("example-pay", "example/example-pay", "https://sandbox.example.com/paid", "v1.6.0", "5"))
         self.assertNotIn("start", got)
+        self.assertEqual(got["head"], "false")  # no HEAD without the operator's permission on the form (XC-110)
+        rpath = os.path.join(self.root, "matrix", "rows", "example-pay.json")
+        row = json.load(open(rpath))
+        row["consent"]["unpaid_head"] = True
+        json.dump(row, open(rpath, "w"))
+        q = json.load(open(os.path.join(self.queue, "matrix", "queue", "example-pay.json")))
+        q["status"] = "queued"
+        json.dump(q, open(os.path.join(self.queue, "matrix", "queue", "example-pay.json"), "w"))
+        open(out, "w").close()
+        self.assertEqual(self.tool("next", "--queue", self.queue, "--now", NOW, "--github-output", out)[0], 0)
+        got = dict(line.split("=", 1) for line in open(out).read().splitlines())
+        self.assertEqual((got["head"], got["consent"]), ("true", row["source_issue"]))
         self.tool("finish", "--queue", self.queue, "--slug", "example-pay", "--now", NOW, "--result", "ok")
         rc, text = self.comment("/x402-conformance run slug=example-pay ref=" + "v1.5.0")
         self.assertIn("already run", text)
@@ -166,10 +178,10 @@ class RunQueue(unittest.TestCase):
                          ("1.5.0", "evidence/impl-matrix/example-pay", "external-verified"))
         svg = open(os.path.join(self.root, "docs", "site", "badge", "example-pay.svg")).read()
         self.assertIn("External-verified \u00b7 x402-conformance v1.6.0 \u00b7 Optitransfer", svg)
-        self.assertIn("6/7 checks \u00b7 2026-10-20", svg)
+        self.assertIn("8/9 checks \u00b7 2026-10-20", svg)
         md = open(os.path.join(self.root, "docs", "MATRIX.md")).read()
         self.assertIn("| External-verified | testnet | 1.5.0 |", md)
-        self.assertIn("| 6/7 | 1 | 7 exercised / 2 NA / 70 needs self-hosted | v1.6.0 |", md)
+        self.assertIn("| 8/9 | 1 | 9 exercised / 2 NA / 68 needs self-hosted | v1.6.0 |", md)
 
     def test_attest_requests_follow_the_same_rules(self) -> None:
         f = os.path.join(self.root, "a.md")

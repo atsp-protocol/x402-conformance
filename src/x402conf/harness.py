@@ -342,9 +342,12 @@ def offers_of(resp: Json) -> list[Any]:
 
 
 def run_resource(url: str, *, timeout: float = 15, opener: Opener | None = None, well_known: bool = False,
-                 manifests: dict[str, Json] | None = None) -> Json:
+                 manifests: dict[str, Json] | None = None, unpaid_head: bool = False, malformed_header: bool = False,
+                 operator_permission: str | None = None) -> Json:
     """One unpaid GET (P1-P7, and P9 when the 402 carries the bazaar extension). With well_known, also one GET of the
-    origin's /.well-known/x402 (P10), shared through `manifests` by every target on the same origin."""
+    origin's /.well-known/x402 (P10), shared through `manifests` by every target on the same origin. With
+    malformed_header, R24 (five unpaid GETs with a malformed PAYMENT-SIGNATURE); with unpaid_head, R16a (one unpaid
+    HEAD), which off loopback is sent only with operator_permission and is skipped without it (external.py)."""
     try:
         r = fetch_402(url, timeout=timeout, opener=opener)
     except RequestBudgetExceeded as e:
@@ -355,6 +358,23 @@ def run_resource(url: str, *, timeout: float = 15, opener: Opener | None = None,
     out = {"target": url, "mode": "resource-GET-only", "http": r["status"], "ms": r["ms"], "checks": check_402(r)}
     if well_known and r["status"] == 402:
         out["checks"] += well_known_checks(url, offers_of(r), timeout=timeout, opener=opener, manifests=manifests)
+    if (unpaid_head or malformed_header) and r["status"] == 402:
+        from . import external as X
+        skipped: list[str] = []
+        if unpaid_head and X.head_needs_permission(url, operator_permission):
+            skipped.append("R16a: an unpaid HEAD is not a GET; off loopback it needs --operator-permission")
+            unpaid_head = False
+        try:
+            if unpaid_head:
+                out["checks"].append(X.unpaid_head(url, r["status"], timeout=timeout, opener=opener))
+            if malformed_header:
+                out["checks"].append(X.malformed_header(url, r["status"], timeout=timeout, opener=opener))
+        except RequestBudgetExceeded as e:
+            skipped.append(str(e))
+        if skipped:
+            out["skipped"] = "; ".join(skipped)
+        if operator_permission:
+            out["operator_permission"] = operator_permission
     return out
 
 

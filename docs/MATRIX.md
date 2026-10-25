@@ -16,7 +16,7 @@ checks, and failed checks are a count only. Rows are listed by name, never by re
 
 | tier | what runs | where | who runs it | badge |
 |---|---|---|---|---|
-| **External-verified** | the checks that work from outside the project's stack: P1 to P7, P9 and P10 (unpaid GETs of the paid URL and its `/.well-known/x402`) | the project's public testnet endpoint | the run queue, on each new release (the notify hook, or the weekly release check) | "External-verified · x402-conformance <tag> · Optitransfer" |
+| **External-verified** | the checks that work from outside the project's stack, 11 of the catalogue: P1 to P7, P9 and P10 (unpaid GETs of the paid URL and its `/.well-known/x402`), R24 (five unpaid GETs with a malformed `PAYMENT-SIGNATURE`) and R16a (one unpaid `HEAD`, only if the project allows it on the form) | the project's public testnet endpoint | the run queue, on each new release (the notify hook, or the weekly release check) | "External-verified · x402-conformance <tag> · Optitransfer" |
 | **Full suite (self-hosted)** | every check in the catalogue, including the facilitator, fault-injection, crash, retry and binding checks that only work inside the stack | the project's own CI, on each release | the project, with the Action and `attest: true`; the queue verifies the signed attestation and never reruns it | "Full suite (self-hosted) · x402-conformance <tag> · Optitransfer" |
 
 Each row shows its tier, checks passed out of applicable checks, and the denominator: how many catalogue checks were
@@ -51,7 +51,7 @@ Opt-in only: a project appears here after it accepts, through the [Add or update
 
 Two tiers. **External-verified**: the run queue runs the checks that work from outside a project's stack against its public testnet endpoint, with no spend, on each new release. **Full suite (self-hosted)**: the project runs the whole suite in its own CI with the Action on each release, and the queue verifies the signed attestation; it never runs it. Each row shows its tier, checks passed out of applicable checks, the denominator (exercised / not applicable / needs the self-hosted run, out of 79 in the catalogue), the suite tag and the date.
 
-Listed projects display the badge in their README with the line "Conformance tested by Optitransfer/x402-conformance", both linking to their row. The badge reads "External-verified · x402-conformance <tag> · Optitransfer" or "Full suite (self-hosted) · x402-conformance <tag> · Optitransfer", with checks passed out of applicable and the date, and turns grey when the row is stale or needs a rerun on the current suite. It is not a certification and not an endorsement, and carries no x402 logo. The weekly check reads each project's public README and flags a row whose README no longer links it. The example row's badge reads "External-verified · x402-conformance v1.7.0 · Optitransfer" | "6/7 checks · 2026-10-20". Copy-paste README snippet, per row (each row below has its own):
+Listed projects display the badge in their README with the line "Conformance tested by Optitransfer/x402-conformance", both linking to their row. The badge reads "External-verified · x402-conformance <tag> · Optitransfer" or "Full suite (self-hosted) · x402-conformance <tag> · Optitransfer", with checks passed out of applicable and the date, and turns grey when the row is stale or needs a rerun on the current suite. It is not a certification and not an endorsement, and carries no x402 logo. The weekly check reads each project's public README and flags a row whose README no longer links it. The example row's badge reads "External-verified · x402-conformance v1.7.0 · Optitransfer" | "8/9 checks · 2026-10-20". Copy-paste README snippet, per row (each row below has its own):
 
 - Markdown: `[![Tested with x402-conformance · Optitransfer](https://atsp-protocol.github.io/x402-conformance/badge/<slug>.svg)](https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>) Conformance tested by [Optitransfer/x402-conformance](https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>)`
 - HTML: `<a href="https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>"><img src="https://atsp-protocol.github.io/x402-conformance/badge/<slug>.svg" alt="Tested with x402-conformance · Optitransfer"></a> Conformance tested by <a href="https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>">Optitransfer/x402-conformance</a>`
@@ -73,7 +73,7 @@ Release alignment: current (the version tested is the latest release), behind (v
 
 | project | type | tier | environment | version tested | release alignment | passed/applicable | failed | denominator | suite | last run | badge in README | README snippet | add or update |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| <a id="project-example"></a>**Example (illustrative, not a real result):** example-org/example-x402-server | merchant-paid-api | External-verified | testnet | 1.4.0 | behind (v1.4.0 tested, v1.5.0 latest) | 6/7 | 1 | 7 exercised / 2 NA / 70 needs self-hosted | v1.7.0 | 2026-10-20: `evidence/impl-matrix/<slug>/run.json` | shown | `[![Tested with x402-conformance · Optitransfer](https://atsp-protocol.github.io/x402-conformance/badge/example.svg)](https://atsp-protocol.github.io/x402-conformance/matrix/#example) Conformance tested by [Optitransfer/x402-conformance](https://atsp-protocol.github.io/x402-conformance/matrix/#example)` | [add or update](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml) |
+| <a id="project-example"></a>**Example (illustrative, not a real result):** example-org/example-x402-server | merchant-paid-api | External-verified | testnet | 1.4.0 | behind (v1.4.0 tested, v1.5.0 latest) | 8/9 | 1 | 9 exercised / 2 NA / 68 needs self-hosted | v1.7.0 | 2026-10-20: `evidence/impl-matrix/<slug>/run.json` | shown | `[![Tested with x402-conformance · Optitransfer](https://atsp-protocol.github.io/x402-conformance/badge/example.svg)](https://atsp-protocol.github.io/x402-conformance/matrix/#example) Conformance tested by [Optitransfer/x402-conformance](https://atsp-protocol.github.io/x402-conformance/matrix/#example)` | [add or update](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml) |
 | no accepted project yet | | | | | | | | | | | | | [add your row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml) |
 
 <!-- matrix-rows:end -->
@@ -147,7 +147,8 @@ form and give your public testnet endpoint.
 Requests go into the run queue (`matrix/queue/`, the `run-queue` workflow). It drops duplicates, takes release tags
 only, and runs within its caps (`matrix/queue/caps.json`):
 
-- unpaid GETs only, at least 5 s apart, at most two per run;
+- unpaid requests only, at least 5 s apart, at most eight per run: seven GETs, and one HEAD (R16a) only if you
+  allowed it on the form. Without that, R16a is left to the self-hosted run;
 - testnet ids only; no hosted facilitator, no mainnet, zero spend;
 - the queue never checks out or runs your code, and refuses to run at all if the caps allow spend or no suite
   release is pinned.

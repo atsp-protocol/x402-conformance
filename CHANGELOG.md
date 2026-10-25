@@ -1,5 +1,14 @@
 # Changelog
 ## Unreleased
+- External modes for R16a and R24 in the tier-1 queue (proposed task XC-110).
+  - `x402conf resource --malformed-header` adds R24 (five unpaid GETs with a malformed `PAYMENT-SIGNATURE`, graded
+    like `x402conf-svm live`), and `--unpaid-head` adds R16a (one unpaid `HEAD`), both on the GET that P1-P7 already
+    sent. A `HEAD` is not a `GET`: off loopback it is sent only with `--operator-permission <ref>` (the devnet runner's
+    convention) and R16a is skipped without it. `x402conf-svm live` follows the same rule.
+  - The queue's `run` job sends them against the row's testnet endpoint, at most eight requests 5 s apart; the HEAD only
+    when the row ticked the new optional form box (`consent.unpaid_head`), with the row's consent issue as the
+    permission. Tier 1 is now 11 checks (P1-P7, P9, P10, R16a, R24); an external check the run did not reach counts
+    as needing the self-hosted run.
 - Two tiers in the matrix (proposed task XC-98).
   - **External-verified** (tier 1): the run queue runs the checks that work from outside a project's stack (P1 to
     P7, P9, P10: unpaid GETs, paced, zero spend) against its public testnet endpoint, with the pinned suite release

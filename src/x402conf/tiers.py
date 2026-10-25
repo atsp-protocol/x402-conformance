@@ -2,7 +2,9 @@
 
 Tier 1, External-verified: the subset of the catalogue that runs from outside the project's stack against its public
 testnet endpoint with no spend. The x402-conformance run queue runs it on each new release (the notify hook or the
-weekly release check). Today that is the unpaid-GET checks of `x402conf resource --well-known`: P1 to P7, P9 and P10.
+weekly release check). That is `x402conf resource --well-known --malformed-header --unpaid-head`: P1 to P7, P9 and P10
+from unpaid GETs, R24 from five unpaid GETs with a malformed PAYMENT-SIGNATURE, and R16a from one unpaid HEAD, which is
+sent only when the row's operator allowed it (XC-110); without that permission R16a needs the self-hosted run.
 Paid checks against a live endpoint are never run by the queue while its spend caps are zero; with the rest of the
 catalogue they need the self-hosted run.
 
@@ -29,8 +31,13 @@ ATTESTATION_FILE: Final = "x402-conformance-attestation.json"
 TIER1: Final = "external-verified"
 TIER2: Final = "full-suite-self-hosted"
 TIER_LABEL: Final = {TIER1: "External-verified", TIER2: "Full suite (self-hosted)"}
-# What the queue runs from outside, unpaid: one GET of the paid URL and one of /.well-known/x402, paced >= 5 s apart.
-EXTERNAL: Final = frozenset({"P1", "P2", "P3", "P4", "P5", "P6", "P7", "P9", "P10"})
+# What the queue runs from outside, unpaid, paced >= 5 s apart: one GET of the paid URL and one of /.well-known/x402
+# (P1-P7, P9, P10), five GETs with a malformed PAYMENT-SIGNATURE (R24) and, with the operator's permission, one HEAD
+# (R16a). At most eight requests a run.
+EXTERNAL: Final = frozenset({"P1", "P2", "P3", "P4", "P5", "P6", "P7", "P9", "P10", "R16a", "R24"})
+# External checks that send something other than a GET, and so run only with the operator's permission.
+NEEDS_PERMISSION: Final = {"R16a": "the operator did not allow an unpaid HEAD; the self-hosted run covers it"}
+MAX_EXTERNAL_REQUESTS: Final = 8
 STATUSES: Final = ("pass", "fail", "warn", "not_applicable", "not_run")
 REASON: Final = re.compile(r"^[^<>`|\n\r]{3,200}$")
 # An external check the run emits nothing for when the endpoint offers nothing to grade.
@@ -45,7 +52,8 @@ def catalogue() -> list[str]:
 def denominator(results: dict[str, dict[str, Any]], tier: str) -> dict[str, int]:
     """Counts for one row: passed, failed, applicable (= exercised), not applicable, and the checks that need the
     self-hosted run. In tier 1 every catalogue check outside EXTERNAL needs the self-hosted run (which of them apply is
-    settled by that run); in tier 2 nothing does."""
+    settled by that run), and so does an external check the run did not reach (R16a without the operator's
+    permission); in tier 2 nothing does."""
     ids = catalogue()
     scope = [i for i in ids if i in EXTERNAL] if tier == TIER1 else ids
     st = {i: str((results.get(i) or {}).get("status") or "not_run") for i in scope}
@@ -55,7 +63,7 @@ def denominator(results: dict[str, dict[str, Any]], tier: str) -> dict[str, int]
     not_run = sum(1 for s in st.values() if s == "not_run")
     return {"passed": passed, "failed": failed, "applicable": passed + failed, "exercised": passed + failed,
             "not_applicable": na, "not_run": not_run,
-            "needs_self_hosted": (len(ids) - len(scope)) if tier == TIER1 else 0, "catalogue": len(ids)}
+            "needs_self_hosted": (len(ids) - len(scope) + not_run) if tier == TIER1 else 0, "catalogue": len(ids)}
 
 
 def results_from_dir(d: str, declared_na: dict[str, str] | None = None) -> dict[str, dict[str, Any]]:
@@ -111,6 +119,8 @@ def tier1_results(results: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any
         e = dict(results.get(cid) or {"status": "not_run"})
         if e["status"] == "not_run" and cid in EXTERNAL_NA:
             e = {"status": "not_applicable", "reason": EXTERNAL_NA[cid]}
+        elif e["status"] == "not_run" and cid in NEEDS_PERMISSION:
+            e = {"status": "not_run", "reason": NEEDS_PERMISSION[cid]}
         out[cid] = e
     return out
 

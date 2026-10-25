@@ -57,7 +57,7 @@ body:
     id: endpoint
     attributes:
       label: Testnet endpoint URL (if any)
-      description: "A public https paid URL on testnet. Tier 1 checks it from outside: unpaid GETs, at least 5 s apart."
+      description: "A public https paid URL on testnet. Tier 1 checks it from outside: at most eight unpaid requests (GETs, and one HEAD only if you allow it below), at least 5 s apart."
       placeholder: "https://sandbox.example.com/paid"
   - type: input
     id: version
@@ -98,8 +98,8 @@ body:
       value: >-
         **Free run program.** For six months from today, free: tier 1, one initial external run of your public
         testnet endpoint and then a rerun for each new release (not every commit); and tier 2, verification and
-        listing of the attested full-suite run your own CI makes on each release. Tier-1 runs are unpaid GETs from
-        outside your stack: never mainnet, never a hosted facilitator, nothing paid, never your code. Full tier-1
+        listing of the attested full-suite run your own CI makes on each release. Tier-1 runs are unpaid GETs (and one
+        HEAD only if you tick that box) from outside your stack: never mainnet, never a hosted facilitator, nothing paid, never your code. Full tier-1
         results go to you privately first. In return your project is listed with its results and displays the badge
         in its README with attribution to Optitransfer/x402-conformance, and you install the notify hook
         ([docs/templates/x402-conformance-notify.yml](https://github.com/atsp-protocol/x402-conformance/blob/main/docs/templates/x402-conformance-notify.yml)),
@@ -112,4 +112,6 @@ body:
       label: Free run program
       options:
         - label: Install the notify hook so each new release joins the x402-conformance run queue (free for six months; needs the testnet endpoint above)
+          required: false
+        - label: "Optional: also allow one unpaid HEAD request per tier-1 run (R16a, is HEAD paywalled like GET). Without it R16a is left to the self-hosted run"
           required: false

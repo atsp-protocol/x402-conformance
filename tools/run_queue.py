@@ -11,8 +11,9 @@
                                        --issue-author LOGIN | --dispatch FILE) [--root DIR] [--github-output FILE]
 
 Two tiers (XC-98). The queue only ever runs tier 1, External-verified: the checks that work from outside the
-project's stack (src/x402conf/tiers.py EXTERNAL), against the row's public testnet endpoint, unpaid GETs paced at
-least min_probe_interval_s apart, with the pinned suite release (matrix/queue/suite.json). It never checks out or
+project's stack (src/x402conf/tiers.py EXTERNAL), against the row's public testnet endpoint: unpaid requests (GETs,
+and one HEAD for R16a only with the operator's permission on the form, consent.unpaid_head) paced at least
+min_probe_interval_s apart, with the pinned suite release (matrix/queue/suite.json). It never checks out or
 runs the project's code. Tier 2, Full suite (self-hosted), runs only in the project's own CI with the Action and
 `attest: true`; `attest` takes the request `/x402-conformance attest slug=<slug> repo=<owner/repo> ref=<tag>
 run=<run id>` (same rules as a run request) and hands it to the verify job, which downloads the signed attestation
@@ -35,7 +36,7 @@ elsewhere. The queue keeps one file per slug, matrix/queue/<slug>.json,
 so a newer request replaces a waiting one, and a ref already run is not run again.
 
 next picks the oldest waiting entry inside matrix/queue/caps.json: runs per day, hours between runs of one slug, and
-no spend (max_testnet_spend_per_run must be 0: the runner sends unpaid GETs only, so nothing is paid, signed on chain
+no spend (max_testnet_spend_per_run must be 0: the runner sends unpaid requests only, so nothing is paid, signed on chain
 or sent to a hosted facilitator or mainnet), and a pinned suite release. publish turns the run's evidence bundle
 into the row through tools/row_from_evidence.py (the same refusals as every row) and regenerates the matrix; the
 workflow then opens a pull request for review. Nothing merges automatically.
@@ -208,7 +209,9 @@ def pick(opt: dict[str, str], root: str) -> dict[str, object] | None:
         return {"slug": e["slug"], "repo": str(row["repo"]).removeprefix("https://github.com/"), "ref": e["ref"],
                 "version": e["version"], "endpoint": row["testnet_endpoint"], "suite": suite["tag"],
                 "interval": max(5, int(caps.get("min_probe_interval_s", 5))),  # type: ignore[call-overload]
-                "consent": row["source_issue"]}
+                "consent": row["source_issue"],
+                # R16a's unpaid HEAD is not a GET: sent only when the operator allowed it on the form (XC-110)
+                "head": "true" if (row.get("consent") or {}).get("unpaid_head") is True else "false"}  # type: ignore[union-attr]
     return None
 
 

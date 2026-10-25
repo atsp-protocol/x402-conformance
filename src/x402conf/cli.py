@@ -2,7 +2,8 @@
 
     x402conf live <facilitator-base-url> ... [--evidence DIR] [--fail-on-error]   S0-S4, GET /supported only
     x402conf resource <paid-url> ... [--fail-on-error] [--share] [--well-known]   P1-P7 and P9, one unpaid GET per URL;
-                                                                                  P10 with --well-known
+             [--malformed-header] [--unpaid-head --operator-permission REF]      P10 with --well-known; R24 (five unpaid
+                                                                                  GETs); R16a (one unpaid HEAD)
     live and resource take --min-interval SECONDS (default 5, live targets only) and --max-requests N
     x402conf offline                                                F1-F12 and S5 against the reference and faulty doubles
     x402conf devnet [--faults] [--evidence DIR] ...                  F1-F6 over real /verify and /settle on Solana devnet
@@ -365,6 +366,14 @@ def parser() -> argparse.ArgumentParser:
     rs.add_argument("--fail-on-error", action="store_true", help=fe)
     rs.add_argument("--well-known", action="store_true",
                     help="also GET each origin's /.well-known/x402 once and check it against the live 402 (P10)")
+    rs.add_argument("--malformed-header", action="store_true",
+                    help="also R24: one unpaid GET per malformed PAYMENT-SIGNATURE value (five), after a 402")
+    rs.add_argument("--unpaid-head", action="store_true",
+                    help="also R16a: one unpaid HEAD after a 402. HEAD is not a GET: off loopback it is sent only with "
+                         "--operator-permission, and skipped without it")
+    rs.add_argument("--operator-permission", metavar="REF", default=None,
+                    help="reference to the operator's written permission for requests other than GET off loopback "
+                         "(for example the row's consent issue URL); recorded in the results")
     _pacing_args(rs)
     rs.add_argument("--share", action="store_true",
                     help="opt-in: write an anonymised corpus case per URL and print the link to submit a failing one; "
@@ -744,11 +753,14 @@ def main(argv: list[str] | None = None) -> int:
             return 2
     if a.mode == "resource":
         manifests: dict[str, Any] = {}
-        rruns = [H.run_resource(t, opener=pacer.wrap(), well_known=a.well_known, manifests=manifests)
+        rruns = [H.run_resource(t, opener=pacer.wrap(), well_known=a.well_known, manifests=manifests,
+                                unpaid_head=a.unpaid_head, malformed_header=a.malformed_header,
+                                operator_permission=a.operator_permission)
                  for t in a.targets]
+        mode = "resource-unpaid" if a.unpaid_head or a.malformed_header else "resource-GET-only"
         reports = [make_report("resource-402", r["target"], r["checks"]) for r in rruns]
         print(json.dumps({"tool": f"x402-conformance {__version__}", **_evidence(), "run_at": stamp,
-                          "mode": "resource-GET-only", "via": H.via(), "links": LINKS, "results": rruns,
+                          "mode": mode, "via": H.via(), "links": LINKS, "results": rruns,
                           "pacing": pacer.summary()},
                          indent=1, sort_keys=True))
         if a.share:

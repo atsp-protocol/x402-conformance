@@ -8,9 +8,9 @@
   "repo": "https://github.com/atsp-protocol/x402-conformance",
   "using": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/USING.md"
  },
- "mode": "resource-GET-only",
+ "mode": "resource-unpaid",
  "pacing": {
-  "max_requests": null,
+  "max_requests": 8,
   "min_interval_s": 5.0,
   "requests": [
    {
@@ -26,9 +26,51 @@
     "n": 2,
     "url": "https://sandbox.example.com/.well-known/x402",
     "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:10Z",
+    "method": "HEAD",
+    "n": 3,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:15Z",
+    "method": "GET",
+    "n": 4,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:20Z",
+    "method": "GET",
+    "n": 5,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:25Z",
+    "method": "GET",
+    "n": 6,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:30Z",
+    "method": "GET",
+    "n": 7,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:35Z",
+    "method": "GET",
+    "n": 8,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
    }
   ],
-  "sent": 2
+  "sent": 8
  },
  "provenance": {
   "publisher": "Optitransfer",
@@ -115,11 +157,67 @@
      "pass": true,
      "profile": "normative",
      "severity": "warning"
+    },
+    {
+     "basis": "the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402",
+     "check": "R16a an unpaid HEAD on a paid route never reaches the handler: 402 with PAYMENT-REQUIRED like GET, or refused with 405",
+     "detail": {
+      "get_status": 402,
+      "head_offers": 1,
+      "head_payment_required": true,
+      "head_status": 402
+     },
+     "pass": true,
+     "profile": "security-profile",
+     "severity": "error"
+    },
+    {
+     "basis": "V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures",
+     "check": "R24 a malformed, non-base64 or non-object payment header gets 402 or 400 with a structured error, never a 5xx or an unhandled exception",
+     "detail": {
+      "cases": [
+       {
+        "header": "not_base64",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       },
+       {
+        "header": "base64_not_json",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       },
+       {
+        "header": "json_array",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       },
+       {
+        "header": "json_string",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       },
+       {
+        "header": "json_number",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       }
+      ],
+      "facilitator_calls": null
+     },
+     "pass": true,
+     "profile": "resilience",
+     "severity": "error"
     }
    ],
    "http": 402,
    "mode": "resource-GET-only",
    "ms": 11,
+   "operator_permission": "https://github.com/atsp-protocol/x402-conformance/issues/1",
    "target": "https://sandbox.example.com/paid"
   }
  ],

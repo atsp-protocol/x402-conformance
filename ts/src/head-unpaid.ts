@@ -6,7 +6,13 @@
 // before any handler runs (RFC 9110 15.5.6), so it meets the property too, and no x402 clause requires HEAD to be priced.
 import { decodePaymentRequiredHeader } from "@x402/core/http";
 import type { Result } from "./probe.js";
-import { RequestBudgetExceeded } from "./pace.js";
+import { isLoopback, RequestBudgetExceeded } from "./pace.js";
+
+/** HEAD is not a GET: off loopback the probe sends it only with the operator's written permission
+ * (`--operator-permission REF`, the convention of the devnet runner), and skips R16a without it. */
+export function headNeedsPermission(url: string, permission?: string): boolean {
+  return !isLoopback(url) && !(permission ?? "").trim();
+}
 
 const keepBudget = (e: unknown): null => { if (e instanceof RequestBudgetExceeded) throw e; return null; };
 

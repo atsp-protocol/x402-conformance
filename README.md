@@ -97,7 +97,9 @@ report everywhere. Failures you choose to share build the public
 
 Live targets are paced: at least 5 s between requests to a non-loopback host (`--min-interval`), an optional cap on the
 whole run (`--max-requests`), and one line per request on stderr. `x402conf-svm live --url <paid-url>` adds R16a and
-R24 to P1-P7 against a server you may test, unpaid, in 7 requests. `x402conf-svm mcp --url <mcp-endpoint> --tool <name>`
+R24 to P1-P7 against a server you may test, unpaid, in 7 requests; `x402conf resource --malformed-header --unpaid-head`
+does the same in Python. HEAD is not a GET, so off loopback R16a runs only with `--operator-permission <ref>` (the
+operator's written permission) and is skipped without it. `x402conf-svm mcp --url <mcp-endpoint> --tool <name>`
 calls a paid MCP tool once, unpaid, and grades X1 and P3-P5 and P7 on the offer in its result (`--no-initialize` for a
 server that needs no session: one request).
 

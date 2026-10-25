@@ -8,7 +8,7 @@ is historical: it grades Base Sepolia too. The double never touches a chain, a k
 ```
 npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start "node server.js" --out results.json
 npx -y x402-conformance-svm resource --url https://your.api/paid --out answer.json   # P1-P7: one unpaid GET, any network
-npx -y x402-conformance-svm live --url https://your.api/paid --out live.json       # P1-P7, R16a, R24: 7 unpaid requests, 5 s apart
+npx -y x402-conformance-svm live --url https://your.api/paid --out live.json       # P1-P7, R24 (+ R16a with --operator-permission off loopback), 5 s apart
 npx -y x402-conformance-svm mcp --url https://your.api/mcp --tool <paid-tool>       # X1, P3-P5, P7: one unpaid tools/call
 npx -y x402-conformance-svm demo                                                     # R0-R10 against a bundled mock, no wallet
 npx -y x402-conformance-svm --help

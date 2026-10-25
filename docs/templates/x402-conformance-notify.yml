@@ -3,7 +3,7 @@
 #
 #   Tier 1, External-verified: the notify job asks for a rerun. It comments on your own "Add or update my row" issue
 #   in atsp-protocol/x402-conformance, and the run queue there checks your public testnet endpoint from outside:
-#   unpaid GETs, paced at least 5 s apart, no spend, never mainnet, never a hosted facilitator. It never runs your code.
+#   unpaid GETs (and one HEAD for R16a only if your row allows it), paced at least 5 s apart, no spend, never mainnet, never a hosted facilitator. It never runs your code.
 #
 #   Tier 2, Full suite (self-hosted): set the repository variable X402_CONFORMANCE_FULL_SUITE to "true" and the
 #   full-suite job runs the whole suite here, in your CI, on your stack, with the Action and attest: true. The Action

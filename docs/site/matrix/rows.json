@@ -25,12 +25,12 @@
   "contact": "@example-org",
   "suite_tag": "v1.7.0",
   "suite_status": "current",
-  "checks_passed": 6,
-  "checks_applicable": 7,
+  "checks_passed": 8,
+  "checks_applicable": 9,
   "failed_count": 1,
-  "exercised": 7,
+  "exercised": 9,
   "not_applicable": 2,
-  "needs_self_hosted": 70,
+  "needs_self_hosted": 68,
   "na_reasons": {
    "P9": "the 402 carries no bazaar extension",
    "P10": "the origin serves no /.well-known/x402"

@@ -1,8 +1,9 @@
 # XC-97 free program, XC-98 two tiers. For six months from consent a listed project in the program gets:
 #   tier 1, External-verified: one free initial run, then a rerun for each new release its notify hook (or the weekly
 #     release check) reports. The `run` job checks the row's public testnet endpoint from outside, with the pinned
-#     suite release (matrix/queue/suite.json): unpaid GETs only (src/x402conf/tiers.py EXTERNAL), paced at least
-#     min_probe_interval_s apart, within matrix/queue/caps.json. It never checks out or runs the project's code and has
+#     suite release (matrix/queue/suite.json): unpaid requests only (src/x402conf/tiers.py EXTERNAL: GETs for P1-P7,
+#     P9, P10 and R24, and one HEAD for R16a only when the row's operator allowed it, passed as --operator-permission),
+#     at most eight, paced at least min_probe_interval_s apart, within matrix/queue/caps.json. It never checks out or runs the project's code and has
 #     read-only permissions and no secrets. The full results are sealed to the maintainer's key and reach the project
 #     privately first; only a maintainer's `/x402-conformance publish slug=<slug> run=<id>` comment then opens the pull
 #     request updating matrix/rows/<slug>.json.
@@ -81,6 +82,8 @@ jobs:
       endpoint: ${{ steps.next.outputs.endpoint }}
       suite: ${{ steps.next.outputs.suite }}
       interval: ${{ steps.next.outputs.interval }}
+      consent: ${{ steps.next.outputs.consent }}
+      head: ${{ steps.next.outputs.head }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -109,19 +112,28 @@ jobs:
           ref: ${{ needs.pick.outputs.suite }}
           persist-credentials: false
       - id: x402
-        name: Tier 1, the external checks against the public testnet endpoint (unpaid GETs, paced, no spend)
+        name: Tier 1, the external checks against the public testnet endpoint (unpaid, paced, no spend)
         env:
           PYTHONPATH: src
           ENDPOINT: ${{ needs.pick.outputs.endpoint }}
           INTERVAL: ${{ needs.pick.outputs.interval }}
+          HEAD_ALLOWED: ${{ needs.pick.outputs.head }}
+          PERMISSION: ${{ needs.pick.outputs.consent }}
           X402C_DIR: x402-conformance
           X402C_ROW: ${{ needs.pick.outputs.slug }}
           X402C_NETWORK: auto
         run: |
           case "$ENDPOINT" in https://*) ;; *) echo "the endpoint must be https"; exit 1 ;; esac
           mkdir -p "$X402C_DIR"
-          python3 -m x402conf resource "$ENDPOINT" --well-known --min-interval "$INTERVAL" --max-requests 2 \
-            > "$X402C_DIR/resource-402.json" || true
+          # P1-P7 and P9 (one GET), P10 (one GET of /.well-known/x402), R24 (five GETs with a malformed
+          # PAYMENT-SIGNATURE) and, only when the operator allowed it on the form, R16a (one HEAD): at most eight.
+          head=()
+          if [ "$HEAD_ALLOWED" = "true" ]; then
+            case "$PERMISSION" in https://github.com/*/issues/*) head=(--unpaid-head --operator-permission "$PERMISSION") ;;
+              *) echo "no consent issue for the HEAD permission: R16a is skipped" ;; esac
+          fi
+          python3 -m x402conf resource "$ENDPOINT" --well-known --malformed-header "${head[@]}" \
+            --min-interval "$INTERVAL" --max-requests 8 > "$X402C_DIR/resource-402.json" || true
           python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_evidence())'
       - name: Seal the full results to the maintainer's key (they go to the project privately first)
         env:
