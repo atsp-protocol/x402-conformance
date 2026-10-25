@@ -18,6 +18,19 @@ import type { Result } from "./probe.js";
 /** The client's own configuration: the networks it pays on, and its maximum per payment in atomic units. */
 export interface OfferPolicy { networks: string[]; maxAmount: string }
 
+/** What the caller says about the client under test. signsPayments: false declares a client that, by design, has no
+ * payment path: it surfaces a 402 to its caller (C1 grades that) and never signs. When such a client signs nothing,
+ * C2 and C3 are graded not_applicable rather than failed; if it signs anyway, it is graded as usual. */
+export interface ClientSigningOptions { signsPayments?: boolean }
+
+/** The not_applicable result for a client declared not to sign that signed nothing. */
+export function notApplicable(check: string, finalStatus: number, thrown: string | undefined): Result {
+  return { check, pass: false, status: "not_applicable", detail: {
+    reason: "the client is declared not to sign x402 payments (signsPayments: false) and signed none, so there is no "
+      + "offer choice or payment version to grade", final_status: finalStatus,
+    ...(thrown ? { client_error: thrown.slice(0, 300) } : {}) } };
+}
+
 /** A client under test: it fetches `url`, pays an offer it chooses, and returns the final response. */
 export type OfferClient = (url: string) => Promise<Response>;
 
@@ -42,7 +55,7 @@ function outsideNetwork(route: string, allowed: string[]): string | undefined {
 /** C2. Puts a recording proxy in front of `url` (a paid route behind `double`), offers the client two decoys before
  * the route's own offer, and reads which offer it signs. `policy` is the client's own declared configuration. */
 export async function checkClientOfferPolicy(client: OfferClient, url: string, double: Double,
-    policy: OfferPolicy): Promise<Result> {
+    policy: OfferPolicy, opts: ClientSigningOptions = {}): Promise<Result> {
   if (!atomic(policy.maxAmount) || policy.networks.length === 0) {
     return res(false, { policy, error: "the policy needs at least one network and a maximum in atomic units" });
   }
@@ -118,6 +131,7 @@ export async function checkClientOfferPolicy(client: OfferClient, url: string, d
   } catch (e) { thrown = String(e); }
   await new Promise<void>((ok) => { proxy.closeAllConnections(); proxy.close(() => ok()); });
 
+  if (opts.signsPayments === false && payments.length === 0) return notApplicable(CHECK, status, thrown);
   const bad = payments.find((p) => !p.within_policy);
   const chosen = bad ?? payments[0];
   let error: string | undefined;

@@ -8,6 +8,7 @@ import type { AddressInfo } from "node:net";
 import { decodePaymentRequiredHeader, decodePaymentSignatureHeader } from "@x402/core/http";
 import { BASE_SEPOLIA, DEVNET, type Double } from "./double.js";
 import type { Result } from "./probe.js";
+import { notApplicable, type ClientSigningOptions } from "./client-offers.js";
 
 export const C3 = "C3 client: when a 402 offers V2 and V1, the client pays with V2 and never falls back to V1";
 
@@ -31,7 +32,7 @@ const res = (pass: boolean, detail: unknown): Result => ({ check: C3, pass, stat
 
 /** C3. Puts a recording proxy in front of `url` (a paid route behind `double`) that adds a V1 body to each 402 with a
  * V2 offer, runs the client through it, and reads which version the client paid with. */
-export async function checkClientKeepsV2(client: VersionClient, url: string, double: Double): Promise<Result> {
+export async function checkClientKeepsV2(client: VersionClient, url: string, double: Double, opts: ClientSigningOptions = {}): Promise<Result> {
   const target = new URL(url);
   const paid: { header: "PAYMENT-SIGNATURE" | "X-PAYMENT"; x402Version: number | null; forwarded: boolean }[] = [];
   const offered = { v2_header: false, v1_body: false };
@@ -91,6 +92,7 @@ export async function checkClientKeepsV2(client: VersionClient, url: string, dou
     await r.text().catch(() => "");
   } catch (e) { thrown = String(e); }
   await new Promise<void>((ok) => { proxy.closeAllConnections(); proxy.close(() => ok()); });
+  if (opts.signsPayments === false && paid.length === 0 && offered.v2_header) return notApplicable(C3, finalStatus, thrown);
   const v1 = paid.find((p) => p.header === "X-PAYMENT" || p.x402Version !== 2);
   const v2 = paid.find((p) => p.header === "PAYMENT-SIGNATURE" && p.x402Version === 2);
   const shown = v1 ?? v2;

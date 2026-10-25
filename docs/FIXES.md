@@ -183,6 +183,27 @@ facilitators that read it fall back to authorization semantics when it's absent.
 scheme text allows omitting it.
 **How to fix it.** Set `extra.paymentFlow` (`"upfront"` or `"escrow"`) on every such offer.
 
+## P9
+**What failed.** The 402 carries the bazaar discovery extension, and its `info` (usually the `info.input` example: the
+query parameters, body or tool arguments) does not validate against the `schema` it ships with. The result lists each
+problem with its path, for example `at /input/queryParams/limit: "3" is not of type integer`. An external `$ref` or
+`$id`, or a `$schema` other than Draft 2020-12, fails too.
+**Why it matters.** The bazaar extension says facilitators must validate `info` against `schema` before cataloging. An
+example that fails its own schema can keep the endpoint out of a discovery catalog, and agents that build calls from
+the schema and the example get two different answers.
+**How to fix it.** Make the example match the schema (send `3`, not `"3"`, for an integer), or change the schema to
+what the endpoint really accepts (query string values are strings, so `type: string` is also a valid choice). Keep
+`$ref` same-document (`#/...`).
+
+## P10
+**What failed.** With `--well-known`, the host's `/.well-known/x402` manifest does not match the live 402: the paid URL
+is not in `resources`, an entry is not HTTPS on this host or a subdomain, or the declared terms (scheme, network,
+asset, payTo, or an atomic `amount`) match none of the live offers. It is a warning: the live 402 is what clients pay.
+**Why it matters.** Crawlers and agents read the manifest to find what you sell. A stale or incomplete one hides paid
+routes or advertises a price or recipient you no longer use, and an off-host entry is ignored by careful consumers.
+**How to fix it.** Generate the manifest from the same route configuration as the payment middleware, list every paid
+URL on your own host, and keep `payTo`, `asset`, `network` and `amount` in step with the 402.
+
 ## F12
 **What failed.** The offline check asked the facilitator to verify a well-formed payment on a network no facilitator
 supports (`x402conf:unsupported`), and one whose asset is an address with no contract code. It answered
@@ -326,6 +347,32 @@ hook's transport context), never `paymentPayload.resource.url`. Until a fixed `@
 `createSIWxResourceServerExtension` and replace its `onAfterSettle` hook (see `ts/example/binding-server.ts`).
 
 
+## W1
+**What failed.** Your server accepted a sign-in-with-x message signed for another site: the message's `domain` and
+`uri` named that site, and the request's `Host` or `X-Forwarded-Host` header named it too.
+**Why it matters.** A signature a wallet made to sign in somewhere else can be replayed against your server by anyone
+who controls a request header. The rule exists so a message is only good for the origin it was signed for.
+**How to fix it.** Validate `domain` and the `uri` origin against your configured public origin, the browser-visible
+URL, never against values taken from the request. With the SDK, pass `origin` to
+`createSIWxResourceServerExtension` as a constant from your configuration (see `ts/example/siwx-server.ts`).
+
+## W2
+**What failed.** The same signed sign-in-with-x message, nonce and all, signed in a second time.
+**Why it matters.** Anyone who sees the header once, in a log, a proxy or a shared terminal, can sign in as that
+wallet for as long as the message is inside its time window.
+**How to fix it.** Record each nonce when you grant access and refuse a nonce you have seen. The SDK does this when
+your storage implements both `hasUsedNonce` and `recordNonce`; the shipped `InMemorySIWxStorage` implements neither,
+so add them, or use a shared store when you run more than one instance (see `ts/example/siwx-server.ts`).
+
+## W3
+**What failed.** A sign-in-with-x message outside its time window was accepted: `issuedAt` more than five minutes old,
+`issuedAt` in the future, or `expirationTime` in the past.
+**Why it matters.** The time window is what limits how long a leaked or captured message stays usable. Without it a
+message signs in indefinitely, and a future `issuedAt` extends that further.
+**How to fix it.** Run the full message validation before you check the signature or the payment record: the SDK's
+`validateSIWxMessage` checks `issuedAt` age and future dates, `expirationTime` and `notBefore`. Don't rewrite or drop
+those fields before validating.
+
 ## R12
 **What failed.** Parallel requests that carried the same payment-identifier id, each with a fresh payment, were settled
 more than once, or a served answer did not name the one settlement.
@@ -395,14 +442,38 @@ answer 402 asking the client to retry as `GET`, without calling `/verify` or `/s
 `ts/example/head-server.ts` shows one way to do it.
 
 ## R16a
-**What failed.** The probe sent an unpaid `HEAD` to your paid `GET` route. Your server did not answer it 402 with a
-`PAYMENT-REQUIRED` offer; usually it answered 200, which means the protected handler ran with no payment.
+**What failed.** The probe sent an unpaid `HEAD` to your paid `GET` route. Your server neither answered it 402 with a
+`PAYMENT-REQUIRED` offer nor refused it with 405; usually it answered 200, which means the protected handler ran with
+no payment. (A 405 with `Allow: GET` passes: the router refuses `HEAD` before any handler runs.)
 **Why it matters.** Many routers serve `HEAD` from the `GET` handler (RFC 9110 §9.3.2: the same response without the
 content). A paywall that matches routes by the exact method then misses `HEAD`, and anyone can run the handler, read
 its status and headers and trigger its side effects for free.
 **How to fix it.** Match `HEAD` against the `GET` route in the payment layer, so an unpaid `HEAD` gets the same 402
-and `PAYMENT-REQUIRED` header as `GET` and never reaches the handler. `ts/example/head-unpaid-server.ts` shows one way
-to do it.
+and `PAYMENT-REQUIRED` header as `GET` and never reaches the handler, or refuse `HEAD` on paid routes with 405.
+`ts/example/head-unpaid-server.ts` shows both.
+
+## D1
+**What failed.** Your facilitator's discovery API did not answer in the V2 section 8 shapes: `/discovery/resources`
+lacked `x402Version`, `items` or numeric `pagination` (`limit`, `offset`, `total`), `/discovery/search` lacked
+`resources`, an item lacked `resource`, `type`, `x402Version`, a complete `accepts` entry or an ISO 8601
+`lastUpdated`, or the endpoint returned more items than `limit` or items off the requested `network`.
+**Why it matters.** Clients and marketplaces build their catalogues from these answers. A missing field or an ignored
+filter shows a buyer offers on a network they did not ask for, or prices they cannot pay, and breaks the SDK's typed
+client.
+**How to fix it.** Return the list as `{ x402Version: 2, items, pagination: { limit, offset, total } }` and search as
+`{ x402Version: 2, resources, partialResults?, pagination? }`, with every item carrying the V2 8.3 fields and each
+`accepts` entry a complete `PaymentRequirements`. Apply `limit` (1 to 100) and the `type`, `network`, `scheme` and
+`payTo` filters before you page (see `ts/example/discovery-server.ts`).
+
+## G1
+**What failed.** Your agent's A2A answer to an unpaid request did not ask for the same payment as the HTTP route it
+mirrors: the task was not `input-required` with `x402.payment.status: "payment-required"`, `x402.payment.required` was
+missing or not a V2 `PaymentRequired`, or its `accepts` differed from the route's `PAYMENT-REQUIRED` offers.
+**Why it matters.** An agent paying over A2A signs whatever the task asks for. When that differs from the HTTP price,
+the same skill costs two different amounts, and a client that checks one surface is charged on the other.
+**How to fix it.** Build both answers from one source: the same resource server and route configuration, so the A2A
+task carries the `PaymentRequired` that `createPaymentRequiredResponse` makes for the HTTP route. Put it in the status
+message's metadata, not in the text (see `ts/example/discovery-server.ts`).
 
 ## R17
 **What failed.** The probe paid your route through a shared cache on loopback, then asked for the same URL with no
@@ -467,6 +538,79 @@ paid result is lost. A client that re-signs with no key leaves a server nothing 
 logical request and append it in `onBeforePaymentCreation` (`appendPaymentIdentifierToExtensions`), or resend the
 same `PAYMENT-SIGNATURE` on retry.
 
+## U1
+**What failed.** Your `upto` route asked the facilitator to settle more than the maximum the client signed: the
+metered charge went to `/settle` as it was, above `permit2Authorization.permitted.amount` (EVM) or `maxAmount` (Solana).
+**Why it matters.** The client authorised a ceiling, and the scheme says the settled amount must not exceed it. A
+facilitator that follows the spec refuses the settle (`invalid_upto_evm_payload_settlement_exceeds_amount` on EVM),
+so the work is done and nothing is paid; one that doesn't charges the client more than it agreed to.
+**How to fix it.** Cap the charge at the authorised maximum before you settle: pass `min(metered, max)` as the
+settlement override's `amount` (`setSettlementOverrides`, or the `amount` of `processSettlement`'s overrides), and
+stop or truncate work that would cost more than the ceiling (see `ts/example/upto-server.ts`).
+
+## U2
+**What failed.** The paid response of your `upto` route didn't report what it charged: `PAYMENT-RESPONSE` had no
+`amount`, or an amount other than the one the settle charged (often the authorised maximum), or another transaction.
+**Why it matters.** With `upto` the client signs a ceiling and learns the price only afterwards. The `amount` in the
+settlement response is how it learns what it paid; without it, or with the ceiling in its place, the client's books
+are wrong and it cannot tell a fair charge from an unfair one.
+**How to fix it.** Return the facilitator's settlement response unchanged in `PAYMENT-RESPONSE`: it carries the
+`amount` the settle charged, `0` included. If you build the header yourself, take `amount` and `transaction` from the
+settle response, never from the offer.
+
+## U3
+**What failed.** Your `upto` offer declared a payment flow the scheme doesn't allow on its network: `upfront`, or a
+flow other than `authorization` for Permit2 on EVM or `escrow` for the Solana payment channel.
+**Why it matters.** `upto` charges what the request used, which is known only after the handler runs, so the settle
+cannot come first. A client or facilitator that follows the declared flow either refuses the payment or settles the
+wrong amount at the wrong time.
+**How to fix it.** Leave `extra.paymentFlow` out and let the scheme's default apply, or declare the binding's own
+flow: `authorization` on EVM, `escrow` on Solana. P7 still warns when a Solana `upto` offer leaves it out, because V2
+section 6.1 asks for it.
+
+## B1
+**What failed.** On your `batch-settlement` route a paid response had no commitment identifier, or reported a charge
+above the per-request amount, or a valid deposit or voucher was refused, or a voucher you had already been paid with
+was served again.
+**Why it matters.** With `batch-settlement` the money moves later, so the commitment is the only record of what the
+request paid. The scheme requires a non-empty identifier for it, and a voucher is cumulative: one that doesn't advance
+the channel's charged total by the request's amount pays for nothing new, so serving it gives the content away.
+**How to fix it.** Keep the channel state the binding asks for (`chargedCumulativeAmount` per channel) and accept a
+voucher only when its `maxClaimableAmount` is that total plus the request's amount; answer anything else with a
+corrective 402 that carries the channel state. Return `extra.commitmentId` (or the channel snapshot) and
+`extra.chargedAmount` in `PAYMENT-RESPONSE` (see `ts/example/batch-server.ts`).
+
+## B2
+**What failed.** A redemption run claimed a channel more than once, or at a voucher older than its latest, or a run
+with nothing new claimed vouchers again.
+**Why it matters.** Vouchers are cumulative, so the latest one supersedes every earlier one. Claiming the old ones as
+well sends claims that cannot advance the onchain total and fail or waste a transaction, and a batch that fails on a
+stale row can take the good rows down with it.
+**How to fix it.** For each channel, claim only the latest voucher above what you have already claimed, record the
+claimed amount when the claim succeeds, and skip channels with nothing new.
+
+## B3
+**What failed.** Part of a redemption run failed and your server reported the failed channels as claimed, or reported
+the run without an item per channel, or the next run didn't claim the failed channels again (or claimed the others
+twice).
+**Why it matters.** A voucher that is never claimed is revenue lost once the payer withdraws. Recording a failed batch
+as claimed hides that loss, and retrying the whole run claims the good channels twice.
+**How to fix it.** Track the outcome per batch and per channel: mark a channel claimed only when the claim that named
+it succeeded, report each channel with its own outcome, and leave failed ones due for the next run, well inside the
+withdraw delay.
+## R21
+**What failed.** A Permit2 payment was granted although your server's own settle failed because a third party had
+already submitted the signed transfer (the facilitator answered `permit2_invalid_nonce`), or a Permit2 payment that
+was already spent unlocked the resource a second time, or the content went out before the settle answered.
+**Why it matters.** In the exact scheme's Permit2 method the signature names the `x402ExactPermit2Proxy` as spender,
+not your facilitator, so anyone who sees the payment can settle it. The funds still reach `payTo`, but your server
+did not make that settlement and cannot tell whose request it paid for. A server that reads a spent nonce as "already
+paid" lets one payment, or someone else's, unlock the resource as often as it is presented.
+**How to fix it.** Serve only when your own `/settle` answered success, and refuse anything else with the
+facilitator's reason, `permit2_invalid_nonce` included. If you want a resent payment to get the result it paid for,
+replay it from your own record of that grant (the same transaction in `PAYMENT-RESPONSE`), never from a failed settle.
+Settle before you serve (see `ts/example/preempt-server.ts`).
+
 ## C3
 **What failed.** The 402 offered V2 (the `PAYMENT-REQUIRED` header) and V1 (a V1 JSON body for the same offer), and the
 client paid the V1 offer: with an `X-PAYMENT` header, or with a payment at `x402Version` 1. Or it never paid.
@@ -476,6 +620,9 @@ for. A client that reads the body first also pays whatever the body says, even w
 **How to fix it.** Read the `PAYMENT-REQUIRED` header first and use the body only when there is no header, as the stock
 `@x402/core` HTTP client does (`x402HTTPClient.getPaymentRequiredResponse`). Pay a V2 offer with `PAYMENT-SIGNATURE` at
 `x402Version` 2, and keep a V1 scheme (`registerV1`) for servers that send no V2 offer at all.
+
+If your client has no payment path by design (it hands a 402 back to its caller as an error), pass
+`{ signsPayments: false }`: a client that then signs nothing is graded not applicable, not failed.
 
 ## C2
 **What failed.** Given several offers, the client signed one outside its own policy: an offer on a network outside
@@ -489,6 +636,10 @@ networks and at or below your maximum, choose among those, and pay nothing if no
 `x402Client`, register your scheme clients only for the networks you configured (registration is its network scope),
 not a wildcard, and keep spend controls on with a per-payment cap (`setSpendControls({ allowedAssets: [{ network,
 asset, maxAmountPerPayment }] })`, an atomic amount). `ts/example/client-offers-clients.ts` shows one way to do it.
+
+If your client has no payment path by design (it hands a 402 back to its caller as an error), pass
+`{ signsPayments: false }`: a client that then signs nothing is graded not applicable, not failed.
+
 
 ## C1
 **What failed.** The client was answered 402 with payment requirements and handed that 402 to its caller as a
@@ -527,3 +678,28 @@ the request, or the process, down with it.
 402 and a `PAYMENT-REQUIRED` that names the error. If your own code reads the header first (for logging or routing),
 wrap the decode and the field access in a guard and pass a malformed header on unchanged, or answer it with 400 and a
 JSON body carrying `error`.
+
+## X1
+**What failed.** Called without a payment, your paid MCP tool did not answer the way the MCP transport requires: it
+returned a JSON-RPC error instead of a tool result, `isError` was not `true`, `structuredContent` was missing or not a
+V2 `PaymentRequired` with a resource and at least one complete offer, or `content[0].text` was not the same object
+JSON-encoded.
+**Why it matters.** An MCP client looks for the offer in `structuredContent` and falls back to `content[0].text`.
+When neither carries it, the client cannot pay and the agent sees an opaque failure; a JSON-RPC error is treated as a
+protocol fault, not as a price.
+**How to fix it.** Answer an unpaid call of a paid tool with a normal tool result: `isError: true`, the
+`PaymentRequired` object (`x402Version: 2`, `resource`, `accepts`) in `structuredContent`, and
+`JSON.stringify(structuredContent)` as the text of `content[0]`. Build the object with the resource server's
+`createPaymentRequiredResponse` so its offers match what you verify against (see `ts/example/mcp-server.ts`).
+
+## X2
+**What failed.** Your paid MCP tool returned the tool's result for a payment that was not settled: the settle never
+answered, answered a broken body, was still pending, failed, or was a duplicate of a payment already settled. Or a
+settled call came back without `_meta["x402/payment-response"]` naming the transaction.
+**Why it matters.** The tool's output is what the caller pays for. Returning it when the settle failed, or before
+it ran, gives it away for nothing and lets one payment be spent again; an agent that never sees the payment response
+cannot reconcile what it was charged.
+**How to fix it.** Verify, run the tool, then settle, and return the tool's content only when the settle answered a
+well-formed success. On any other outcome, a timeout included, return the payment error alone as a tool result with
+`isError: true`, and drop the content you computed. Put the settle response in `_meta["x402/payment-response"]` on
+the result you do return (see `ts/example/mcp-server.ts`).

@@ -33,6 +33,14 @@ for (const [name, net] of NETS) {
     assert.equal(handled, 1, "the protected handler ran with no payment");
     assert.match(d.error, /reached the protected handler/);
   });
+  test(`R16a control: a router that refuses HEAD with 405 and Allow: GET never reaches the handler, ${name}`, async () => {
+    const { r, d, handled, settles } = await run("head_refused", net);
+    assert.equal(r.pass, true, JSON.stringify(r, null, 1));
+    assert.equal(d.head_status, 405);
+    assert.equal(d.allow, "GET");
+    assert.equal(handled, 0);
+    assert.equal(settles, 0);
+  });
   test(`R16a control: a URL that is not a paid route grades nothing, ${name}`, async () => {
     const double = await startDouble(0);
     const s = await startUnpaidHeadServer(double.url, "", net);

@@ -6,6 +6,8 @@
 // UNPAID_HEAD_FAULT shows what R16a catches:
 //   head_bypass  the paywall matches routes by the exact method, so HEAD /paid matches no paid route and the handler
 //                runs for free (200, headers only)
+// UNPAID_HEAD_REFUSED is a legitimate variant, not a fault: the router refuses HEAD with 405 and `Allow: GET` before
+// the paywall or the handler sees it.
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { HTTPFacilitatorClient, x402HTTPResourceServer, x402ResourceServer } from "@x402/core/server";
@@ -16,7 +18,8 @@ import { ExactEvmScheme } from "@x402/evm/exact/server";
 export const DEVNET = "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1";
 export const BASE_SEPOLIA = "eip155:84532";
 export const UNPAID_HEAD_FAULTS = ["head_bypass"] as const;
-export type UnpaidHeadFault = "" | (typeof UNPAID_HEAD_FAULTS)[number];
+export type UnpaidHeadFault = "" | "head_refused" | (typeof UNPAID_HEAD_FAULTS)[number];
+export const UNPAID_HEAD_REFUSED = "head_refused";
 
 export interface UnpaidHeadServer { url: string; handled: number; close(): Promise<void> }
 
@@ -51,6 +54,10 @@ export async function startUnpaidHeadServer(facilitatorUrl: string, fault: Unpai
       res.end(head ? undefined : JSON.stringify(body ?? {}));
     };
     const handler = (headers: Record<string, string>) => { srv.handled++; send(200, headers, { content: "paid content" }); };
+    if (head && fault === "head_refused") {
+      res.writeHead(405, { allow: "GET" });
+      return res.end();
+    }
     try {
       const paymentHeader = adapter.getHeader("payment-signature") ?? adapter.getHeader("x-payment");
       const r = await app.processHTTPRequest({ adapter, path: url.pathname, method, paymentHeader });

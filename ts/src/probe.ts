@@ -17,7 +17,9 @@ import { decodePaymentRequiredHeader, decodePaymentResponseHeader, encodePayment
 import { BASE_SEPOLIA, DEVNET, NETWORKS, type Double, type Mode, type Network } from "./double.js";
 import { userAgent, type Via } from "./report.js";
 
-export type Status = "pass" | "fail" | "unsupported";
+/** "unsupported": the target cannot be graded by this check (e.g. no network the suite pays on). "not_applicable": the
+ * property does not apply to this implementation by design (e.g. C2 and C3 on a client that never signs payments). */
+export type Status = "pass" | "fail" | "unsupported" | "not_applicable";
 export interface Result { check: string; pass: boolean; status: Status; detail: unknown }
 export interface ProbeOptions {
   /** Which network to pay on when the server offers several; "auto" takes the first of NETWORKS it offers. */

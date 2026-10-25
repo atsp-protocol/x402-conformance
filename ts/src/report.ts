@@ -31,7 +31,7 @@ export function userAgent(via: Via = "library"): string {
 }
 
 export type Severity = "error" | "warning";
-export type Status = "pass" | "fail" | "unsupported";
+export type Status = "pass" | "fail" | "unsupported" | "not_applicable";
 export interface CheckResult {
   check: string; pass: boolean; status: Status; severity: Severity; detail: unknown;
   /** Evidence v2 labels from spec.CATALOG: normative, security-profile or resilience, and the spec basis. */
@@ -48,7 +48,7 @@ export interface Report {
   run_at: string;
   target: string;
   results: CheckResult[];
-  summary: { checks: number; failed: number; failed_ids: string[]; unsupported: boolean };
+  summary: { checks: number; failed: number; failed_ids: string[]; unsupported: boolean; not_applicable?: string[] };
   error?: string;
   links: typeof LINKS;
 }
@@ -67,25 +67,32 @@ export function normalise(r: { check: string; pass: boolean; status?: Status; se
 export function makeReport(kind: Kind, target: string, results: Array<Parameters<typeof normalise>[0]>,
     via: Via = "library", error?: string): Report {
   const rs = results.map(normalise);
-  const failed = rs.filter((r) => !r.pass && r.status !== "unsupported");
+  const failed = rs.filter((r) => !r.pass && r.status !== "unsupported" && r.status !== "not_applicable");
+  const na = rs.filter((r) => r.status === "not_applicable").map((r) => checkId(r.check));
   return {
     schema: REPORT_SCHEMA, tool: "x402-conformance-svm", version: VERSION, via, kind, run_at: new Date().toISOString(),
     target, results: rs,
     summary: { checks: rs.length, failed: failed.length, failed_ids: failed.map((r) => checkId(r.check)),
-      unsupported: rs.some((r) => r.status === "unsupported") },
+      unsupported: rs.some((r) => r.status === "unsupported"), ...(na.length ? { not_applicable: na } : {}) },
     ...(error ? { error } : {}), links: LINKS,
   };
 }
 
 /** True when nothing failed at error severity and the run completed. Warnings never fail. */
 export const passed = (r: Report): boolean =>
-  !r.error && !r.summary.unsupported && r.results.every((x) => x.pass || x.severity === "warning");
+  !r.error && !r.summary.unsupported
+    && r.results.every((x) => x.pass || x.severity === "warning" || x.status === "not_applicable");
 
 /** A short human summary ending with where to go next. Used by every integration's failure message. */
 export function explain(r: Report): string {
   const lines = [`x402-conformance ${r.version} (${r.kind}, via ${r.via}) on ${r.target}: ` +
-    (r.error ? `could not complete: ${r.error}` : `${r.summary.checks} checks, ${r.summary.failed} failed`)];
-  for (const x of r.results.filter((x) => !x.pass)) {
+    (r.error ? `could not complete: ${r.error}` : `${r.summary.checks} checks, ${r.summary.failed} failed`
+      + (r.summary.not_applicable?.length ? `, ${r.summary.not_applicable.length} not applicable` : ""))];
+  for (const x of r.results.filter((x) => x.status === "not_applicable")) {
+    lines.push(`  N/A ${x.check}`);
+    lines.push(`    why: ${JSON.stringify((x.detail as any)?.reason ?? x.detail).slice(0, 300)}`);
+  }
+  for (const x of r.results.filter((x) => !x.pass && x.status !== "not_applicable")) {
     lines.push(`  ${x.status === "unsupported" ? "UNSUPPORTED" : x.severity.toUpperCase()} ${x.check}`);
     lines.push(`    detail: ${JSON.stringify(x.detail).slice(0, 300)}`);
     lines.push(`    how to fix: ${fixUrl(checkId(x.check))}`);

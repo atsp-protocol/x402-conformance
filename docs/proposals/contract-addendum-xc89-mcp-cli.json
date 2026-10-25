@@ -1,0 +1,131 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-89: `x402conf-svm mcp`, a seller mode for paid MCP tools on a live server, on top of XC-33's MCP transport (X1). One unpaid tools/call of the named tool, after initialize unless --no-initialize (1 or 3 requests), paced and logged like `live` (XC-88), graded X1 on the tool result and P3, P4, P5 and P7 on the PaymentRequired in it. Nothing is paid or signed. MCP is JSON-RPC over POST, so this is not covered by the contract's 'live mode is GET-only' rule for the Python live mode; like `x402conf-svm live`, it is for servers whose operator agreed, and the docs say so. If the owner wants no POST to third parties from any CLI, do not sign this task. Owner's go, 2026-10-25T12:48Z, in chat: 'fix mcp and endpoints and then test'. Under D-AUTO-4 sys may batch-sign contracts covered by an owner go; nothing here binds until the owner key signs it into proofline.json.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "applies_after": [
+    "XC-33",
+    "XC-88"
+  ],
+  "tasks": [
+    {
+      "id": "XC-89",
+      "title": "x402conf-svm mcp: X1 and the offer checks on one unpaid call of a paid MCP tool, paced",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-33",
+        "XC-88"
+      ],
+      "requirements": [
+        "R-MCP",
+        "R-SAFE-GET"
+      ],
+      "description": "ts/src/mcp-transport.ts: McpSession and McpOptions take a fetch (a paced one for live servers) and initialize: false; unpaidToolCall returns X1 and the answer; a RequestBudgetExceeded is never swallowed as a dead server. ts/src/mcp-seller.ts: checkMcpSeller runs X1 then grades the PaymentRequired in the result (structuredContent, else content[0].text) with P3, P4, P5 and P7. ts/src/cli.ts: `mcp --url --tool [--arguments json] [--no-initialize] [--min-interval] [--max-requests] [--out]`. ts/example/mcp-server.ts gains a sessionless option. Docs: README, USING, ts/README, SPEC, COVERAGE, CHANGELOG.",
+      "scope": {
+        "allow": [
+          "ts/src/mcp-transport.ts",
+          "ts/src/mcp-seller.ts",
+          "ts/src/cli.ts",
+          "ts/src/index.ts",
+          "ts/example/mcp-server.ts",
+          "ts/test/mcp-seller.test.ts",
+          "tools/build_coverage.py",
+          "docs/**",
+          "README.md",
+          "ts/README.md",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-89-AC01",
+          "mandatory": true,
+          "statement": "On Solana devnet and Base Sepolia the seller mode passes the control in 3 requests (1 with --no-initialize), pays and settles nothing, and catches text_only and rpc_error",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^MCP seller (control|--no-initialize|catches)' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^MCP seller (control|--no-initialize|catches)' 8",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-89-AC02",
+          "mandatory": true,
+          "statement": "The offer checks catch a missing payTo (P4) and an EVM offer without name and version (P5)",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^MCP seller offer checks' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^MCP seller offer checks' 1",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-89-AC03",
+          "mandatory": true,
+          "statement": "x402conf-svm mcp logs each request, honours --no-initialize and --max-requests, and exits 2 on a usage error",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^MCP seller CLI' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^MCP seller CLI' 2",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-89-AC04",
+          "mandatory": true,
+          "statement": "The XC-33 X1 and X2 tests still pass",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^X[12] ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^X[12] ' 13",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-89-AC05",
+          "mandatory": true,
+          "statement": "docs/USING.md says the mcp mode POSTs and is for servers whose operator agreed",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/USING.md",
+            "pattern": "x402conf-svm mcp --url",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-89-AC06",
+          "mandatory": true,
+          "statement": "The docs name every mcp flag (no drift)",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/interdeps.py --drift",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-89-AC07",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-89-AC08",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Never send a payment or a signed payload from the mcp mode, and never send a request the cap refused."
+      ]
+    }
+  ]
+}

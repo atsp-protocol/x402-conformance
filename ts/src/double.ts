@@ -20,7 +20,10 @@ export type Mode =
   | "settle_non_json"// settle answers 200 with an HTML page
   | "settle_truncated" // settle answers 200 with half of a success body
   | "settle_pending" // settle answers success=false, errorReason=settlement_pending, with a transaction
-  | "settle_failed"; // settle answers success=false, errorReason=invalid_transaction_state
+  | "settle_failed"  // settle answers success=false, errorReason=invalid_transaction_state
+  | "settle_preempted"; // R21: a third party submitted the signed transfer first. /settle answers success=false,
+                        // errorReason=permit2_invalid_nonce, and the payment counts as spent (in `preempted`, not in
+                        // `successes`): the funds moved, but not in a settlement this server made
 
 export const MODES: Mode[] = ["reference", "settle_timeout", "settle_502", "settle_503", "settle_non_json",
   "settle_truncated", "settle_pending", "settle_failed"];
@@ -39,6 +42,8 @@ export interface Double {
   successes: string[];
   /** How many /settle calls have been answered so far (any outcome). */
   settleAnswers: number;
+  /** The transaction of every payment a third party submitted first (settle_preempted), in order. */
+  preempted: string[];
   close(): Promise<void>;
 }
 
@@ -66,7 +71,7 @@ export async function startDouble(port = 0): Promise<Double> {
   const held = new Set<http.ServerResponse>();
   const sockets = new Set<Socket>();
   const d: Double = { url: "", mode: "reference", calls: [], settleDelayMs: 0, successes: [], settleAnswers: 0,
-    close: async () => {} };
+    preempted: [], close: async () => {} };
   const server = http.createServer(async (rq, rs) => {
     const json = (code: number, obj: unknown) => {
       rs.writeHead(code, { "content-type": "application/json" });
@@ -119,8 +124,16 @@ export async function startDouble(port = 0): Promise<Double> {
         return json(200, { success: false, errorReason: "settlement_pending", transaction: tx, network });
       case "settle_failed":
         return json(200, { success: false, errorReason: "invalid_transaction_state", transaction: tx, network });
+      case "settle_preempted":
+        settled.add(tx);
+        d.preempted.push(tx);
+        return json(200, { success: false, errorReason: "permit2_invalid_nonce", transaction: "", network });
       default:
-        if (settled.has(tx)) return json(200, { success: false, errorReason: "duplicate_settlement", transaction: "", network });
+        // A Permit2 nonce that is spent, by this facilitator or by anyone else, fails the transfer on chain.
+        if (settled.has(tx)) {
+          return json(200, { success: false, transaction: "", network,
+            errorReason: body?.paymentPayload?.payload?.permit2Authorization ? "permit2_invalid_nonce" : "duplicate_settlement" });
+        }
         settled.add(tx);
         d.successes.push(tx);
         if (d.onSettled) {

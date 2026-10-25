@@ -1,8 +1,58 @@
 # Changelog
 ## Unreleased
+- `x402conf-svm mcp --url <mcp-endpoint> --tool <name> [--arguments '<json>'] [--no-initialize]`: one unpaid
+  `tools/call` of a paid MCP tool on a live server, paced like `live`, graded X1 on the tool result and P3, P4, P5 and
+  P7 on the `PaymentRequired` in it (`checkMcpSeller`). `--no-initialize` grades a server that needs no session in one
+  request. MCP is JSON-RPC over `POST`, so it is for servers whose operator agreed. Proposed task XC-89.
+- P9 and P10 (proposed task XC-85). P9: the bazaar discovery `info` in a 402, including its example query, body or
+  tool arguments, validates against the `schema` the endpoint ships next to it (a Draft 2020-12 subset with no
+  dependency; keywords it does not grade are listed, never guessed). P10, with `x402conf resource --well-known`: the
+  host's `/.well-known/x402` manifest lists the paid URL, lists only HTTPS URLs on its own host or a subdomain, and
+  declares terms a live offer matches; one GET per origin, a 404 is not graded.
+- R16a passes an unpaid `HEAD` that is refused with 405 and no `PAYMENT-RESPONSE`, as well as a 402 with an offer: both
+  keep `HEAD` away from the handler. A 2xx still fails. Proposed task XC-86.
+- C2 and C3 grade a client the caller declares does not sign (`{ signsPayments: false }`) and that signs nothing as not
+  applicable instead of failed. Reports, `explain`, SARIF, JUnit (skipped) and the badge show it as N/A and never count
+  it as a failure. Without the declaration a client that never pays still fails. Proposed task XC-87.
+- Live targets are paced by default: at least 5 s between requests to a non-loopback host (`--min-interval`), an
+  optional cap (`--max-requests`; a request over it is not sent and the target is reported skipped), one log line per
+  request on stderr and the log in the JSON under `pacing`. This applies to `x402conf live` and `resource` and to
+  `x402conf-svm resource` and the new `x402conf-svm live --url`, which grades P1-P7, R16a and R24 on one paid URL in
+  7 unpaid requests. Proposed task XC-88.
 - Seventeen open-source facilitators are listed in `docs/MATRIX.md` as self-hosted columns, each at a pinned commit, run
   on 127.0.0.1 as my own instance against public testnets; S0 to S4 run against them today. The verify-only F checks on
   Base Sepolia for these columns are the proposed task XC-51.
+- U1 to U3 for the `upto` scheme and B1 to B3 for the `batch-settlement` scheme (XC-35), on Solana devnet and Base
+  Sepolia, exported as `probeUpto` and `probeBatch` with a scheme double, `startSchemeDouble`. U1: a settle never
+  exceeds the authorised maximum; U2: `PAYMENT-RESPONSE` reports the settled amount; U3: an `upto` offer never declares
+  `upfront` (P7's flow rule, graded). B1: a commitment is served once with its identifier and charge; B2: one
+  redemption run claims each channel once, at its latest voucher; B3: a partly failed run is reported and retried per
+  channel. The `upto` control is `ts/example/upto-server.ts` on the stock scheme servers, the `batch-settlement` control
+  `ts/example/batch-server.ts`; the `no_cap`, `report_max`, `upfront_flow`, `accept_replay`, `claim_every_voucher` and
+  `drop_failed` builds are each caught.
+- W1 to W3, the sign-in-with-x server rules (XC-37), exported as `probeSiwx`. After a throwaway wallet pays the route
+  through the double and signs back in (the control), W1 refuses a message signed for another site even when `Host` or
+  `X-Forwarded-Host` names it, W2 refuses the same signed message twice, and W3 refuses a stale, future or expired
+  message. The control is the shipped extension with a configured origin and a nonce-tracking storage
+  (`ts/example/siwx-server.ts`); the shipped `InMemorySIWxStorage` tracks no nonces, so on its own it fails W2. The
+  `origin_from_host`, `no_nonce_store` and `no_time_window` builds are each caught.
+- D1 and G1, discovery and A2A (XC-36), exported as `checkDiscovery` and `checkA2aMirrorsHttp`. D1 reads a
+  facilitator's `/discovery/resources` and `/discovery/search` (GET only) and checks the V2 section 8 shapes, every
+  item's fields, `limit` and the `network` filter; a facilitator that serves neither is unsupported. G1 sends an
+  unpaid A2A `message/send` and checks the `input-required` task asks for the same `accepts` as the HTTP route's 402.
+  The controls and the `v1_items`, `ignore_filters`, `stale_price` and `not_input_required` builds are in
+  `ts/example/discovery-server.ts`.
+- R21, settlement preemption for caller-unbound settlement (XC-34), exported as `probePreempt`. On a Base Sepolia
+  route whose exact offer uses Permit2, a payment a third party settled first (the server's own settle answers
+  `permit2_invalid_nonce`) must not be served, and a spent payment must not be served twice. The facilitator double
+  gains a `settle_preempted` mode and answers `permit2_invalid_nonce` for a spent Permit2 payment. The control is
+  `ts/example/preempt-server.ts`; the `nonce_used_is_paid` and `serve_before_settle` builds are each caught.
+- X1 and X2, the MCP transport checks for paid MCP tools (XC-33), exported from `x402-conformance-svm` as
+  `checkMcpPaymentRequired` and `probeMcpTransport`. X1 reads one unpaid `tools/call` and checks the payment-required
+  tool result: `isError: true`, the `PaymentRequired` object in `structuredContent` and the same JSON in
+  `content[0].text`. X2 runs the R0-R10 faults on a paid tool call: the tool's result comes back only on a final,
+  first-time settle, with `_meta["x402/payment-response"]`. The control is `ts/example/mcp-server.ts`; the
+  `text_only`, `rpc_error`, `serve_on_failure` and `result_first` builds are each caught.
 ## 1.6.0 (2026-10-24)
 - The contract: XC-48, Release 1.6.0, carries the tasks that were still open when 1.5.0 was planned and the two added
   since: R17 to R19 (XC-18), the implementation matrix (XC-19), the framework quickstarts (XC-26), docs examples run by

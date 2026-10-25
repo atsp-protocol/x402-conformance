@@ -1,7 +1,9 @@
 """Command line.
 
     x402conf live <facilitator-base-url> ... [--evidence DIR] [--fail-on-error]   S0-S4, GET /supported only
-    x402conf resource <paid-url> ... [--fail-on-error] [--share]                  P1-P7, one unpaid GET per URL
+    x402conf resource <paid-url> ... [--fail-on-error] [--share] [--well-known]   P1-P7 and P9, one unpaid GET per URL;
+                                                                                  P10 with --well-known
+    live and resource take --min-interval SECONDS (default 5, live targets only) and --max-requests N
     x402conf offline                                                F1-F12 and S5 against the reference and faulty doubles
     x402conf devnet [--faults] [--evidence DIR] ...                  F1-F6 over real /verify and /settle on Solana devnet
     x402conf report [--dir DIR] [--sarif FILE] [--junit FILE] [--fail-on-error]   SARIF 2.1.0 and JUnit XML
@@ -33,6 +35,7 @@ from xml.sax.saxutils import quoteattr
 from . import __version__
 from . import harness as H
 from . import mock as M
+from . import pacing as PG
 from . import spec as S
 
 DOCS = "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/"
@@ -61,13 +64,14 @@ def make_report(kind: str, target: str, checks: list[dict[str, Any]], via: str |
                 error: str | None = None) -> dict[str, Any]:
     rs = [{"check": c["check"], "pass": bool(c["pass"]), "status": c.get("status") or ("pass" if c["pass"] else "fail"),
            "severity": c.get("severity", "error"), "detail": c.get("detail"), **_labels(c["check"])} for c in checks]
-    failed = [r for r in rs if not r["pass"] and r["status"] != "unsupported"]
+    failed = [r for r in rs if not r["pass"] and r["status"] not in ("unsupported", "not_applicable")]
+    na = [r["check"].split(" ")[0] for r in rs if r["status"] == "not_applicable"]
     out: dict[str, Any] = {
         "schema": "x402-conformance.report/1", "tool": "x402-conformance", "version": __version__,
         "via": via or H.via(), "kind": kind, "run_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "target": target, "results": rs,
         "summary": {"checks": len(rs), "failed": len(failed), "failed_ids": [r["check"].split(" ")[0] for r in failed],
-                    "unsupported": any(r["status"] == "unsupported" for r in rs)},
+                    "unsupported": any(r["status"] == "unsupported" for r in rs), **({"not_applicable": na} if na else {})},
         "links": LINKS}
     if error:
         out["error"] = error
@@ -177,9 +181,10 @@ def collect(d: str) -> list[dict[str, Any]]:
         with open(p) as f:
             return json.load(f)
 
-    def row(target: str, check: str, ok: bool, severity: str, detail: Any, source: str) -> None:
+    def row(target: str, check: str, ok: bool, severity: str, detail: Any, source: str, status: str = "") -> None:
         rows.append({"id": check.split()[0], "target": target, "check": check, "pass": bool(ok),
-                     "severity": severity, "detail": detail, "source": source})
+                     "severity": severity, "detail": detail, "source": source,
+                     **({"status": status} if status else {})})
 
     for name in ("live.json", "resource-402.json"):
         for r in (load(name) or {}).get("results", []):
@@ -198,7 +203,7 @@ def collect(d: str) -> list[dict[str, Any]]:
             if c.get("status") == "unsupported":
                 detail = {"status": "unsupported", "detail": detail}
             row(rsv.get("resource") or "resource server (binding)", c["check"], c["pass"], "error", detail,
-                "resource-server.json")
+                "resource-server.json", "not_applicable" if c.get("status") == "not_applicable" else "")
     off = load("offline.json")
     if off is not None:
         res = off["results"]
@@ -231,7 +236,7 @@ def sarif(rows: list[dict[str, Any]], results_dir: str) -> dict[str, Any]:
     ids = sorted(rules)
     results = []
     for r in rows:
-        if r["pass"]:
+        if r["pass"] or r.get("status") == "not_applicable":
             continue
         key = hashlib.sha256(f"{r['target']}|{r['id']}".encode()).hexdigest()
         detail = json.dumps(r["detail"], sort_keys=True)[:500]
@@ -257,22 +262,27 @@ def junit(rows: list[dict[str, Any]]) -> str:
     suites: dict[str, list[dict[str, Any]]] = {}
     for r in rows:
         suites.setdefault(r["target"], []).append(r)
-    fails = sum(1 for r in rows if not r["pass"] and r["severity"] == "error")
+    def failing(r: dict[str, Any]) -> bool:
+        return not r["pass"] and r["severity"] == "error" and r.get("status") != "not_applicable"
+
+    fails = sum(1 for r in rows if failing(r))
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
            f'<testsuites name="x402-conformance" tests="{len(rows)}" failures="{fails}">']
     for target, rs in suites.items():
-        nf = sum(1 for r in rs if not r["pass"] and r["severity"] == "error")
-        ns = sum(1 for r in rs if not r["pass"] and r["severity"] != "error")
+        nf = sum(1 for r in rs if failing(r))
+        ns = sum(1 for r in rs if not r["pass"] and not failing(r))
         out.append(f'  <testsuite name={quoteattr(target)} tests="{len(rs)}" failures="{nf}" skipped="{ns}">')
         for r in rs:
             case = f'    <testcase classname={quoteattr("x402." + r["id"])} name={quoteattr(r["check"])}'
             if r["pass"]:
                 out.append(case + "/>")
                 continue
-            msg = quoteattr(f"{r['id']} failed; how to fix it: {anchor(r['id'])}")
+            na = r.get("status") == "not_applicable"
+            msg = quoteattr(f"{r['id']} not applicable to this implementation" if na
+                            else f"{r['id']} failed; how to fix it: {anchor(r['id'])}")
             body = json.dumps(r["detail"], sort_keys=True)[:2000]
             body = body.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            tag = "failure" if r["severity"] == "error" else "skipped"
+            tag = "failure" if failing(r) else "skipped"
             out += [case + ">", f"      <{tag} message={msg}>{body}</{tag}>", "    </testcase>"]
         out.append("  </testsuite>")
     out.append("</testsuites>")
@@ -291,17 +301,32 @@ def report(a: argparse.Namespace) -> int:
     if a.junit:
         with open(a.junit, "w") as f:
             f.write(junit(rows))
-    bad = [r for r in rows if not r["pass"] and r["severity"] == "error"]
+    bad = [r for r in rows if not r["pass"] and r["severity"] == "error" and r.get("status") != "not_applicable"]
+    na = sorted({r["id"] for r in rows if r.get("status") == "not_applicable"})
     if a.badge:
         with open(a.badge, "w") as f:
             json.dump(badge(rows), f, indent=1)
             f.write("\n")
-    print(json.dumps({"checks": len(rows), "failed": len(bad), "failed_ids": sorted({r["id"] for r in bad})}))
+    print(json.dumps({"checks": len(rows), "failed": len(bad), "failed_ids": sorted({r["id"] for r in bad}),
+                      **({"not_applicable": na} if na else {})}))
     return 1 if bad and a.fail_on_error else 0
 
 
 def failed_errors(runs: list[dict[str, Any]]) -> bool:
     return any(not c["pass"] and c.get("severity", "error") == "error" for r in runs for c in r.get("checks", []))
+
+
+def _pacing_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--min-interval", type=float, default=PG.DEFAULT_MIN_INTERVAL, metavar="SECONDS",
+                   help="at least this many seconds between requests to a live (non-loopback) target, default "
+                        f"{PG.DEFAULT_MIN_INTERVAL:g}; every request is logged on stderr")
+    p.add_argument("--max-requests", type=int, default=None, metavar="N",
+                   help="send at most N requests in this run; a request over the cap is not sent and its target is "
+                        "reported as skipped")
+
+
+def _pacer(a: argparse.Namespace) -> PG.Pacer:
+    return PG.Pacer(a.min_interval, a.max_requests)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -331,10 +356,16 @@ def parser() -> argparse.ArgumentParser:
     lv.add_argument("targets", nargs="+", metavar="FACILITATOR_URL")
     lv.add_argument("--evidence", help="directory for raw bodies, run.json and SHA256SUMS")
     lv.add_argument("--fail-on-error", action="store_true", help=fe)
-    rs = sub.add_parser("resource", help="P1-P7 over one unpaid GET of a paid URL: the 402 answer and its PaymentRequired",
-                        description="P1-P7: one unpaid GET per URL, any network, V1 or V2. Never pays or POSTs.")
+    _pacing_args(lv)
+    rs = sub.add_parser("resource", help="P1-P7 and P9 over one unpaid GET of a paid URL: the 402 answer and its "
+                                         "PaymentRequired; P10 with --well-known",
+                        description="P1-P7 (and P9 when the 402 carries the bazaar extension): one unpaid GET per URL, "
+                                    "any network, V1 or V2. Never pays or POSTs.")
     rs.add_argument("targets", nargs="+", metavar="PAID_URL")
     rs.add_argument("--fail-on-error", action="store_true", help=fe)
+    rs.add_argument("--well-known", action="store_true",
+                    help="also GET each origin's /.well-known/x402 once and check it against the live 402 (P10)")
+    _pacing_args(rs)
     rs.add_argument("--share", action="store_true",
                     help="opt-in: write an anonymised corpus case per URL and print the link to submit a failing one; "
                          "nothing is sent")
@@ -359,10 +390,11 @@ COMMENT_MARKER = "<!-- x402-conformance:sticky -->"
 
 def badge(rows: list[dict[str, Any]], result: str | None = None) -> dict[str, Any]:
     """A shields.io endpoint badge: https://img.shields.io/endpoint?url=<where badge.json is served>."""
-    failed = sum(1 for r in rows if not r["pass"] and r["severity"] == "error")
+    failed = sum(1 for r in rows if not r["pass"] and r["severity"] == "error" and r.get("status") != "not_applicable")
+    graded = [r for r in rows if r.get("status") != "not_applicable"]
     res = result or ("pass" if rows and not failed else "fail")
     if res == "pass":
-        msg, color = f"pass {len(rows)}/{len(rows)}", "brightgreen"
+        msg, color = f"pass {len(graded)}/{len(graded)}", "brightgreen"
     elif res == "unsupported":
         msg, color = "unsupported", "lightgrey"
     else:
@@ -599,11 +631,20 @@ def main(argv: list[str] | None = None) -> int:
         return demo(a)
     if a.mode == "pr-comment":
         return pr_comment(a.file)
+    if a.mode in ("resource", "live"):
+        try:
+            pacer = _pacer(a)
+        except ValueError as e:
+            print(f"x402conf {a.mode}: {e}", file=sys.stderr)
+            return 2
     if a.mode == "resource":
-        rruns = [H.run_resource(t) for t in a.targets]
+        manifests: dict[str, Any] = {}
+        rruns = [H.run_resource(t, opener=pacer.wrap(), well_known=a.well_known, manifests=manifests)
+                 for t in a.targets]
         reports = [make_report("resource-402", r["target"], r["checks"]) for r in rruns]
         print(json.dumps({"tool": f"x402-conformance {__version__}", **_evidence(), "run_at": stamp,
-                          "mode": "resource-GET-only", "via": H.via(), "links": LINKS, "results": rruns},
+                          "mode": "resource-GET-only", "via": H.via(), "links": LINKS, "results": rruns,
+                          "pacing": pacer.summary()},
                          indent=1, sort_keys=True))
         if a.share:
             for path, link in write_cases(reports):
@@ -615,7 +656,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1 if a.fail_on_error and failed_errors(rruns) else 0
     if a.mode == "live":
         try:
-            runs = [H.run_live(t) for t in a.targets]
+            runs = [H.run_live(t, opener=pacer.wrap()) for t in a.targets]
         except H.UsageError as e:
             print(f"x402conf live: {e}", file=sys.stderr)
             return 2
@@ -631,7 +672,7 @@ def main(argv: list[str] | None = None) -> int:
                         fb.write(raw)
                     sums.append(f"{r['body_sha256']}  {name}")
         out = {"tool": f"x402-conformance {__version__}", **_evidence(), "run_at": stamp, "mode": "live-GET-only",
-               "results": runs}
+               "results": runs, "pacing": pacer.summary()}
         text = json.dumps(out, indent=1, sort_keys=True)
         if a.evidence:
             os.makedirs(a.evidence, exist_ok=True)
