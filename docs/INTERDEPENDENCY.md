@@ -46,7 +46,7 @@ graph LR
   XC_35["XC-35<br/>Schemes: upto (U1-U3) and batch-settlement (B1-B..."]
   XC_36["XC-36<br/>Discovery and A2A: D1 (Bazaar) and G1 (A2A)"]
   XC_37["XC-37<br/>SIWX normative: W1-W3"]
-  XC_38("XC-38<br/>R20c: a same-id re-signed retry is graded as a s...")
+  XC_38["XC-38<br/>R20c: a same-id re-signed retry is graded as a s..."]
   XC_39["XC-39<br/>R16a: an unpaid HEAD on a paid GET route gets th..."]
   XC_40["XC-40<br/>R22: the paid response keeps the handler's 2xx s..."]
   XC_41["XC-41<br/>R23: a client abort during settle is recoverable"]
@@ -206,7 +206,6 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_08,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_20,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_48,XC_49,XC_50,XC_M1,XC_M3,XC_M4 done
-  class XC_38 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -253,7 +252,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-35 Schemes: upto (U1-U3) and batch-settlement (B1-B3) | implement | signed | XC-16 | - | R-SCHEMES | 10 (command 7, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-36 Discovery and A2A: D1 (Bazaar) and G1 (A2A) | implement | signed | XC-16 | - | R-DISCOVERY | 6 (command 3, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-37 SIWX normative: W1-W3 | implement | signed | XC-10 | - | R-SIWX | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
-| XC-38 R20c: a same-id re-signed retry is graded as a safe refusal | implement | proposed | XC-22 | - | R-CONC | 11 (command 4, grep 5, pushed 1, scope 1) | `ts/src/retry.ts`; `ts/src/catalog.ts`; `ts/src/cli.ts`; `ts/src/double.ts`; `ts/test/retry.test.ts`; `src/x402conf/spec.py`; `src/x402conf/cli.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
+| XC-38 R20c: a same-id re-signed retry is graded as a safe refusal | implement | signed | XC-22 | - | R-CONC | 11 (command 4, grep 5, pushed 1, scope 1) | `ts/src/retry.ts`; `ts/src/catalog.ts`; `ts/src/cli.ts`; `ts/src/double.ts`; `ts/test/retry.test.ts`; `src/x402conf/spec.py`; `src/x402conf/cli.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
 | XC-39 R16a: an unpaid HEAD on a paid GET route gets the same 402 as GET | implement | done | XC-18 | XC-31, XC-86, XC-88 | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
 | XC-40 R22: the paid response keeps the handler's 2xx status and headers | implement | done | XC-18 | XC-31 | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
 | XC-41 R23: a client abort during settle is recoverable | implement | done | XC-22 | XC-31 | R-CONC | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
@@ -347,7 +346,7 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | R20 | built | security-profile | control: the route answers 402 with an exact offer the probe can pay | - | XC-22 | action.yml, src/x402conf/spec.py, ts/example/retry-server.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/double.ts, ts/src/retry.ts | tests/test_offline.py, ts/test/retry.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
 | R20a | built | security-profile | payment-identifier: a retry with the same id and a fresh payment is not charged again | - | - | action.yml, src/x402conf/spec.py, ts/src/catalog.ts, ts/src/cli.ts, ts/src/retry.ts | tests/test_offline.py, ts/test/retry.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md, ts/README.md |
 | R20b | built | security-profile | a retry resending the same signed payment is settled once and gets the original result | - | - | action.yml, src/x402conf/spec.py, ts/example/client-offers-clients.ts, ts/example/retry-clients.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/retry.ts | tests/test_offline.py, ts/test/retry.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md, ts/README.md |
-| R20c | planned | - | - | - | XC-38 | - | - | - |
+| R20c | planned | - | - | - | XC-38 | - | - | docs/VV.md |
 | R21 | built | security-profile | EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again | - | XC-34 | src/x402conf/spec.py, ts/example/preempt-server.ts, ts/src/catalog.ts, ts/src/double.ts, ts/src/index.ts, ts/src/preempt.ts | tests/test_offline.py, ts/test/preempt.test.ts | README.md, docs/COVERAGE.md, docs/FIXES.md, docs/SPEC.md, docs/VV.md, ts/README.md |
 | R22 | built | normative | after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15) | - | XC-40 | src/x402conf/spec.py, ts/src/catalog.ts, ts/src/index.ts, ts/src/status.ts | tests/test_offline.py, ts/test/handler-status.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
 | R23 | built | security-profile | a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again | - | XC-41 | src/x402conf/spec.py, ts/example/retry-server.ts, ts/src/abort.ts, ts/src/catalog.ts | tests/test_offline.py, ts/test/abort.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
