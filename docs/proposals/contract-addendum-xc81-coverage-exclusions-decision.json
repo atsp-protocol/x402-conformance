@@ -1,0 +1,150 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-81, part of the addendum XC-79 to XC-84 drafted on 2026-10-25. It extends the 'cover ALL' decomposition proposed as XC-54 to XC-78 (pull request #80) without changing any of its files. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub, after XC-51 to XC-53 and XC-54 to XC-78. Every criterion except scope, pushed and the unchanged-suite guards fails on today's tree and passes only on committed evidence. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 1 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-81",
+      "title": "Coverage exclusions, decided by the owner: settle off Solana devnet and Base Sepolia, live Starknet, Canton and Lightning, mainnet-only defaults",
+      "phase": "design",
+      "owner": "mgillr",
+      "team": "exec",
+      "agent": "owner",
+      "depends_on": [
+        "XC-54"
+      ],
+      "requirements": [
+        "R-MATRIX"
+      ],
+      "deadline": {
+        "from": "signed into proofline.json",
+        "within": "the owner's next decision batch"
+      },
+      "lease": {
+        "hours": 24,
+        "heartbeat_hours": 2,
+        "on_lapse": [
+          "retry by the same agent",
+          "reassign to the next free agent",
+          "raise to the owner"
+        ]
+      },
+      "description": "The cover-all plan leaves three things out on purpose: settle-time checks on any network other than Solana devnet and Base Sepolia (the rules allow verify-only there, so F settle stays at 0), live runs for Starknet, Canton and Lightning (spec-only families, offline profiles in XC-66), and mainnet-only EVM defaults (a testnet twin only where one exists). This task records each exclusion as an explicit owner decision in docs/coverage-decisions.json, with the question, the default (excluded), the tasks it affects, and the owner's decision with its date. Until the owner records a decision the default holds: excluded. The ledger rows for these cells cite the decision id. The task passes only when every decision is recorded (kept excluded, or changed with the task that will build it).",
+      "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+      "scope": {
+        "allow": [
+          "docs/coverage-decisions.json",
+          "docs/coverage-ledger.json",
+          "docs/COVERAGE.md",
+          "tools/coverage_ledger.py",
+          "tests/test_coverage_ledger.py",
+          "CHANGELOG.md"
+        ]
+      },
+      "open_decisions": [
+        {
+          "id": "COV-D1",
+          "question": "Run settle-time checks on any network other than Solana devnet and Base Sepolia?",
+          "default": "excluded",
+          "affects": [
+            "XC-60",
+            "XC-62",
+            "XC-63",
+            "XC-64",
+            "XC-65",
+            "XC-67",
+            "XC-77"
+          ]
+        },
+        {
+          "id": "COV-D2",
+          "question": "Run Starknet, Canton or Lightning live (not only as offline profiles)?",
+          "default": "excluded",
+          "affects": [
+            "XC-66"
+          ]
+        },
+        {
+          "id": "COV-D3",
+          "question": "Cover mainnet-only EVM defaults by any route other than a compatible testnet twin?",
+          "default": "excluded",
+          "affects": [
+            "XC-60"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "id": "XC-81-AC01",
+          "mandatory": true,
+          "statement": "docs/coverage-decisions.json has the three decisions (COV-D1 settle off Solana devnet and Base Sepolia, COV-D2 live Starknet, Canton and Lightning, COV-D3 mainnet-only EVM defaults), each with question, default 'excluded' and affected task ids",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import json,sys;d={x['id']:x for x in json.load(open('docs/coverage-decisions.json'))['decisions']};sys.exit(0 if {'COV-D1','COV-D2','COV-D3'}<=set(d) and all(d[k].get('default')=='excluded' and d[k].get('question') and d[k].get('affects') for k in ('COV-D1','COV-D2','COV-D3')) else 1)\"",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-81-AC02",
+          "mandatory": true,
+          "statement": "Each decision is recorded by the owner: status decided, decided_by mgillr, a date, and the outcome (excluded, or the task id that builds it)",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import json,sys;d=json.load(open('docs/coverage-decisions.json'))['decisions'];sys.exit(0 if d and all(x.get('status')=='decided' and x.get('decided_by')=='mgillr' and x.get('decided_at') and (x.get('outcome')=='excluded' or str(x.get('outcome','')).startswith('XC-')) for x in d) else 1)\"",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-81-AC03",
+          "mandatory": true,
+          "statement": "Every ledger cell excluded by a decision cites its decision id, and the ledger check passes",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/coverage_ledger.py --check --decisions docs/coverage-decisions.json",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-81-AC04",
+          "mandatory": true,
+          "statement": "docs/COVERAGE.md lists the exclusions and links the decision record",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/COVERAGE.md",
+            "pattern": "coverage-decisions\\.json",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-81-AC05",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-81-AC06",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "The decisions are the owner's. No agent records one for him; until he does, the default (excluded) holds and nothing is built for those cells."
+      ]
+    }
+  ]
+}

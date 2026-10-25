@@ -1,0 +1,129 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-80, part of the addendum XC-79 to XC-84 drafted on 2026-10-25. It extends the 'cover ALL' decomposition proposed as XC-54 to XC-78 (pull request #80) without changing any of its files. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub, after XC-51 to XC-53 and XC-54 to XC-78. Every criterion except scope, pushed and the unchanged-suite guards fails on today's tree and passes only on committed evidence. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 1-2 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-80",
+      "title": "Hosted-only facilitators: documented out-of-reach rows and an operator-permission track",
+      "phase": "verify",
+      "owner": "mgillr",
+      "team": "engineering",
+      "agent": "code agent",
+      "depends_on": [
+        "XC-54"
+      ],
+      "requirements": [
+        "R-MATRIX",
+        "R-SAFE-GET"
+      ],
+      "deadline": {
+        "from": "signed into proofline.json and every depends_on task done",
+        "days": 2
+      },
+      "lease": {
+        "hours": 24,
+        "heartbeat_hours": 2,
+        "on_lapse": [
+          "retry by the same agent",
+          "reassign to the next free agent",
+          "raise to the owner"
+        ]
+      },
+      "description": "About 30 facilitators on the public facilitators page are hosted-only: there is no source to build, and calling a hosted facilitator is outside the rules. XC-54 lists them as out-of-reach rows. This task makes each of those rows explicit and checkable: reason hosted-only, the public source the row came from, and an operator_permission field that is 'none' until an operator gives written permission for devnet or testnet reports (the XC-M2 route). docs/COVERAGE.md explains the track: a hosted operator can ask to be tested, and only a written permission linked from the row moves it to a task. No hosted facilitator is called, asked or contacted by this task; asking operators stays with XC-M2 and the owner's go.",
+      "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+      "scope": {
+        "allow": [
+          "tools/coverage_ledger.py",
+          "tests/test_coverage_ledger.py",
+          "docs/coverage-ledger.json",
+          "docs/COVERAGE.md",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-80-AC01",
+          "mandatory": true,
+          "statement": "Every hosted-only facilitator row has reason hosted-only, a public source URL and an operator_permission field whose value is none, or a link to a written permission",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/coverage_ledger.py --check --hosted-only-rows",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-80-AC02",
+          "mandatory": true,
+          "statement": "The ledger checker rejects a hosted-only row without a source, without operator_permission, or marked as covered by a /verify or /settle run",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_coverage_ledger.HostedOnly",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-80-AC03",
+          "mandatory": true,
+          "statement": "docs/COVERAGE.md has an operator-permission section for hosted-only facilitators",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/COVERAGE.md",
+            "pattern": "^#+ .*[Oo]perator permission",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-80-AC04",
+          "mandatory": true,
+          "statement": "No committed evidence anywhere was produced against a hosted facilitator URL",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/evidence_guard.py --loopback-only evidence/self-hosted",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-80-AC05",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-80-AC06",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-80-AC07",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Never call, probe or contact a hosted facilitator. Asking an operator for permission is an outward step: it happens only under XC-M2 with the owner's go."
+      ]
+    }
+  ]
+}

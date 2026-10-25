@@ -58,6 +58,12 @@ graph LR
   XC_48["XC-48<br/>Release 1.6.0: the rest of the v1.5 build list"]
   XC_49["XC-49<br/>F13: a payment whose asset differs from the requ..."]
   XC_50["XC-50<br/>F14: a payment authorized for another network is..."]
+  XC_79("XC-79<br/>Dexter: the open-source build of a hosted facili...")
+  XC_80("XC-80<br/>Hosted-only facilitators: documented out-of-reac...")
+  XC_81("XC-81<br/>Coverage exclusions, decided by the owner: settl...")
+  XC_82("XC-82<br/>Spec traceability: every check classified as nor...")
+  XC_83("XC-83<br/>An offline CI job template another repo can past...")
+  XC_84("XC-84<br/>Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, w...")
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -164,6 +170,14 @@ graph LR
   XC_50 --> XC_48
   XC_08 --> XC_49
   XC_08 --> XC_50
+  XC_51 --> XC_79
+  XC_54 --> XC_79
+  XC_61 --> XC_79
+  XC_54 --> XC_80
+  XC_54 --> XC_81
+  XC_53 --> XC_82
+  XC_55 --> XC_82
+  XC_26 --> XC_83
   XC_05 --> XC_M1
   XC_05 --> XC_M2
   XC_05 --> XC_M3
@@ -173,10 +187,12 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_48,XC_49,XC_50,XC_M3,XC_M4 done
-  class XC_47 proposed
+  class XC_47,XC_79,XC_80,XC_81,XC_82,XC_83,XC_84 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
+
+Dependencies on tasks that are in no contract or addendum here: XC-51, XC-53, XC-54, XC-55, XC-61.
 
 ## Tasks
 
@@ -208,7 +224,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-23 Docs in sync with the build, and a generated interdependency map | integrate | done | XC-04, XC-05 | XC-27, XC-30, XC-31 | R-DOCS | 7 (command 3, grep 2, pushed 1, scope 1) | `README.md`; `CHANGELOG.md`; `CONTRIBUTING.md`; `docs/**`; `ts/README.md`; `ts/mcp/README.md`; `tools/interdeps.py`; `tests/test_interdeps.py`; `.github/workflows/ci.yml` |
 | XC-24 Lean: n replicas, shared atomic check-and-set versus partitioned caches | verify | done | XC-03, XC-M3 | XC-48 | R-LEAN | 4 (command 2, pushed 1, scope 1) | `lean/X402Conformance/Replicas.lean`; `lean/X402Conformance.lean`; `lean/Axioms.lean`; `docs/SPEC.md` |
 | XC-25 A2 and A5: the PR summary comment and the results badge | integrate | done | XC-M4, XC-16 | XC-30, XC-31 | R-ADOPT | 6 (command 3, grep 1, pushed 1, scope 1) | `action.yml`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `README.md`; `docs/**` |
-| XC-26 A4: framework quickstarts, clone to first result, run in CI | integrate | done | XC-20, XC-14 | XC-48 | R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `examples/**`; `tools/quickstart.sh`; `.github/workflows/ci.yml`; `docs/USING.md`; `README.md` |
+| XC-26 A4: framework quickstarts, clone to first result, run in CI | integrate | done | XC-20, XC-14 | XC-48, XC-83 | R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `examples/**`; `tools/quickstart.sh`; `.github/workflows/ci.yml`; `docs/USING.md`; `README.md` |
 | XC-27 A8: every docs example is run by CI | integrate | done | XC-23 | XC-48 | R-ADOPT | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/doc_examples.py`; `tests/test_doc_examples.py`; `.github/workflows/ci.yml`; `README.md`; `docs/**`; `examples/**`; `Makefile.example` |
 | XC-28 A7: the compatibility matrix is generated from runs, on a schedule | verify | done | XC-19 | XC-48 | R-MATRIX | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `.github/workflows/compat-matrix.yml`; `evidence/impl-matrix/**` |
 | XC-29 Credibility: the mutation matrix and false-positive handling, published | verify | done | XC-16 | XC-48 | R-CRED | 6 (command 2, grep 2, pushed 1, scope 1) | `tools/mutation_matrix.py`; `tests/test_mutation_matrix.py`; `docs/site/**`; `docs/FALSE-POSITIVES.md`; `.github/workflows/**` |
@@ -232,6 +248,12 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-48 Release 1.6.0: the rest of the v1.5 build list | release | done | XC-18, XC-19, XC-22, XC-24, XC-26, XC-27, XC-28, XC-29, XC-31, XC-49, XC-50 | - | R-RELEASE | 9 (command 6, grep 1, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**`; `RELEASES.md`; `tools/build_coverage.py`; `tests/test_coverage_doc.py` |
 | XC-49 F13: a payment whose asset differs from the requirement's asset is rejected (asset substitution) | implement | done | XC-08 | XC-48 | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
 | XC-50 F14: a payment authorized for another network is rejected (facilitator-layer network substitution) | implement | done | XC-08 | XC-48 | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
+| XC-79 Dexter: the open-source build of a hosted facilitator as a self-hosted column | verify | proposed | XC-51, XC-54, XC-61 | - | R-MATRIX, R-SAFE-GET | 6 (command 4, pushed 1, scope 1) | `tools/self_hosted_matrix.py`; `evidence/self-hosted/dexter/**`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-80 Hosted-only facilitators: documented out-of-reach rows and an operator-permission track | verify | proposed | XC-54 | - | R-MATRIX, R-SAFE-GET | 7 (command 4, grep 1, pushed 1, scope 1) | `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `CHANGELOG.md` |
+| XC-81 Coverage exclusions, decided by the owner: settle off Solana devnet and Base Sepolia, live Starknet, Canton and Lightning, mainnet-only defaults | design | proposed | XC-54 | - | R-MATRIX | 6 (command 3, grep 1, pushed 1, scope 1) | `docs/coverage-decisions.json`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `CHANGELOG.md` |
+| XC-82 Spec traceability: every check classified as normative (a spec clause) or hardening (beyond the spec) | design | proposed | XC-53, XC-55 | - | R-SPEC | 8 (command 3, grep 3, pushed 1, scope 1) | `tools/traceability.py`; `tests/test_traceability.py`; `docs/traceability.json`; `docs/TRACEABILITY.md`; `docs/COVERAGE.md`; `README.md`; `.github/workflows/ci.yml`; `CHANGELOG.md` |
+| XC-83 An offline CI job template another repo can paste in: no wallet, no funds, no secrets | implement | proposed | XC-26 | - | R-ADOPT | 7 (command 2, file_exists 1, grep 2, pushed 1, scope 1) | `docs/ci/**`; `docs/USING.md`; `.github/workflows/ci.yml`; `tests/test_ci_template.py`; `CHANGELOG.md` |
+| XC-84 Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, with a reason pointing to 1.4.0 | release | proposed | - | - | R-RELEASE | 5 (command 2, grep 1, pushed 1, scope 1) | `evidence/registry/pypi-yank-1.3.json`; `docs/RELEASES.md`; `CHANGELOG.md` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | signed | XC-05 | - | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |
