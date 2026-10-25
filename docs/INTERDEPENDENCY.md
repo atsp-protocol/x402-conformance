@@ -58,9 +58,9 @@ graph LR
   XC_48["XC-48<br/>Release 1.6.0: the rest of the v1.5 build list"]
   XC_49["XC-49<br/>F13: a payment whose asset differs from the requ..."]
   XC_50["XC-50<br/>F14: a payment authorized for another network is..."]
-  XC_51("XC-51<br/>Self-hosted open-source facilitators as matrix c...")
-  XC_52("XC-52<br/>A static per-implementation scoreboard on the Pa...")
-  XC_53("XC-53<br/>Governance and stewardship, and check ids that n...")
+  XC_51["XC-51<br/>Self-hosted open-source facilitators as matrix c..."]
+  XC_52["XC-52<br/>A static per-implementation scoreboard on the Pa..."]
+  XC_53["XC-53<br/>Governance and stewardship, and check ids that n..."]
   XC_79("XC-79<br/>Dexter: the open-source build of a hosted facili...")
   XC_80("XC-80<br/>Hosted-only facilitators: documented out-of-reac...")
   XC_81("XC-81<br/>Coverage exclusions, decided by the owner: settl...")
@@ -199,7 +199,7 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_48,XC_49,XC_50,XC_M3,XC_M4 done
-  class XC_47,XC_51,XC_52,XC_53,XC_79,XC_80,XC_81,XC_82,XC_83,XC_84 proposed
+  class XC_47,XC_79,XC_80,XC_81,XC_82,XC_83,XC_84 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -260,9 +260,9 @@ Dependencies on tasks that are in no contract or addendum here: XC-54, XC-55, XC
 | XC-48 Release 1.6.0: the rest of the v1.5 build list | release | done | XC-18, XC-19, XC-22, XC-24, XC-26, XC-27, XC-28, XC-29, XC-31, XC-49, XC-50 | - | R-RELEASE | 9 (command 6, grep 1, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**`; `RELEASES.md`; `tools/build_coverage.py`; `tests/test_coverage_doc.py` |
 | XC-49 F13: a payment whose asset differs from the requirement's asset is rejected (asset substitution) | implement | done | XC-08 | XC-48, XC-51 | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
 | XC-50 F14: a payment authorized for another network is rejected (facilitator-layer network substitution) | implement | done | XC-08 | XC-48, XC-51 | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
-| XC-51 Self-hosted open-source facilitators as matrix columns: verify-only F checks over real /verify on Base Sepolia, loopback only | verify | proposed | XC-M1, XC-46, XC-49, XC-50 | XC-52, XC-79 | R-MATRIX, R-SAFE-GET | 12 (command 8, grep 2, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet.py`; `tests/test_self_hosted_matrix.py`; `tools/self_hosted_matrix.py`; `tools/interdeps.py`; `evidence/self-hosted/**`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
-| XC-52 A static per-implementation scoreboard on the Pages site, generated from committed evidence, never a certification | integrate | proposed | XC-28, XC-29, XC-51 | - | R-MATRIX, R-ADOPT | 9 (command 4, grep 3, pushed 1, scope 1) | `tools/scoreboard.py`; `tests/test_scoreboard.py`; `docs/site/**`; `.github/workflows/ci.yml`; `.github/workflows/compat-matrix.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
-| XC-53 Governance and stewardship, and check ids that never change meaning | design | proposed | XC-00, XC-23 | XC-82 | R-GOV, R-OPEN | 9 (command 4, file_exists 1, grep 2, pushed 1, scope 1) | `GOVERNANCE.md`; `README.md`; `CONTRIBUTING.md`; `tools/check_ids.py`; `tests/test_check_ids.py`; `docs/check-ids.json`; `.github/workflows/ci.yml`; `docs/**`; `CHANGELOG.md` |
+| XC-51 Self-hosted open-source facilitators as matrix columns: verify-only F checks over real /verify on Base Sepolia, loopback only | verify | signed | XC-M1, XC-46, XC-49, XC-50 | XC-52, XC-79 | R-MATRIX, R-SAFE-GET | 12 (command 8, grep 2, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet.py`; `tests/test_self_hosted_matrix.py`; `tools/self_hosted_matrix.py`; `tools/interdeps.py`; `evidence/self-hosted/**`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-52 A static per-implementation scoreboard on the Pages site, generated from committed evidence, never a certification | integrate | signed | XC-28, XC-29, XC-51 | - | R-MATRIX, R-ADOPT | 9 (command 4, grep 3, pushed 1, scope 1) | `tools/scoreboard.py`; `tests/test_scoreboard.py`; `docs/site/**`; `.github/workflows/ci.yml`; `.github/workflows/compat-matrix.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-53 Governance and stewardship, and check ids that never change meaning | design | signed | XC-00, XC-23 | XC-82 | R-GOV, R-OPEN | 9 (command 4, file_exists 1, grep 2, pushed 1, scope 1) | `GOVERNANCE.md`; `README.md`; `CONTRIBUTING.md`; `tools/check_ids.py`; `tests/test_check_ids.py`; `docs/check-ids.json`; `.github/workflows/ci.yml`; `docs/**`; `CHANGELOG.md` |
 | XC-79 Dexter: the open-source build of a hosted facilitator as a self-hosted column | verify | proposed | XC-51, XC-54, XC-61 | - | R-MATRIX, R-SAFE-GET | 6 (command 4, pushed 1, scope 1) | `tools/self_hosted_matrix.py`; `evidence/self-hosted/dexter/**`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
 | XC-80 Hosted-only facilitators: documented out-of-reach rows and an operator-permission track | verify | proposed | XC-54 | - | R-MATRIX, R-SAFE-GET | 7 (command 4, grep 1, pushed 1, scope 1) | `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `CHANGELOG.md` |
 | XC-81 Coverage exclusions, decided by the owner: settle off Solana devnet and Base Sepolia, live Starknet, Canton and Lightning, mainnet-only defaults | design | proposed | XC-54 | - | R-MATRIX | 6 (command 3, grep 1, pushed 1, scope 1) | `docs/coverage-decisions.json`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `CHANGELOG.md` |
