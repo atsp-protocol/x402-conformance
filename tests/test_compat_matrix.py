@@ -24,6 +24,7 @@ class CompatMatrix(unittest.TestCase):
         os.makedirs(os.path.join(self.tmp, "docs"))
         for f in ("MATRIX.md", "compat-matrix.json"):
             shutil.copy2(os.path.join(ROOT, "docs", f), os.path.join(self.tmp, "docs", f))
+        shutil.copytree(os.path.join(ROOT, "docs", "site", "badge"), os.path.join(self.tmp, "docs", "site", "badge"))
         self.rows = sorted(os.listdir(os.path.join(self.tmp, "evidence", "impl-matrix")))
 
     # ---------------- the real tree ----------------
@@ -51,7 +52,7 @@ class CompatMatrix(unittest.TestCase):
         p = os.path.join(self.tmp, "docs", "MATRIX.md")
         with open(p, encoding="utf-8") as f:
             md = f.read()
-        edited = md.replace(f"| {self.rows[0]} |", f"| {self.rows[0]} (edited by hand) |", 1)
+        edited = md.replace(f"</a>{self.rows[0]} |", f"</a>{self.rows[0]} (edited by hand) |", 1)
         self.assertNotEqual(edited, md)
         with open(p, "w", encoding="utf-8") as f:
             f.write(edited)
@@ -94,6 +95,96 @@ class CompatMatrix(unittest.TestCase):
             self.assertEqual(f.read(), first)
         rc, out = run("--check", root=self.tmp)
         self.assertEqual(rc, 0, out)
+
+
+class RowFormat(unittest.TestCase):
+    """XC-93 and XC-95: the row format (environment, passed/run, failed count only, date, links) and the badges."""
+
+    setUp = CompatMatrix.setUp
+
+    def table_rows(self, root: str) -> list[str]:
+        with open(os.path.join(root, "docs", "MATRIX.md"), encoding="utf-8") as f:
+            md = f.read()
+        table = md[md.index("<!-- compat-matrix:start -->"):md.index("<!-- compat-matrix:end -->")]
+        return [line for line in table.splitlines() if line.startswith("| <a id=")]
+
+    def test_every_row_has_environment_counts_date_and_links(self) -> None:
+        import json
+        d = json.load(open(os.path.join(ROOT, "docs", "compat-matrix.json")))
+        for r in d["rows"]:
+            self.assertIn(r["environment"], ("testnet", "devnet", "live-not-run", "out-of-reach"))
+            self.assertEqual(r["checks_passed"] + r["failed_count"], r["checks_run"])
+        rows = self.table_rows(ROOT)
+        self.assertEqual(len(rows), len(d["rows"]))
+        for line in rows:
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            self.assertRegex(cells[5], r"^\d+/\d+$")
+            self.assertRegex(cells[6], r"^\d+$")
+            self.assertRegex(cells[7], r"^\[\d{4}-\d{2}-\d{2}\]\(\.\./evidence/.+/run\.json\)$")
+            self.assertIn("(#rerun-or-get-listed)", cells[10])
+            self.assertIn("template=check-proposal.yml", cells[11])
+
+    def test_counts_come_from_the_run(self) -> None:
+        import json
+        p = os.path.join(self.tmp, "evidence", "impl-matrix", self.rows[0], "run.json")
+        doc = json.load(open(p))
+        doc["results"][0]["status"], doc["results"][0]["pass"] = "fail", False
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(doc, f, indent=1)
+        sums = os.path.join(self.tmp, "evidence", "impl-matrix", self.rows[0], "SHA256SUMS")
+        import hashlib
+        lines = []
+        for line in open(sums, encoding="utf-8"):
+            h, name = line.split()
+            fp = os.path.join(os.path.dirname(sums), name.lstrip("*"))
+            lines.append(f"{hashlib.sha256(open(fp, 'rb').read()).hexdigest()}  {name}")
+        with open(sums, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+        rc, out = run("--check", root=self.tmp)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("stale or hand-edited", out)
+        self.assertEqual(run("--write", root=self.tmp)[0], 0)
+        line = [x for x in self.table_rows(self.tmp) if f'id="row-{self.rows[0]}"' in x][0]
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        n = len(doc["results"])
+        self.assertEqual(cells[5], f"{n - 1}/{n}")
+        self.assertEqual(cells[6], "1")
+        self.assertNotIn(str(doc["results"][0]["check"]).split(" ")[0] + ",", line)
+
+    def test_a_hand_edited_count_is_detected(self) -> None:
+        p = os.path.join(self.tmp, "docs", "MATRIX.md")
+        md = open(p, encoding="utf-8").read()
+        edited = md.replace(" | 11/11 | ", " | 12/12 | ", 1)
+        self.assertNotEqual(edited, md)
+        open(p, "w", encoding="utf-8").write(edited)
+        rc, out = run("--check", root=self.tmp)
+        self.assertEqual(rc, 1, out)
+
+    def test_badges_read_tested_with_and_link_their_row(self) -> None:
+        for name in self.rows:
+            svg = open(os.path.join(ROOT, "docs", "site", "badge", f"{name}.svg"), encoding="utf-8").read()
+            self.assertIn("Tested with x402-conformance", svg)
+            self.assertIn(f"docs/MATRIX.md#row-{name}", svg)
+            self.assertNotRegex(svg.lower(), r"certified|compliant|approved|endorsed|<script|<image|<img")
+
+    def test_a_missing_stale_or_orphan_badge_is_detected(self) -> None:
+        b = os.path.join(self.tmp, "docs", "site", "badge")
+        os.remove(os.path.join(b, f"{self.rows[0]}.svg"))
+        with open(os.path.join(b, f"{self.rows[1]}.svg"), "a", encoding="utf-8") as f:
+            f.write("<!-- edited -->")
+        with open(os.path.join(b, "no-such-row.svg"), "w", encoding="utf-8") as f:
+            f.write("<svg/>")
+        rc, out = run("--check", root=self.tmp)
+        self.assertEqual(rc, 1, out)
+        self.assertIn(f"{self.rows[0]}.svg is missing", out)
+        self.assertIn(f"{self.rows[1]}.svg is stale", out)
+        self.assertIn("no-such-row.svg has no matrix row", out)
+        self.assertEqual(run("--write", root=self.tmp)[0], 0)
+        self.assertEqual(run("--check", root=self.tmp)[0], 0)
+
+    def test_the_matrix_has_no_score_rank_or_certified_wording(self) -> None:
+        md = open(os.path.join(ROOT, "docs", "MATRIX.md"), encoding="utf-8").read()
+        self.assertNotRegex(md, r"(?i)\bcertified\b|\boverall score\b|\branking\b|\branked\b")
 
 
 if __name__ == "__main__":

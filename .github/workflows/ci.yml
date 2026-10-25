@@ -257,6 +257,35 @@ jobs:
         run: |
           python3 -c "import json,sys;d=json.load(open('${{ steps.probe.outputs.badge }}'));sys.exit(0 if d['schemaVersion']==1 and d['color']=='brightgreen' and d['message'].startswith('pass') else 1)"
           head -1 '${{ steps.probe.outputs.pr-comment }}' | grep -qx '<!-- x402-conformance:sticky -->'
+      - name: Evidence mode writes one row's bundle and uploads it (XC-94)
+        id: evidence
+        uses: ./
+        with:
+          resource-url: http://127.0.0.1:4024/paid
+          start: PORT=4024 node ts/dist/example/server.js
+          port: "4406"
+          offline: "false"
+          results-dir: evidence-mode
+          evidence: true
+          row: ci-example-server
+      - name: The bundle verifies, names the row and carries provenance
+        run: |
+          test "${{ steps.evidence.outputs.result }}" = pass
+          cd "${{ steps.evidence.outputs.evidence-dir }}" && sha256sum -c SHA256SUMS
+          python3 -c "import json,sys;d=json.load(open('run.json'));p=d['provenance'];sys.exit(0 if p['suite']=='x402-conformance' and p['publisher']=='Optitransfer' else 1)"
+          grep -q 'ci-example-server' README.md
+      - name: Evidence mode refuses a mainnet network before any request
+        id: mainnet
+        continue-on-error: true
+        uses: ./
+        with:
+          resource-url: http://127.0.0.1:4026/paid
+          network: eip155:8453
+          offline: "false"
+          results-dir: evidence-mainnet
+          evidence: true
+          row: ci-mainnet
+      - run: test "${{ steps.mainnet.outcome }}" = failure && test ! -e evidence-mainnet/resource-server.json
       - name: A stock @x402/express server on Base Sepolia passes, R3 included
         id: stock
         uses: ./

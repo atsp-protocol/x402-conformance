@@ -22,6 +22,7 @@ import { checkMcpSeller } from "./mcp-seller.js";
 import { probeBinding, type BindingTargets } from "./binding.js";
 import { probeRetry } from "./retry.js";
 import { EVIDENCE_FORMAT, label } from "./catalog.js";
+import { provenance } from "./provenance.js";
 import { MOCK_FAULTS, startMockResource } from "./mock-server.js";
 import { commandControl, probeCrash, SpawnedServer, type ServerControl } from "./crash.js";
 type Labelled = Result & { profile: string; basis: string; fix: string };
@@ -193,7 +194,7 @@ function via(): Via {
 function finish(o: Record<string, string>, kind: Kind, target: string, results: Result[] | ReturnType<typeof makeReport>["results"],
     doc: Record<string, unknown>): void {
   const report = makeReport(kind, target, results, via(), doc.error as string | undefined);
-  Object.assign(doc, { schema: report.schema, via: report.via, kind, summary: report.summary, links: report.links });
+  Object.assign(doc, { schema: report.schema, via: report.via, kind, provenance: report.provenance, summary: report.summary, links: report.links });
   const text = JSON.stringify(doc, null, 1);
   if (o.out) writeFileSync(o.out, text + "\n");
   console.log(text);
@@ -230,7 +231,7 @@ async function resourceMain(o: Record<string, string>): Promise<number> {
  * request paced and logged. The first GET is shared, so R16a and R24 do not send their own. Never pays or signs. */
 async function liveMain(o: Record<string, string>): Promise<number> {
   const f = pacedFetch(o);
-  const doc: Record<string, unknown> = { tool: `x402-conformance-svm ${VERSION}`, evidence: EVIDENCE_FORMAT,
+  const doc: Record<string, unknown> = { tool: `x402-conformance-svm ${VERSION}`, evidence: EVIDENCE_FORMAT, provenance: provenance(VERSION),
     run_at: new Date().toISOString(), target: o.url, mode: "live-unpaid" };
   let results: Result[] = [];
   const skipped: string[] = [];
@@ -258,7 +259,7 @@ async function liveMain(o: Record<string, string>): Promise<number> {
  * the PaymentRequired in the tool result. Never pays or signs. */
 async function mcpMain(o: Record<string, string>): Promise<number> {
   const f = pacedFetch(o);
-  const doc: Record<string, unknown> = { tool: `x402-conformance-svm ${VERSION}`, evidence: EVIDENCE_FORMAT,
+  const doc: Record<string, unknown> = { tool: `x402-conformance-svm ${VERSION}`, evidence: EVIDENCE_FORMAT, provenance: provenance(VERSION),
     run_at: new Date().toISOString(), target: o.url, mcp_tool: o.tool, mode: "mcp-unpaid" };
   let results: Result[] = [];
   const skipped: string[] = [];
@@ -309,7 +310,7 @@ async function demo(argv: string[]): Promise<number> {
   }
   const secs = ((Date.now() - t0) / 1000).toFixed(1);
   if (o.out) {
-    writeFileSync(o.out, JSON.stringify({ tool: `x402-conformance-svm ${VERSION}`, evidence: EVIDENCE_FORMAT,
+    writeFileSync(o.out, JSON.stringify({ tool: `x402-conformance-svm ${VERSION}`, evidence: EVIDENCE_FORMAT, provenance: provenance(VERSION),
       versions: { "x402-conformance-svm": VERSION, node: process.versions.node }, run_at: new Date().toISOString(),
       resource: "demo://bundled-mock" + (o.fault ? `?fault=${o.fault}` : ""), demo: true, seconds: Number(secs),
       results }, null, 1) + "\n");
@@ -332,7 +333,7 @@ async function main(): Promise<number> {
   const binding = bindingTargets(o) as BindingTargets | null;
   const resource = o.resource ?? binding?.cheap ?? binding?.byMethod ?? binding?.byQuery?.[0] ?? binding?.siwx?.cheap
     ?? binding?.parameterised?.replace("{id}", "1") ?? "";
-  const doc: Record<string, unknown> = { tool: `x402-conformance-svm ${VERSION}`, evidence: EVIDENCE_FORMAT,
+  const doc: Record<string, unknown> = { tool: `x402-conformance-svm ${VERSION}`, evidence: EVIDENCE_FORMAT, provenance: provenance(VERSION),
     versions: { "x402-conformance-svm": VERSION, node: process.versions.node }, run_at: new Date().toISOString(),
     resource: o.resource ?? null, ...(binding ? { binding } : {}) };
   let results: Result[] = [];

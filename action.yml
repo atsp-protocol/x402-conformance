@@ -123,6 +123,17 @@ inputs:
     description: Token for pr-comment. The default job token is enough.
     required: false
     default: ${{ github.token }}
+  evidence:
+    description: >-
+      "true" writes the run as one matrix row's evidence bundle (run.json as the tool wrote it, a README and
+      SHA256SUMS) in <results-dir>/evidence-bundle/<row> and uploads it as an artifact, for the 'Add or update my row'
+      form or a PR (docs/RUN-IT-YOURSELF.md). Testnet and devnet only: a mainnet network is refused before any request.
+    required: false
+    default: "false"
+  row:
+    description: The matrix row name for evidence mode, e.g. myserver-1.2.0 (lower case letters, digits, '.', '_', '-').
+    required: false
+    default: ""
 outputs:
   result:
     description: '"pass" when every requested check passed, "unsupported" when the probe found nothing it could grade, otherwise "fail".'
@@ -144,6 +155,9 @@ outputs:
   junit:
     description: JUnit XML file with one test case per check, for test-report viewers.
     value: ${{ inputs.results-dir }}/junit.xml
+  evidence-dir:
+    description: With evidence "true", the directory holding the row's evidence bundle (also uploaded as an artifact).
+    value: ${{ steps.evidence.outputs.evidence-dir }}
 runs:
   using: composite
   steps:
@@ -155,6 +169,14 @@ runs:
       run: |
         python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' \
           || { echo "::error title=x402 Conformance::python3 3.10 or newer is required on the runner"; exit 1; }
+    - name: Evidence mode, before any request (testnet and devnet only)
+      if: inputs.evidence == 'true'
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}/src
+        X402C_ROW: ${{ inputs.row }}
+        X402C_NETWORK: ${{ inputs.network }}
+      run: python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_evidence_guard())'
     - name: Live checks S0-S4 (GET /supported only)
       if: inputs.facilitators != ''
       shell: bash
@@ -269,6 +291,23 @@ runs:
         X402C_WANT_OFFLINE: ${{ inputs.offline == 'true' }}
         X402C_RESOURCE: ${{ inputs.resource-url }}
       run: python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_summary())'
+    - name: Evidence bundle for the matrix row (opt-in)
+      id: evidence
+      if: always() && inputs.evidence == 'true'
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}/src
+        X402C_DIR: ${{ inputs.results-dir }}
+        X402C_ROW: ${{ inputs.row }}
+        X402C_NETWORK: ${{ inputs.network }}
+      run: python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_evidence())'
+    - name: Upload the evidence bundle
+      if: always() && inputs.evidence == 'true' && steps.evidence.outputs.evidence-dir != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: x402-conformance-evidence-${{ inputs.row }}
+        path: ${{ steps.evidence.outputs.evidence-dir }}
+        if-no-files-found: error
     - name: Sticky pull request comment (opt-in)
       if: always() && inputs.pr-comment == 'true' && github.event_name == 'pull_request'
       shell: bash

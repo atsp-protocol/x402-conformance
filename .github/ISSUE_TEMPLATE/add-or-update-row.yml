@@ -1,0 +1,65 @@
+name: Add or update my row
+description: Add your facilitator, SDK, merchant endpoint or product to the matrix, or refresh its row
+title: "Row: <entity name>"
+labels: [results, row]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Run the suite on your own testnet or devnet endpoint, or on a local build, first: see
+        [RUN-IT-YOURSELF.md](https://github.com/atsp-protocol/x402-conformance/blob/main/docs/RUN-IT-YOURSELF.md).
+        Your row is built only from committed evidence (a run.json and its SHA256SUMS), and it shows checks passed
+        out of checks run and a failed count. There is no score and no ranking. Never run it against mainnet or
+        against someone else's facilitator.
+  - type: input
+    id: entity
+    attributes: { label: Entity name (company or project), placeholder: "Example Payments" }
+    validations: { required: true }
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options: [facilitator, SDK, merchant, vendor]
+    validations: { required: true }
+  - type: input
+    id: languages
+    attributes: { label: Languages, placeholder: "TypeScript, Go" }
+    validations: { required: true }
+  - type: input
+    id: networks
+    attributes: { label: Chains and networks (CAIP-2 ids), placeholder: "eip155:84532, solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1" }
+    validations: { required: true }
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment of the run
+      description: >-
+        testnet: your public testnet or devnet endpoint. devnet: a local build on loopback, from source or fixtures.
+        live: GET-only checks of an unpaid 402 (x402conf resource); nothing is paid.
+      options: [testnet, devnet, live]
+    validations: { required: true }
+  - type: input
+    id: endpoint
+    attributes: { label: "Endpoint that was tested (or 'local build')", placeholder: "https://sandbox.example.com/paid" }
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes: { label: Version or commit tested, placeholder: "2.3.0 or f44d34c" }
+    validations: { required: true }
+  - type: input
+    id: run
+    attributes: { label: Link to your Action run or evidence artifact (optional) }
+  - type: input
+    id: contact
+    attributes: { label: Contact for this row (email or GitHub handle), description: "Also where a failing check is reported privately first (SECURITY.md)." }
+    validations: { required: true }
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: >-
+            I'm authorised to ask for this listing, and I agree to the row being listed in the public matrix with its
+            evidence under CC BY 4.0 (DATA-LICENSE, attribution "x402-conformance by Optitransfer") and to the badge
+            terms in docs/BADGE.md. The badge says a run exists; it is not an endorsement.
+          required: true

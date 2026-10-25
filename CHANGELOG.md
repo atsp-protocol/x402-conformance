@@ -1,5 +1,17 @@
 # Changelog
 ## Unreleased
+- Run it yourself (proposed task XC-94): the Action's `evidence: true` and `row:` inputs write one matrix row's
+  evidence bundle (the run.json as written, a README and `SHA256SUMS`) and upload it as an artifact. A mainnet network
+  is refused before any request, and so is a run graded on mainnet or with a facilitator off loopback. New
+  "Add or update my row" issue form, and `docs/RUN-IT-YOURSELF.md` (CLI, Action, MCP, how to get listed).
+- Matrix rows (proposed task XC-93): every row in `docs/MATRIX.md` has an environment (testnet, devnet, live-not-run
+  or out-of-reach), checks passed out of checks run, a failed count only, the version tested and the run date linking
+  its evidence, plus "rerun / get listed" and "missing check?" links. No score or ranking.
+- Attribution (proposed task XC-95): a "Tested with x402-conformance" SVG badge per row on the Pages site
+  (`docs/site/badge/`, terms in `docs/BADGE.md`, built and checked by `tools/compat_matrix.py`). The public results
+  and evidence are CC BY 4.0 (`DATA-LICENSE`); the code stays Apache-2.0. `CITATION.cff`, and a credit line in
+  `NOTICE`. Every results document has `provenance` (suite, version, publisher, repo), and the Action's job summary
+  ends with "Tested with x402-conformance vX.Y.Z".
 - `x402conf-svm mcp --url <mcp-endpoint> --tool <name> [--arguments '<json>'] [--no-initialize]`: one unpaid
   `tools/call` of a paid MCP tool on a live server, paced like `live`, graded X1 on the tool result and P3, P4, P5 and
   P7 on the `PaymentRequired` in it (`checkMcpSeller`). `--no-initialize` grades a server that needs no session in one

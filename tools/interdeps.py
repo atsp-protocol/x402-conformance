@@ -308,7 +308,8 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
     ("community", "doc", ("CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", ".github/ISSUE_TEMPLATE/**",
                           ".github/pull_request_template.md", ".github/CODEOWNERS"),
      "contributing, conduct, security and templates"),
-    ("legal", "doc", ("LICENSE", "NOTICE"), "the licence and notice"),
+    ("legal", "doc", ("LICENSE", "NOTICE", "DATA-LICENSE", "CITATION.cff"),
+     "the code licence and notice, the CC BY 4.0 data licence for public results, and the citation file"),
     ("ci", "gate", (".github/workflows/ci.yml", ".github/truedone.yml", ".gitignore"),
      "CI: lint, tests, Lean, the TS and MCP builds, V&V, red-green and this map"),
 ]

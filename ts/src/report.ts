@@ -3,6 +3,7 @@
 // any other and can become a corpus case unchanged.
 import { readFileSync } from "node:fs";
 import { CATALOG } from "./catalog.js";
+import { provenance, type Provenance } from "./provenance.js";
 
 export const VERSION: string = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")).version;
 export const REPO = "https://github.com/atsp-protocol/x402-conformance";
@@ -47,6 +48,8 @@ export interface Report {
   kind: Kind;
   run_at: string;
   target: string;
+  /** Who made the tool that wrote this report (XC-95). */
+  provenance: Provenance;
   results: CheckResult[];
   summary: { checks: number; failed: number; failed_ids: string[]; unsupported: boolean; not_applicable?: string[] };
   error?: string;
@@ -71,7 +74,7 @@ export function makeReport(kind: Kind, target: string, results: Array<Parameters
   const na = rs.filter((r) => r.status === "not_applicable").map((r) => checkId(r.check));
   return {
     schema: REPORT_SCHEMA, tool: "x402-conformance-svm", version: VERSION, via, kind, run_at: new Date().toISOString(),
-    target, results: rs,
+    target, provenance: provenance(VERSION), results: rs,
     summary: { checks: rs.length, failed: failed.length, failed_ids: failed.map((r) => checkId(r.check)),
       unsupported: rs.some((r) => r.status === "unsupported"), ...(na.length ? { not_applicable: na } : {}) },
     ...(error ? { error } : {}), links: LINKS,

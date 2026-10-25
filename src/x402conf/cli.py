@@ -29,7 +29,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any
+from typing import Any, Final
 from xml.sax.saxutils import quoteattr
 
 from . import __version__
@@ -581,7 +581,8 @@ def action_summary(env: dict[str, str] | None = None) -> int:
     out += [""] + [f"- {b}" for b in bad if b.endswith("see the step log") or b.startswith("nothing")]
     out += ["", "How to fix a failed check: " + DOCS + "FIXES.md", "",
             "Checks map to spec text; they are not a certification of x402 conformance. "
-            "Docs: https://github.com/atsp-protocol/x402-conformance"]
+            "Docs: https://github.com/atsp-protocol/x402-conformance", "",
+            f"Tested with x402-conformance v{__version__} by Optitransfer: {REPO}"]
     if e.get("GITHUB_STEP_SUMMARY"):
         with open(e["GITHUB_STEP_SUMMARY"], "a") as f:
             f.write("\n".join(out) + "\n")
@@ -609,10 +610,114 @@ def action_summary(env: dict[str, str] | None = None) -> int:
     return 1 if bad and e.get("X402C_FAIL", "true") == "true" else 0
 
 
+def provenance() -> dict[str, str]:
+    """Who made the tool that wrote a results document (XC-95): the suite, its version, the publisher and the repo."""
+    return {"suite": "x402-conformance", "version": __version__, "publisher": "Optitransfer", "repo": REPO}
+
+
+PROBE_NETWORKS: Final = ("auto", S.SOLANA_DEVNET, "eip155:84532")
+MAINNET_IDS: Final = frozenset({S.SOLANA_MAINNET, "eip155:1", "eip155:8453", "eip155:137", "eip155:42161", "eip155:10",
+                                "eip155:43114", "eip155:56", "eip155:1329", "eip155:143", "eip155:196", "eip155:480"})
+ROW_NAME = re.compile(r"^[a-z0-9][a-z0-9._-]{0,79}$")
+LOOPBACK_HOSTS: Final = ("127.0.0.1", "localhost", "::1", "[::1]")
+
+
+def _host(url: str) -> str:
+    return urllib.parse.urlsplit(url).hostname or ""
+
+
+def action_evidence_guard(env: dict[str, str] | None = None) -> int:
+    """The Action's evidence mode, before any request (XC-94): a row name, and no mainnet network for the probe."""
+    e = dict(os.environ if env is None else env)
+    bad: list[str] = []
+    row = e.get("X402C_ROW", "")
+    if not ROW_NAME.match(row):
+        bad.append(f"evidence: true needs row: <name>, lower case letters, digits, '.', '_' or '-' (got {row!r})")
+    net = e.get("X402C_NETWORK", "auto") or "auto"
+    if net in MAINNET_IDS or net not in PROBE_NETWORKS:
+        bad.append(f"evidence mode runs on testnet or devnet only: network {net!r} is not one of {', '.join(PROBE_NETWORKS)}")
+    for b in bad:
+        print(f"::error title=x402 Conformance::{b}")
+    return 1 if bad else 0
+
+
+def _networks(doc: Any) -> set[str]:
+    out: set[str] = set()
+    if isinstance(doc, dict):
+        for k, v in doc.items():
+            if k in ("network", "graded_on") and isinstance(v, str):
+                out.add(v)
+            else:
+                out |= _networks(v)
+    elif isinstance(doc, list):
+        for v in doc:
+            out |= _networks(v)
+    return out
+
+
+def action_evidence(env: dict[str, str] | None = None) -> int:
+    """The Action's evidence mode, after the run (XC-94): one row's evidence bundle, ready to commit as
+    evidence/impl-matrix/<row>/ (run.json as the tool wrote it, a README and SHA256SUMS), and the environment."""
+    e = dict(os.environ if env is None else env)
+    d = e.get("X402C_DIR", "x402-conformance")
+    row = e.get("X402C_ROW", "")
+    if action_evidence_guard(e):
+        return 1
+    src = next((n for n in ("resource-server.json", "resource-402.json", "live.json")
+                if os.path.isfile(os.path.join(d, n))), None)
+    if src is None:
+        print("::error title=x402 Conformance::evidence: no results to bundle (set resource-url, resources or facilitators)")
+        return 1
+    raw = open(os.path.join(d, src), "rb").read()
+    doc = json.loads(raw)
+    targets = [str(doc.get("resource") or "")] if src == "resource-server.json" else [
+        str(r.get("target", "")) for r in doc.get("results", []) if isinstance(r, dict)]
+    local = all(_host(t) in LOOPBACK_HOSTS for t in targets if t)
+    mainnet = sorted(_networks(doc) & MAINNET_IDS)
+    if src == "resource-server.json":
+        if mainnet:
+            print("::error title=x402 Conformance::evidence: the probe graded a mainnet network "
+                  f"({', '.join(mainnet)}); refused")
+            return 1
+        facilitator = str(doc.get("facilitator_double") or "")
+        if facilitator and _host(facilitator) not in LOOPBACK_HOSTS:
+            print("::error title=x402 Conformance::evidence: the facilitator is not on loopback; refused")
+            return 1
+    environment = "devnet" if local else ("live" if mainnet else "testnet")
+    out = os.path.join(d, "evidence-bundle", row)
+    os.makedirs(out, exist_ok=True)
+    with open(os.path.join(out, "run.json"), "wb") as f:
+        f.write(raw)
+    summary = doc.get("summary") if isinstance(doc.get("summary"), dict) else {}
+    readme = [f"# {row}: a row of the x402-conformance matrix", "",
+              f"- Environment: {environment}"
+              + (" (GET-only checks of an unpaid 402; nothing was paid)" if environment == "live" else ""),
+              f"- Results file: `{src}`, unchanged, written by {doc.get('tool') or 'x402-conformance'}",
+              f"- Target: {', '.join(t for t in targets if t) or 'none'}",
+              f"- Run at: {doc.get('run_at', '')}",
+              f"- Checks: {summary.get('checks', '?')}, failed: {summary.get('failed', '?')}",
+              f"- Made with x402-conformance v{__version__} by Optitransfer: {REPO}", "",
+              "Check the files with `shasum -a 256 -c SHA256SUMS` from this directory. To list this row, open the",
+              f"'Add or update my row' form ({REPO}/issues/new?template=add-or-update-row.yml) or a PR that adds this",
+              "directory as evidence/impl-matrix/<row>/ (docs/MATRIX.md, Rerun or get listed).", ""]
+    with open(os.path.join(out, "README.md"), "w") as f:
+        f.write("\n".join(readme))
+    sums = "".join(f"{hashlib.sha256(open(os.path.join(out, n), 'rb').read()).hexdigest()}  {n}\n"
+                   for n in ("README.md", "run.json"))
+    with open(os.path.join(out, "SHA256SUMS"), "w") as f:
+        f.write(sums)
+    if e.get("GITHUB_OUTPUT"):
+        with open(e["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"evidence-dir={out}\nenvironment={environment}\n")
+    print(f"x402 Conformance: evidence for row {row} ({environment}) in {out}")
+    return 0
+
+
 def _evidence() -> dict[str, Any]:
-    """Evidence v2: the format, and the versions a rerun needs to reproduce the result."""
+    """Evidence v2: the format, the versions a rerun needs to reproduce the result, and the provenance."""
     return {"evidence": S.EVIDENCE_FORMAT,
-            "versions": {"x402-conformance": __version__, "python": platform.python_version()}}
+            "versions": {"x402-conformance": __version__, "python": platform.python_version()},
+            "provenance": provenance()}
 
 
 def main(argv: list[str] | None = None) -> int:

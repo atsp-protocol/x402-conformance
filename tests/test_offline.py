@@ -596,5 +596,34 @@ class VVPreMerge(unittest.TestCase):
         self.assertFalse(ok)
 
 
+class Provenance(unittest.TestCase):
+    """XC-95: every results document names the suite, its version, the publisher and the repository, and the
+    Action's job summary ends with the 'Tested with' line."""
+
+    def test_every_results_document_carries_provenance(self):
+        from x402conf import __version__
+        d = tempfile.mkdtemp()
+        with contextlib.redirect_stdout(io.StringIO()):
+            cli.main(["demo", "--dir", d])
+        docs = [f for f in sorted(os.listdir(d)) if f.endswith(".json")]
+        self.assertTrue(docs)
+        for f in docs:
+            p = json.load(open(os.path.join(d, f))).get("provenance")
+            self.assertEqual(p, {"suite": "x402-conformance", "version": __version__, "publisher": "Optitransfer",
+                                 "repo": "https://github.com/atsp-protocol/x402-conformance"}, f)
+
+    def test_the_job_summary_ends_with_the_tested_with_line(self):
+        from x402conf import __version__
+        d = tempfile.mkdtemp()
+        summary = os.path.join(d, "summary.md")
+        with contextlib.redirect_stdout(io.StringIO()):
+            cli.main(["demo", "--dir", d])
+            cli.action_summary({"X402C_DIR": d, "X402C_WANT_402": "true", "X402C_FAIL": "false",
+                                "GITHUB_STEP_SUMMARY": summary})
+        last = open(summary).read().strip().splitlines()[-1]
+        self.assertTrue(last.startswith(f"Tested with x402-conformance v{__version__}"), last)
+        self.assertIn("https://github.com/atsp-protocol/x402-conformance", last)
+
+
 if __name__ == "__main__":
     unittest.main()
