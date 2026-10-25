@@ -1,5 +1,7 @@
 # Security policy
 
+This project is maintained, and security reports are triaged, by Ryan Gillespie ([@mgillr](https://github.com/mgillr)), Optitransfer.
+
 ## Reporting a vulnerability
 Please use GitHub private vulnerability reporting: **Security → Report a vulnerability**
 (https://github.com/atsp-protocol/x402-conformance/security/advisories/new). Do not open a public issue for a
