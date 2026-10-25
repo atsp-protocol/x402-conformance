@@ -54,18 +54,18 @@ graph LR
   XC_44["XC-44<br/>C2: a client pays an offer within its own policy"]
   XC_45["XC-45<br/>C3: a client pays V2 and never falls back to V1..."]
   XC_46["XC-46<br/>F12: /verify rejects an unsupported network or a..."]
-  XC_47("XC-47<br/>S5: every kind /supported advertises gets a verd...")
+  XC_47["XC-47<br/>S5: every kind /supported advertises gets a verd..."]
   XC_48["XC-48<br/>Release 1.6.0: the rest of the v1.5 build list"]
   XC_49["XC-49<br/>F13: a payment whose asset differs from the requ..."]
   XC_50["XC-50<br/>F14: a payment authorized for another network is..."]
   XC_51["XC-51<br/>Self-hosted open-source facilitators as matrix c..."]
   XC_52["XC-52<br/>A static per-implementation scoreboard on the Pa..."]
   XC_53["XC-53<br/>Governance and stewardship, and check ids that n..."]
-  XC_85("XC-85<br/>P9 and P10: a seller's discovery metadata is con...")
-  XC_86("XC-86<br/>R16a amendment: an unpaid HEAD refused with 405...")
-  XC_87("XC-87<br/>C2 and C3 not applicable to a client declared no...")
-  XC_88("XC-88<br/>Polite pacing for live targets: --min-interval a...")
-  XC_89("XC-89<br/>x402conf-svm mcp: X1 and the offer checks on one...")
+  XC_85["XC-85<br/>P9 and P10: a seller's discovery metadata is con..."]
+  XC_86["XC-86<br/>R16a amendment: an unpaid HEAD refused with 405..."]
+  XC_87["XC-87<br/>C2 and C3 not applicable to a client declared no..."]
+  XC_88["XC-88<br/>Polite pacing for live targets: --min-interval a..."]
+  XC_89["XC-89<br/>x402conf-svm mcp: X1 and the offer checks on one..."]
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -202,7 +202,6 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_08,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_20,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_48,XC_49,XC_50,XC_M1,XC_M3,XC_M4 done
-  class XC_47,XC_85,XC_86,XC_87,XC_88,XC_89 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -257,18 +256,18 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-44 C2: a client pays an offer within its own policy | implement | done | XC-M4 | XC-31, XC-87 | R-C2 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
 | XC-45 C3: a client pays V2 and never falls back to V1 when a V2 offer is present | implement | done | XC-M4 | XC-31, XC-87 | R-C3 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
 | XC-46 F12: /verify rejects an unsupported network or an asset with no token contract | implement | done | XC-15 | XC-31, XC-51 | R-F12 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
-| XC-47 S5: every kind /supported advertises gets a verdict from /verify | implement | proposed | XC-01, XC-02 | - | R-S5 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
+| XC-47 S5: every kind /supported advertises gets a verdict from /verify | implement | signed | XC-01, XC-02 | - | R-S5 | 6 (command 2, grep 2, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `ts/src/catalog.ts`; `docs/**`; `CHANGELOG.md` |
 | XC-48 Release 1.6.0: the rest of the v1.5 build list | release | done | XC-18, XC-19, XC-22, XC-24, XC-26, XC-27, XC-28, XC-29, XC-31, XC-49, XC-50 | - | R-RELEASE | 9 (command 6, grep 1, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**`; `RELEASES.md`; `tools/build_coverage.py`; `tests/test_coverage_doc.py` |
 | XC-49 F13: a payment whose asset differs from the requirement's asset is rejected (asset substitution) | implement | done | XC-08 | XC-48, XC-51 | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
 | XC-50 F14: a payment authorized for another network is rejected (facilitator-layer network substitution) | implement | done | XC-08 | XC-48, XC-51 | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
 | XC-51 Self-hosted open-source facilitators as matrix columns: verify-only F checks over real /verify on Base Sepolia, loopback only | verify | signed | XC-M1, XC-46, XC-49, XC-50 | XC-52 | R-MATRIX, R-SAFE-GET | 12 (command 8, grep 2, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet.py`; `tests/test_self_hosted_matrix.py`; `tools/self_hosted_matrix.py`; `tools/interdeps.py`; `evidence/self-hosted/**`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-52 A static per-implementation scoreboard on the Pages site, generated from committed evidence, never a certification | integrate | signed | XC-28, XC-29, XC-51 | - | R-MATRIX, R-ADOPT | 9 (command 4, grep 3, pushed 1, scope 1) | `tools/scoreboard.py`; `tests/test_scoreboard.py`; `docs/site/**`; `.github/workflows/ci.yml`; `.github/workflows/compat-matrix.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-53 Governance and stewardship, and check ids that never change meaning | design | signed | XC-00, XC-23 | - | R-GOV, R-OPEN | 9 (command 4, file_exists 1, grep 2, pushed 1, scope 1) | `GOVERNANCE.md`; `README.md`; `CONTRIBUTING.md`; `tools/check_ids.py`; `tests/test_check_ids.py`; `docs/check-ids.json`; `.github/workflows/ci.yml`; `docs/**`; `CHANGELOG.md` |
-| XC-85 P9 and P10: a seller's discovery metadata is consistent with its own schema and its live 402 | implement | proposed | XC-16, XC-23 | - | R-DISCOVERY | 8 (command 4, grep 2, pushed 1, scope 1) | `src/x402conf/discovery.py`; `src/x402conf/harness.py`; `src/x402conf/cli.py`; `src/x402conf/spec.py`; `tests/test_discovery_pacing.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
-| XC-86 R16a amendment: an unpaid HEAD refused with 405 never reaches the handler and passes | implement | proposed | XC-39 | - | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/src/head-unpaid.ts`; `ts/example/head-unpaid-server.ts`; `ts/test/head-unpaid.test.ts`; `ts/src/index.ts`; `docs/**`; `README.md`; `CHANGELOG.md` |
-| XC-87 C2 and C3 not applicable to a client declared not to sign, shown as N/A in every report | implement | proposed | XC-44, XC-45, XC-11 | - | R-C2, R-C3 | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/src/client-offers.ts`; `ts/src/client-version.ts`; `ts/src/probe.ts`; `ts/src/report.ts`; `ts/src/index.ts`; `ts/test/client-offers.test.ts`; `ts/test/client-version.test.ts`; `src/x402conf/cli.py`; `tests/test_discovery_pacing.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
-| XC-88 Polite pacing for live targets: --min-interval and --max-requests on every live request, logged | implement | proposed | XC-01, XC-11, XC-42, XC-39 | XC-89 | R-SAFE-GET, R-R24 | 7 (command 4, grep 1, pushed 1, scope 1) | `src/x402conf/pacing.py`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `ts/src/pace.ts`; `ts/src/cli.ts`; `ts/src/header.ts`; `ts/src/resource.ts`; `ts/src/index.ts`; `ts/test/pace.test.ts`; `tests/test_discovery_pacing.py`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
-| XC-89 x402conf-svm mcp: X1 and the offer checks on one unpaid call of a paid MCP tool, paced | implement | proposed | XC-33, XC-88 | - | R-MCP, R-SAFE-GET | 8 (command 5, grep 1, pushed 1, scope 1) | `ts/src/mcp-transport.ts`; `ts/src/mcp-seller.ts`; `ts/src/cli.ts`; `ts/src/index.ts`; `ts/example/mcp-server.ts`; `ts/test/mcp-seller.test.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `ts/README.md`; `CHANGELOG.md` |
+| XC-85 P9 and P10: a seller's discovery metadata is consistent with its own schema and its live 402 | implement | signed | XC-16, XC-23 | - | R-DISCOVERY | 8 (command 4, grep 2, pushed 1, scope 1) | `src/x402conf/discovery.py`; `src/x402conf/harness.py`; `src/x402conf/cli.py`; `src/x402conf/spec.py`; `tests/test_discovery_pacing.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-86 R16a amendment: an unpaid HEAD refused with 405 never reaches the handler and passes | implement | signed | XC-39 | - | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/src/head-unpaid.ts`; `ts/example/head-unpaid-server.ts`; `ts/test/head-unpaid.test.ts`; `ts/src/index.ts`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-87 C2 and C3 not applicable to a client declared not to sign, shown as N/A in every report | implement | signed | XC-44, XC-45, XC-11 | - | R-C2, R-C3 | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/src/client-offers.ts`; `ts/src/client-version.ts`; `ts/src/probe.ts`; `ts/src/report.ts`; `ts/src/index.ts`; `ts/test/client-offers.test.ts`; `ts/test/client-version.test.ts`; `src/x402conf/cli.py`; `tests/test_discovery_pacing.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-88 Polite pacing for live targets: --min-interval and --max-requests on every live request, logged | implement | signed | XC-01, XC-11, XC-42, XC-39 | XC-89 | R-SAFE-GET, R-R24 | 7 (command 4, grep 1, pushed 1, scope 1) | `src/x402conf/pacing.py`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `ts/src/pace.ts`; `ts/src/cli.ts`; `ts/src/header.ts`; `ts/src/resource.ts`; `ts/src/index.ts`; `ts/test/pace.test.ts`; `tests/test_discovery_pacing.py`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-89 x402conf-svm mcp: X1 and the offer checks on one unpaid call of a paid MCP tool, paced | implement | signed | XC-33, XC-88 | - | R-MCP, R-SAFE-GET | 8 (command 5, grep 1, pushed 1, scope 1) | `ts/src/mcp-transport.ts`; `ts/src/mcp-seller.ts`; `ts/src/cli.ts`; `ts/src/index.ts`; `ts/example/mcp-server.ts`; `ts/test/mcp-seller.test.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `ts/README.md`; `CHANGELOG.md` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | done | XC-05 | XC-51 | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |
