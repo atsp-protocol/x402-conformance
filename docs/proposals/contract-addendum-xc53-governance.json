@@ -1,0 +1,134 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-53: a stewardship and governance document (GOVERNANCE.md) and a stable, machine-readable check-ID registry (docs/check-ids.json) that CI holds to the published catalogue, so other projects can cite a check id and rely on it not changing meaning. XC-00 covers licence, notice, CODEOWNERS and SECURITY but no governance document, and a suite that wants to be the one everyone runs has to say who decides, how a check gets in, how ids stay stable and how it stays vendor-neutral. Nothing here is binding and vv does not read this file; it becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except scope and pushed fails on the v1.6.0 tree. The stewardship section states the owner's own position on a future neutral home; this task does not contact anyone.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "tasks": [
+    {
+      "id": "XC-53",
+      "title": "Governance and stewardship, and check ids that never change meaning",
+      "phase": "design",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-00",
+        "XC-23"
+      ],
+      "requirements": [
+        "R-GOV",
+        "R-OPEN"
+      ],
+      "description": "GOVERNANCE.md states: the maintainers and how someone becomes one; how decisions are made (proposals in issues and Discussions, binding work as Proofline tasks signed only by the owner key); the check admission bar (linking docs/ROADMAP.md 'How I decide what goes in'); the check-id policy (an id is never reused or removed, a change of meaning gets a new id, deprecations are listed in CHANGELOG and kept in the registry); neutrality (no implementation is treated differently, there is no paid tier, results are never sold, the same disclosure rules apply to everyone); conflicts of interest (the licensor and his company, stated plainly); disclosure (linking SECURITY.md); and stewardship (what would move the project to a neutral home and on what terms). tools/check_ids.py writes docs/check-ids.json from the catalogue (id, profile, one-line property, spec basis, first release, status) and --check fails when the registry is stale, an id present at the last release tag is missing, or an id's property text changed without a deprecation entry.",
+      "scope": {
+        "allow": [
+          "GOVERNANCE.md",
+          "README.md",
+          "CONTRIBUTING.md",
+          "tools/check_ids.py",
+          "tests/test_check_ids.py",
+          "docs/check-ids.json",
+          ".github/workflows/ci.yml",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-53-AC01",
+          "mandatory": true,
+          "statement": "GOVERNANCE.md exists",
+          "verifier": {
+            "type": "file_exists",
+            "path": "GOVERNANCE.md"
+          }
+        },
+        {
+          "id": "XC-53-AC02",
+          "mandatory": true,
+          "statement": "GOVERNANCE.md has every required section",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import sys;s=open('GOVERNANCE.md').read();h=['## Maintainers','## Decisions','## Adding or changing a check','## Check ids','## Neutrality','## Conflicts of interest','## Disclosure','## Stewardship'];m=[x for x in h if x not in s];print(m);sys.exit(1 if m else 0)\"",
+            "expect_exit": 0,
+            "timeout_s": 30
+          }
+        },
+        {
+          "id": "XC-53-AC03",
+          "mandatory": true,
+          "statement": "GOVERNANCE.md contains no email address",
+          "verifier": {
+            "type": "grep",
+            "file": "GOVERNANCE.md",
+            "pattern": "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[a-z]{2,}",
+            "must": "absent"
+          }
+        },
+        {
+          "id": "XC-53-AC04",
+          "mandatory": true,
+          "statement": "README and CONTRIBUTING link GOVERNANCE.md",
+          "verifier": {
+            "type": "command",
+            "cmd": "grep -q 'GOVERNANCE.md' README.md && grep -q 'GOVERNANCE.md' CONTRIBUTING.md",
+            "expect_exit": 0,
+            "timeout_s": 30
+          }
+        },
+        {
+          "id": "XC-53-AC05",
+          "mandatory": true,
+          "statement": "The check-id registry matches the catalogue, and no id published at v1.6.0 is missing or has changed meaning without a deprecation entry",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/check_ids.py --check --since v1.6.0",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-53-AC06",
+          "mandatory": true,
+          "statement": "A removed id, a reused id and a silently changed property are each detected",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_check_ids",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-53-AC07",
+          "mandatory": true,
+          "statement": "CI runs the check-id gate on every push",
+          "verifier": {
+            "type": "grep",
+            "file": ".github/workflows/ci.yml",
+            "pattern": "tools/check_ids\\.py --check",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-53-AC08",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-53-AC09",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "GOVERNANCE.md states the owner's own position only. Do not name, quote or commit to any third party, and do not contact anyone."
+      ]
+    }
+  ]
+}
