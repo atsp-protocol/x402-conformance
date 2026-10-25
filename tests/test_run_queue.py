@@ -1,6 +1,7 @@
-"""tools/run_queue.py (XC-97): the free run queue accepts a rerun request only for a listed row in the free run program,
-from that row's own issue and contact, for the row's own repository; it keeps one entry per slug, never reruns a ref,
-honours the caps, refuses any cap that allows spend, and turns a run's evidence into the row."""
+"""tools/run_queue.py (XC-97, XC-98): the free run queue accepts a rerun request only for a listed row in the free
+program with a public testnet endpoint, from that row's own issue and contact, for the row's own repository; it keeps
+one entry per slug, never reruns a ref, honours the caps, refuses any cap that allows spend or no pinned suite, runs
+only the row's endpoint (never its code), turns a tier-1 run into the row, and admits tier-2 attestations to verify."""
 import json
 import os
 import shutil
@@ -23,15 +24,24 @@ class RunQueue(unittest.TestCase):
         shutil.copytree(os.path.join(ROOT, "evidence", "impl-matrix"), os.path.join(self.root, "evidence", "impl-matrix"))
         shutil.copytree(os.path.join(ROOT, "docs"), os.path.join(self.root, "docs"))
         self.queue = os.path.join(self.root, "queue-state")
+        self.pin("v1.6.0")
         self.row({})
+
+    def pin(self, tag: str | None) -> None:
+        p = os.path.join(self.root, "matrix", "queue", "suite.json")
+        d = json.load(open(p))
+        d.update({"tag": tag, "commit": "69bc4a7adf05983795904639ef12c431742ff850" if tag else None,
+                  "version": tag.lstrip("v") if tag else None})
+        json.dump(d, open(p, "w"))
 
     def row(self, over: dict) -> None:
         r = {"schema": "x402-conformance.matrix-row/1", "slug": "example-pay", "project": "Example Pay", "type": "sdk",
              "repo": "https://github.com/example/example-pay", "site": None, "languages": ["TypeScript"],
-             "chains": ["EVM"], "networks": ["eip155:84532"], "environments": ["devnet"], "testnet_endpoint": None,
+             "chains": ["EVM"], "networks": ["eip155:84532"], "environments": ["testnet"],
+             "testnet_endpoint": "https://sandbox.example.com/paid",
              "version": "1.4.0", "contact": "@example",
              "consent": {"listing": True, "data_license": True, "testnet_only": True, "badge": True, "hook": True},
-             "source_issue": ISSUE, "evidence": None, "run": {"start": "npm start", "path": "/paid"},
+             "source_issue": ISSUE, "evidence": None, "tier": None, "attestation": None,
              "program_start": "2026-10-25", "program_end": "2027-04-25"}
         r.update(over)
         json.dump(r, open(os.path.join(self.root, "matrix", "rows", "example-pay.json"), "w"))
@@ -70,6 +80,10 @@ class RunQueue(unittest.TestCase):
             self.assertEqual(self.entry(), {})
         self.row({"consent": {"listing": True, "data_license": True, "testnet_only": True, "badge": True, "hook": False}})
         self.assertEqual(self.comment(ok)[0], 1)
+        self.row({"testnet_endpoint": None})
+        rc, out = self.comment(ok)
+        self.assertEqual(rc, 1)
+        self.assertIn("public testnet endpoint", out)
 
     def test_no_reruns_after_the_program_ends(self) -> None:
         rc, out = self.comment("/x402-conformance run slug=example-pay ref=v2.0.0", now="2027-04-26T00:00:00Z")
@@ -116,8 +130,9 @@ class RunQueue(unittest.TestCase):
         out = os.path.join(self.root, "out")
         self.assertEqual(self.tool("next", "--queue", self.queue, "--now", NOW, "--github-output", out)[0], 0)
         got = dict(line.split("=", 1) for line in open(out).read().splitlines())
-        self.assertEqual((got["slug"], got["repo"], got["start"], got["path"], got["interval"]),
-                         ("example-pay", "example/example-pay", "npm start", "/paid", "5"))
+        self.assertEqual((got["slug"], got["repo"], got["endpoint"], got["suite"], got["interval"]),
+                         ("example-pay", "example/example-pay", "https://sandbox.example.com/paid", "v1.6.0", "5"))
+        self.assertNotIn("start", got)
         self.tool("finish", "--queue", self.queue, "--slug", "example-pay", "--now", NOW, "--result", "ok")
         rc, text = self.comment("/x402-conformance run slug=example-pay ref=" + "v1.5.0")
         self.assertIn("already run", text)
@@ -135,15 +150,47 @@ class RunQueue(unittest.TestCase):
         self.comment("/x402-conformance run slug=example-pay ref=" + "v1.5.0")
         self.assertIn("nothing picked", self.tool("next", "--queue", self.queue, "--now", NOW)[1])
 
-    def test_publish_turns_the_bundle_into_the_row(self) -> None:
+    def test_no_suite_pinned_runs_nothing(self) -> None:
+        self.pin(None)
+        self.comment("/x402-conformance run slug=example-pay ref=v1.5.0")
+        self.assertIn("no suite release pinned", self.tool("next", "--queue", self.queue, "--now", NOW)[1])
+
+    def test_publish_turns_the_external_run_into_a_tier_1_row(self) -> None:
         bundle = os.path.join(self.root, "bundle")
         os.makedirs(bundle)
-        shutil.copy2(os.path.join(ROOT, "evidence", "impl-matrix", "express-2.28.0", "run.json"), bundle)
+        shutil.copy2(os.path.join(ROOT, "tests", "tier1_run.json"), os.path.join(bundle, "run.json"))
         rc, out = self.tool("publish", "--bundle", bundle, "--slug", "example-pay", "--ref", "v1.5.0", "--version", "1.5.0")
         self.assertEqual(rc, 0, out)
         row = json.load(open(os.path.join(self.root, "matrix", "rows", "example-pay.json")))
-        self.assertEqual((row["version"], row["evidence"]), ("1.5.0", "evidence/impl-matrix/example-pay"))
-        self.assertTrue(os.path.isfile(os.path.join(self.root, "docs", "site", "badge", "example-pay.svg")))
+        self.assertEqual((row["version"], row["evidence"], row["tier"]),
+                         ("1.5.0", "evidence/impl-matrix/example-pay", "external-verified"))
+        svg = open(os.path.join(self.root, "docs", "site", "badge", "example-pay.svg")).read()
+        self.assertIn("External-verified \u00b7 x402-conformance v1.6.0 \u00b7 Optitransfer", svg)
+        self.assertIn("6/7 checks \u00b7 2026-10-20", svg)
+        md = open(os.path.join(self.root, "docs", "MATRIX.md")).read()
+        self.assertIn("| External-verified | testnet | 1.5.0 |", md)
+        self.assertIn("| 6/7 | 1 | 7 exercised / 2 NA / 70 needs self-hosted | v1.6.0 |", md)
+
+    def test_attest_requests_follow_the_same_rules(self) -> None:
+        f = os.path.join(self.root, "a.md")
+        out = os.path.join(self.root, "ao")
+
+        def ask(text: str, author: str = "example") -> tuple[int, str]:
+            open(f, "w").write(text)
+            return self.tool("attest", "--queue", self.queue, "--now", NOW, "--comment", f, "--issue-url", ISSUE,
+                             "--author", author, "--issue-author", "someone", "--github-output", out)
+        good = "/x402-conformance attest slug=example-pay repo=example/example-pay ref=v1.5.0 run=123"
+        self.assertEqual(ask(good, "intruder")[0], 1)
+        self.assertEqual(ask(good.replace("example/example-pay", "evil/repo"))[0], 1)
+        self.assertEqual(ask(good.replace(" run=123", ""))[0], 1)
+        self.assertEqual(ask(good.replace("ref=v1.5.0", "ref=" + "b" * 40))[0], 1)
+        rc, text = ask(good)
+        self.assertEqual(rc, 0, text)
+        got = dict(line.split("=", 1) for line in open(out).read().splitlines() if line)
+        self.assertEqual((got["repo"], got["ref"], got["run"]), ("example/example-pay", "v1.5.0", "123"))
+        rc, text = ask(good)
+        self.assertEqual(rc, 1)
+        self.assertIn("already verified", text)
 
 
 if __name__ == "__main__":

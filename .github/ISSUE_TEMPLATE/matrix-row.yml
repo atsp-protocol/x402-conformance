@@ -9,8 +9,11 @@ body:
         A check runs on this issue as soon as you submit it. It validates your answers against
         [matrix/schema/row.schema.json](https://github.com/atsp-protocol/x402-conformance/blob/main/matrix/schema/row.schema.json)
         and opens a pull request with your row for review. Nothing is merged automatically and nothing is listed
-        without the consents at the end. Public details only: no emails, no keys. Results in a row come only from
-        evidence (your own run or mine): checks passed out of checks run and a failed count. No score and no ranking.
+        without the consents at the end. Public details only: no emails, no keys. A row has one of two tiers.
+        **External-verified**: my run queue checks your public testnet endpoint from outside your stack, with no spend.
+        **Full suite (self-hosted)**: you run the whole suite in your own CI with the Action and `attest: true`, and the
+        queue verifies the signed attestation. Results show checks passed out of applicable checks, the denominator
+        (exercised / not applicable / needs the self-hosted run), the suite tag and the date. No score and no ranking.
         To run it yourself first, see
         [RUN-IT-YOURSELF.md](https://github.com/atsp-protocol/x402-conformance/blob/main/docs/RUN-IT-YOURSELF.md).
   - type: input
@@ -52,20 +55,23 @@ body:
     validations: { required: true }
   - type: input
     id: endpoint
-    attributes: { label: Testnet endpoint URL (if any), placeholder: "https://sandbox.example.com/paid" }
+    attributes:
+      label: Testnet endpoint URL (if any)
+      description: "A public https paid URL on testnet. Tier 1 checks it from outside: unpaid GETs, at least 5 s apart."
+      placeholder: "https://sandbox.example.com/paid"
   - type: input
     id: version
     attributes: { label: Version or commit, placeholder: "2.3.0 or f44d34c" }
     validations: { required: true }
-  - type: textarea
+  - type: input
     id: evidence
     attributes:
-      label: Evidence JSON from your own run (optional)
+      label: Full-suite run with an attestation (optional)
       description: >-
-        Paste the run.json the Action's evidence mode wrote (the evidence artifact, or resource-server.json), or the
-        file from `x402conf-svm probe --out`. It goes through the same checks as every row: testnet or devnet only,
-        facilitator on loopback, nothing paid against a live endpoint.
-      render: json
+        For tier 2: the link to a run in your own repository, on a release, of the Action with `attest: true`
+        (docs/templates/x402-conformance.yml). The signed attestation is downloaded and verified (your repository,
+        the attested commit and tag, the pinned suite, every applicable check present); nothing is rerun.
+      placeholder: "https://github.com/example/example-pay/actions/runs/123456789"
   - type: input
     id: contact
     attributes:
@@ -90,13 +96,14 @@ body:
   - type: markdown
     attributes:
       value: >-
-        **Free run program.** I run the suite for you, free: one initial run, then a rerun for each new release (not
-        every commit) for six months from today. Runs use loopback with testnet ids: never mainnet, never a hosted
-        facilitator, nothing paid. Full results go to you privately first. In return your project is listed with its
-        results and displays the badge in its README with attribution to Optitransfer/x402-conformance, and you
-        install the notify hook
+        **Free run program.** For six months from today, free: tier 1, one initial external run of your public
+        testnet endpoint and then a rerun for each new release (not every commit); and tier 2, verification and
+        listing of the attested full-suite run your own CI makes on each release. Tier-1 runs are unpaid GETs from
+        outside your stack: never mainnet, never a hosted facilitator, nothing paid, never your code. Full tier-1
+        results go to you privately first. In return your project is listed with its results and displays the badge
+        in its README with attribution to Optitransfer/x402-conformance, and you install the notify hook
         ([docs/templates/x402-conformance-notify.yml](https://github.com/atsp-protocol/x402-conformance/blob/main/docs/templates/x402-conformance-notify.yml)),
-        which reports each published release. At five months I open a renewal heads-up issue. After six months your
+        which reports each published release and submits its attestation. At five months I open a renewal heads-up issue. After six months your
         row stays listed with its last result, marked stale, and the badge greys out; nothing is deleted. Running it
         yourself with the Action stays free and unlimited (docs/RUN-IT-YOURSELF.md): leave this unticked for that.
   - type: checkboxes
@@ -104,15 +111,5 @@ body:
     attributes:
       label: Free run program
       options:
-        - label: Install the notify hook so each new release joins the x402-conformance run queue (free for six months)
+        - label: Install the notify hook so each new release joins the x402-conformance run queue (free for six months; needs the testnet endpoint above)
           required: false
-  - type: input
-    id: start
-    attributes:
-      label: Start command for a free run (optional)
-      description: "Run from your repository root; it must use X402_FACILITATOR_URL as its facilitator and listen on PORT. Example: npm ci && PORT=4020 npm start"
-  - type: input
-    id: path
-    attributes:
-      label: Paid route path for a free run (optional)
-      placeholder: "/paid"

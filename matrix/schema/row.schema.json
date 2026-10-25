@@ -2,7 +2,7 @@
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "$id": "https://github.com/atsp-protocol/x402-conformance/blob/main/matrix/schema/row.schema.json",
  "title": "x402-conformance matrix row",
- "description": "One project's row in docs/MATRIX.md, from the 'Add or update my row' issue form. Public details only: no emails, no keys, no private data. A row exists only with all three consents.",
+ "description": "One project's row in docs/MATRIX.md, from the 'Add or update my row' issue form. Public details only: no emails, no keys, no private data. A row exists only with all four consents.",
  "type": "object",
  "additionalProperties": false,
  "required": [
@@ -102,7 +102,8 @@
     "null"
    ],
    "maxLength": 300,
-   "pattern": "^https://[A-Za-z0-9.-]+(/[^\\s<>|`]*)?$"
+   "pattern": "^https://[A-Za-z0-9.-]+(/[^\\s<>|`]*)?$",
+   "description": "The public testnet paid URL the run queue checks from outside (tier 1): unpaid GETs paced at least 5 s apart, never mainnet"
   },
   "version": {
    "type": "string",
@@ -136,7 +137,7 @@
      "const": true
     },
     "hook": {
-     "description": "Free run program: the project installs the notify hook so new releases and commits join the run queue",
+     "description": "Free program: the project installs the notify hook so each published release gets a tier-1 external rerun and its tier-2 attestation verified, for six months",
      "type": "boolean"
     }
    }
@@ -150,7 +151,28 @@
     "string",
     "null"
    ],
-   "pattern": "^evidence/impl-matrix/[a-z0-9][a-z0-9._-]{0,79}$"
+   "pattern": "^evidence/impl-matrix/[a-z0-9][a-z0-9._-]{0,79}$",
+   "description": "Tier 1: the run queue's external run, committed by tools/row_from_evidence.py"
+  },
+  "tier": {
+   "description": "Written by the tools, never by the form: external-verified (tier 1, the run queue's external run) or full-suite-self-hosted (tier 2, a verified attestation of the project's own full-suite run)",
+   "type": [
+    "string",
+    "null"
+   ],
+   "enum": [
+    "external-verified",
+    "full-suite-self-hosted",
+    null
+   ]
+  },
+  "attestation": {
+   "description": "Tier 2: the verified attestation (tools/attestation.py), signed in the project's own CI with GitHub artifact attestations",
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^matrix/attestations/[a-z0-9][a-z0-9-]{0,62}\\.json$"
   },
   "release": {
    "description": "Written by tools/matrix_freshness.py, never by the form: the project's latest release or tag and default-branch commit as of checked_at, and since when the version tested has been behind it.",
@@ -197,36 +219,6 @@
       "boolean",
       "null"
      ]
-    }
-   }
-  },
-  "run": {
-   "description": "Free run program: how the queue runner starts the project's server from its own repository, on loopback behind the facilitator double",
-   "type": [
-    "object",
-    "null"
-   ],
-   "additionalProperties": false,
-   "required": [
-    "start",
-    "path"
-   ],
-   "properties": {
-    "start": {
-     "type": "string",
-     "minLength": 1,
-     "maxLength": 200,
-     "pattern": "^[A-Za-z0-9 ._/:=+@,&-]+$"
-    },
-    "path": {
-     "type": "string",
-     "maxLength": 200,
-     "pattern": "^/[A-Za-z0-9._~/-]*$"
-    },
-    "port": {
-     "type": "integer",
-     "minimum": 1024,
-     "maximum": 65535
     }
    }
   },

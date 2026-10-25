@@ -1,7 +1,8 @@
 # XC-96: an "Add or update my row" issue (.github/ISSUE_TEMPLATE/matrix-row.yml) is checked against
 # matrix/schema/row.schema.json and the public-safe rules in tools/matrix_rows.py. A valid issue gets a pull request
-# that adds or updates matrix/rows/<slug>.json (and the evidence, if pasted) for a maintainer to review. Nothing here
-# merges anything, nothing is listed without all three consents, and no endpoint is probed from this workflow.
+# that adds or updates matrix/rows/<slug>.json for a maintainer to review. XC-98: when the issue links a full-suite run
+# from the project's own repository, its signed attestation is downloaded and verified (tier 2); nothing is run. Nothing
+# here merges anything, nothing is listed without all four consents, and no endpoint is probed from this workflow.
 name: matrix-row
 on:
   issues:
@@ -59,6 +60,29 @@ jobs:
             cat "$RUNNER_TEMP/result.md"; } > "$RUNNER_TEMP/comment.md"
           gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment.md"
           exit 1
+      - name: Verify the attested full-suite run, if one is linked (tier 2; nothing is run)
+        if: steps.check.outputs.rc == '0' && steps.check.outputs.attest_run != ''
+        env:
+          SLUG: ${{ steps.check.outputs.slug }}
+          REPO: ${{ steps.check.outputs.attest_repo }}
+          RUN: ${{ steps.check.outputs.attest_run }}
+          GH_TOKEN: ${{ secrets.X402C_READ_TOKEN || secrets.GITHUB_TOKEN }}
+          PR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          d="$RUNNER_TEMP/att"; mkdir -p "$d"
+          if gh run download "$RUN" -R "$REPO" -n "x402-conformance-attestation-$SLUG" -D "$d" \
+             && [ "$(find "$d" -type f | wc -l)" -eq 1 ] && [ -f "$d/x402-conformance-attestation.json" ]; then
+            f="$d/x402-conformance-attestation.json"
+            commit=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['vendor']['commit'])" "$f")
+            gh attestation verify "$f" --repo "$REPO" --source-digest "$commit" --format json > "$d/verify.json" \
+              || echo '[]' > "$d/verify.json"
+            python3 tools/attestation.py verify --file "$f" --gh-json "$d/verify.json" --slug "$SLUG" \
+              --now "$(date -u +%FT%TZ)" --apply | tee "$RUNNER_TEMP/att.md" || true
+          else
+            echo "attestation: no artifact x402-conformance-attestation-$SLUG with only the attestation in run $RUN" | tee "$RUNNER_TEMP/att.md"
+          fi
+          { echo "Tier 2 (Full suite (self-hosted)):"; echo; sed 's/^attestation: /- /' "$RUNNER_TEMP/att.md"; } > "$RUNNER_TEMP/attc.md"
+          GH_TOKEN="$PR_TOKEN" gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/attc.md"
       - name: Open or update the pull request for review
         if: steps.check.outputs.rc == '0'
         env:
@@ -67,14 +91,14 @@ jobs:
           # Commits carry the maintainer identity the repository's hygiene check requires.
           git config user.name "mgillr"
           git config user.email "36207807+mgillr@users.noreply.github.com"
-          git add matrix/rows docs/MATRIX.md docs/compat-matrix.json docs/site/badge docs/site/matrix evidence/impl-matrix
+          git add matrix/rows matrix/attestations docs/MATRIX.md docs/site/badge docs/site/matrix
           if git diff --cached --quiet; then echo "no change to the row"; else
             git commit -m "Add or update the matrix row $SLUG (#$ISSUE)"
             git push origin "$BRANCH"
           fi
           gh issue edit "$ISSUE" --add-label "matrix-row: valid" --remove-label "matrix-row: needs changes" || true
           if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
-            printf 'Adds or updates `matrix/rows/%s.json` from #%s.\n\nThe issue passed `tools/matrix_rows.py`: the schema, all three consents and the public-safe rules. For maintainer review; nothing merges automatically. Pull requests opened by this workflow do not start CI on their own, so a maintainer runs it (close and reopen, or push) before merging.\n\nCloses #%s\n' \
+            printf 'Adds or updates `matrix/rows/%s.json` from #%s.\n\nThe issue passed `tools/matrix_rows.py`: the schema, all four consents and the public-safe rules (and, with a linked full-suite run, tools/attestation.py). For maintainer review; nothing merges automatically. Pull requests opened by this workflow do not start CI on their own, so a maintainer runs it (close and reopen, or push) before merging.\n\nCloses #%s\n' \
               "$SLUG" "$ISSUE" "$ISSUE" > "$RUNNER_TEMP/pr.md"
             gh pr create --base main --head "$BRANCH" --title "Matrix row: $SLUG" --body-file "$RUNNER_TEMP/pr.md" --label matrix-row
             gh issue comment "$ISSUE" --body "Your row is valid. I've opened a pull request for review; it lists your project once it's merged."

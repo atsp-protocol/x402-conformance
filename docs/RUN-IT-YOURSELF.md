@@ -49,8 +49,40 @@ jobs:
 ```
 
 `evidence-upload: false` keeps the bundle in the `evidence-dir` output without uploading it, if you'd rather seal or
-filter it yourself first. The job summary lists every check and ends with the "Tested with x402-conformance" line and the version. The
-`evidence` and `row` inputs come with the first release after 1.6.0; until then use `@main`.
+filter it yourself first.
+
+For tier 2 of the matrix, Full suite (self-hosted), run it on each release with `attest: true`. The Action writes one
+entry per catalogue check (with a reason for each check you list in `not-applicable`), signs it with GitHub artifact
+attestations and uploads it as `x402-conformance-attestation-<row>`. The job needs `id-token: write` and
+`attestations: write`:
+
+<!-- runnable: actions -->
+```yaml
+on:
+  release:
+    types: [published]
+jobs:
+  x402:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: atsp-protocol/x402-conformance@v1
+        with:
+          resource-url: http://127.0.0.1:4020/paid
+          start: PORT=4020 node server.js
+          retry: true
+          attest: true
+          not-applicable: "U1: no upto scheme; X1: no paid MCP tools"
+          row: myserver
+```
+
+The job summary lists every check and ends with the "Tested with x402-conformance" line and the version. The
+`evidence`, `row`, `attest` and `not-applicable` inputs come with the first release after 1.6.0; until then use
+`@main` (an attestation made with `@main` is listed as "rerun on current suite" until a release is pinned).
 
 ## MCP
 
@@ -65,19 +97,23 @@ See [USING.md](USING.md) for the tools it offers.
 
 ## Get listed or update your row
 
-1. Run it with the Action's evidence mode, or keep the `run.json` from the CLI.
-2. Open the [Add or update my row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml)
-   form: project name, type, repository, languages, chain families and networks, the environments you offer, a
-   testnet endpoint if any, version or commit, a public contact handle (no emails), the three consents, and the
-   run.json from step 1 pasted in (optional). A workflow checks it and opens a pull request with your row for review.
-3. Open a PR made with `python3 tools/row_from_evidence.py <bundle> --row <row> --consent <issue URL>`, which checks
-   the bundle and writes `evidence/impl-matrix/<row>/`, the table row and the badge.
-   Or link the artifact in the issue and I'll open the PR. CI rebuilds the row and its badge from the evidence.
+Open the [Add or update my row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml)
+form: project name, type, repository, languages, chain families and networks, the environments you offer, your
+public testnet endpoint, version or commit, a public contact handle (no emails) and the four consents. Then pick a
+tier (or both):
 
-Your row shows the environment, checks passed out of checks run, the failed count, the version tested and the run date
-with a link to the evidence. It never shows a score or a rank. If a check fails, I tell you privately first
-(SECURITY.md). Once your row is listed you can embed its badge ([BADGE.md](BADGE.md)). The public results are CC BY 4.0
-([DATA-LICENSE](../DATA-LICENSE)).
+1. **External-verified**: tick the notify hook and give the testnet endpoint. The run queue checks it from outside
+   your stack on each new release: unpaid GETs only, paced, never your code.
+2. **Full suite (self-hosted)**: link a release run of the Action with `attest: true` in your own repository. The
+   workflow downloads the attestation, checks its signature (`gh attestation verify`: a workflow in your repository,
+   at the attested commit and tag) and its contents (`tools/attestation.py`: the pinned suite, every applicable check
+   present) and upgrades your row. Nothing is rerun on our side.
+
+A workflow checks the issue and opens a pull request with your row for review. Your row shows its tier, checks
+passed out of applicable checks, the failed count, the denominator (exercised / not applicable / needs the
+self-hosted run), the suite tag, the version tested and the date, with a link to the evidence. It never shows a score
+or a rank. If a check fails, I tell you privately first (SECURITY.md). Once your row is listed you display its badge
+([BADGE.md](BADGE.md)). The public results are CC BY 4.0 ([DATA-LICENSE](../DATA-LICENSE)).
 
 Is a check missing? Propose one with the
 [check proposal](https://github.com/atsp-protocol/x402-conformance/issues/new?template=check-proposal.yml) form.
@@ -85,20 +121,23 @@ Is a check missing? Propose one with the
 ## Keep your row fresh
 
 Copy [templates/x402-conformance.yml](templates/x402-conformance.yml) into your repository as
-`.github/workflows/x402-conformance.yml` and set your slug. It runs the suite on your own code, on loopback with
-testnet ids, on every push to your default branch, on every release or tag, and weekly, and uploads the evidence
-bundle. Each week the matrix's freshness job (`tools/matrix_freshness.py`) checks your latest release or tag and
-default-branch commit against the version tested, picks up the newest successful run's evidence (the same checks as
-every row), and opens a pull request updating your row, its release alignment (current, behind or stale) and your
-badge. It reads the GitHub API only; it never calls your endpoints.
+`.github/workflows/x402-conformance.yml` and set your slug. It runs the full suite on your own code, on loopback with
+testnet ids, on every push to your default branch, on every release or tag, and weekly, and on a release signs and
+uploads the attestation. Each week the matrix's freshness job (`tools/matrix_freshness.py`) checks your latest release
+or tag and default-branch commit against the version tested, verifies the attestation of your newest release run
+(tier 2), asks the run queue for a tier-1 rerun of a new release, and opens a pull request updating your row, its
+release alignment (current, behind or stale) and your badge. It reads the GitHub API only; it never calls your
+endpoints.
 
 ## Free run program
 
-Rather not run it yourself? I run the suite for you, free: one initial run, then a rerun for each new release for six
-months, on loopback with testnet ids, with no hosted facilitator, no mainnet and no spend. Full results go to you
-privately first. In return your project is listed with its results and displays the badge in its README with
-attribution to Optitransfer/x402-conformance. You also install the notify hook,
+For six months from your consent, free: tier-1 external runs of your public testnet endpoint (one initial run, then
+one per new release), and verification and listing of your tier-2 attestations. Tier-1 runs are unpaid GETs from
+outside your stack, with no hosted facilitator, no mainnet and no spend, and the queue never runs your code. Full
+tier-1 results go to you privately first. In return your project is listed with its results and displays the badge in
+its README with attribution to Optitransfer/x402-conformance. You also install the notify hook,
 [templates/x402-conformance-notify.yml](templates/x402-conformance-notify.yml), as
-`.github/workflows/x402-conformance-notify.yml`; it runs on release published only. After six months the row stays
+`.github/workflows/x402-conformance-notify.yml`; it runs on release published only, asks for the tier-1 rerun and,
+with `X402_CONFORMANCE_FULL_SUITE` set, runs the full suite and submits its attestation. After six months the row stays
 listed with its last result, marked stale. Self-runs with the Action above stay free and unlimited. See
 [MATRIX.md, Free run program](MATRIX.md#free-run-program).

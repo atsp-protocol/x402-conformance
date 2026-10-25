@@ -38,7 +38,7 @@ jobs:
       - name: The compatibility matrix matches the committed implementation-matrix runs
         run: python3 tools/compat_matrix.py --check
       - name: Listed projects (matrix/rows) match the schema and docs/MATRIX.md
-        run: python3 tools/matrix_rows.py --check
+        run: python3 tools/matrix_rows.py --check && python3 tools/attestation.py check
       - run: PYTHONPATH=src python -m x402conf offline > /dev/null
       - run: cd evidence/2026-10-20 && sha256sum -c SHA256SUMS
   interdeps-gate:

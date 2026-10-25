@@ -101,13 +101,20 @@ def rows(root: str) -> tuple[list[dict[str, object]], list[str]]:
         readme = os.path.join(d, "README.md")
         m = CONSENT_LINE.search(open(readme, encoding="utf-8").read()) if os.path.isfile(readme) else None
         results = run.get("results", [])
+        target = ""
+        if run.get("mode") == "resource-GET-only":  # the run queue's external tier-1 run (XC-98): x402conf resource
+            target = next((str(r.get("target")) for r in results if isinstance(r, dict) and r.get("target")), "")
+            results = [{"check": c.get("check"), "pass": c.get("pass") is True or c.get("severity") != "error",
+                        "status": "pass" if c.get("pass") is True or c.get("severity") != "error" else "fail"}
+                       for r in results if isinstance(r, dict) for c in r.get("checks", []) if isinstance(c, dict)]
         stack, _, version = name.rpartition("-")
         first = results[0].get("detail") if results and isinstance(results[0], dict) else None
         network = first.get("graded_on") if isinstance(first, dict) else None
         ran = [r for r in results if isinstance(r, dict) and r.get("status") not in NOT_RUN]
         passed = [r for r in ran if r.get("status") == "pass" or (r.get("pass") is True and r.get("status") is None)]
         out.append({
-            "row": name, "environment": environment(run), "stack": stack, "version": version, "network": network,
+            "row": name, "environment": environment({"resource": target} if target else run), "stack": stack,
+            "version": version, "network": network,
             "checks_run": len(ran), "checks_passed": len(passed), "failed_count": len(ran) - len(passed),
             "tool": run.get("tool"), "run_at": run.get("run_at"),
             "run": f"{ROWS}/{name}/run.json", "sums": f"{ROWS}/{name}/SHA256SUMS", "sha256": sums,

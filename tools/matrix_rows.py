@@ -24,13 +24,11 @@ import html
 import json
 import os
 import re
-import shutil
-import subprocess
 import sys
-import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "src"))
+from x402conf import tiers as T  # noqa: E402
 from x402conf.discovery import Validator  # noqa: E402
 
 SCHEMA = "matrix/schema/row.schema.json"
@@ -40,6 +38,7 @@ COMPAT = "docs/compat-matrix.json"
 PAGE_DIR = "docs/site/matrix"
 BADGES = "docs/site/badge"
 STALE_DAYS = 30
+PIN = "matrix/queue/suite.json"
 PROGRAM_MONTHS = 6
 NOTICE_MONTHS = 5
 START, END = "<!-- matrix-rows:start -->", "<!-- matrix-rows:end -->"
@@ -52,10 +51,10 @@ LABELS = {
     "project": "Project name", "type": "Type", "repo": "Repository URL", "site": "Docs or site URL",
     "languages": "Languages", "chains": "Chain families", "networks": "Networks (CAIP-2 ids)",
     "environments": "Environments you offer", "testnet_endpoint": "Testnet endpoint URL (if any)",
-    "version": "Version or commit", "evidence": "Evidence JSON from your own run (optional)",
+    "version": "Version or commit", "evidence": "Full-suite run with an attestation (optional)",
     "contact": "Public contact handle", "consent": "Consent",
-    "start": "Start command for a free run (optional)", "path": "Paid route path for a free run (optional)",
 }
+RUN_URL = re.compile(r"^https://github\.com/([\w.-]+/[\w.-]+)/actions/runs/([0-9]{1,20})/?$")
 CONSENTS = {"listing": "list this project", "data_license": "CC BY 4.0", "testnet_only": "testnet-only probes",
             "badge": "Display the badge in our README with attribution to Optitransfer/x402-conformance"}
 HOOK = ("Free run program", "Install the notify hook")
@@ -111,7 +110,7 @@ def add_months(day: str, n: int) -> str:
 
 
 def from_issue(body: str, issue_url: str, today: str = "") -> tuple[dict[str, object], str, list[str]]:
-    """The row, any evidence JSON text, and the problems found reading the form."""
+    """The row, the link to a full-suite run with an attestation (if any), and the problems found reading the form."""
     s = sections(body)
     bad: list[str] = []
     for key, label in LABELS.items():
@@ -123,14 +122,18 @@ def from_issue(body: str, issue_url: str, today: str = "") -> tuple[dict[str, ob
         if not ok:
             bad.append(f"consent not given: '{CONSENTS[k]}' must be ticked; nothing is listed without it")
     ticked["hook"] = bool(re.search(r"^- \[[xX]\] .*" + re.escape(HOOK[1]), s.get(HOOK[0], ""), re.M | re.I))
-    start, path = s.get(LABELS["start"], "").strip(), s.get(LABELS["path"], "").strip()
-    if ticked["hook"] and not (start and path):
-        bad.append("the free run program needs a start command and a paid route path")
-    if (start or path) and not ticked["hook"]:
-        bad.append("a start command is used only by the free run program: tick the notify hook, or leave them empty")
+    endpoint = s.get(LABELS["testnet_endpoint"], "").strip()
+    envs = items(s.get(LABELS["environments"], ""))
+    if ticked["hook"] and not (endpoint and "testnet" in envs):
+        bad.append("the free run program runs the external checks against your public testnet endpoint: give its URL "
+                   "and offer testnet")
     t = s.get(LABELS["type"], "").strip().lower()
     evidence = s.get(LABELS["evidence"], "").strip()
-    evidence = re.sub(r"^```(json)?\s*|\s*```$", "", evidence).strip()
+    repo = s.get(LABELS["repo"], "").strip().rstrip("/")
+    m = RUN_URL.match(evidence)
+    if evidence and not (m and f"https://github.com/{m.group(1)}" == repo):
+        bad.append("the full-suite run must be a link to a workflow run in your own repository, "
+                   "https://github.com/<owner>/<repo>/actions/runs/<id>, that ran the Action with attest: true")
     row: dict[str, object] = {
         "schema": "x402-conformance.matrix-row/1",
         "slug": slug(s.get(LABELS["project"], "")),
@@ -147,11 +150,10 @@ def from_issue(body: str, issue_url: str, today: str = "") -> tuple[dict[str, ob
         "contact": s.get(LABELS["contact"], "").strip(),
         "consent": ticked,
         "source_issue": issue_url,
-        "evidence": None,
-        "run": {"start": start, "path": path} if ticked["hook"] and start and path else None,
+        "evidence": None, "tier": None, "attestation": None,
         "program_start": None, "program_end": None,
     }
-    if row["run"]:
+    if ticked["hook"]:
         day = today or datetime.date.today().isoformat()
         row["program_start"], row["program_end"] = day, add_months(day, PROGRAM_MONTHS)
     return row, evidence, bad
@@ -168,8 +170,10 @@ def problems(row: object, root: str) -> list[str]:
     if isinstance(row, dict):
         if row.get("environments") and "mainnet-only" in row["environments"] and len(row["environments"]) > 1:
             bad.append("environments: mainnet-only cannot be combined with testnet or devnet")
-        if row.get("type") == "facilitator-hosted" and row.get("testnet_endpoint"):
-            pass  # listed as offered; a hosted facilitator is probed only with written permission (SECURITY.md)
+        if row.get("tier") == T.TIER2 and not row.get("attestation"):
+            bad.append("tier 2 (Full suite (self-hosted)) needs a verified attestation in matrix/attestations/")
+        if row.get("tier") == T.TIER1 and not row.get("evidence"):
+            bad.append("tier 1 (External-verified) needs the run queue's evidence")
     return bad
 
 
@@ -242,13 +246,29 @@ def alignment(version: str, last_run: str | None, release: object, program_end: 
     return ("current" if latest else "current (no release published; default branch tested)"), False
 
 
-def badge_svg(slug: str, version: str, stale: bool, example: bool = False) -> str:
-    """'Tested with x402-conformance · Optitransfer' and the version tested, grey 'stale' when stale. No script, no
-    remote resource, no logo; the link goes to the project's row on the Pages matrix."""
-    left = "Tested with x402-conformance \u00b7 Optitransfer"
-    right = "stale" if stale else f"v{norm(version)}"[:24]
-    lw, rw = 6 * len(left) + 14, 7 * len(right) + 14
-    color = "#9e9e9e" if stale else "#2e7d32"
+def pin(root: str) -> dict[str, object]:
+    p = os.path.join(root, PIN)
+    return json.load(open(p, encoding="utf-8")) if os.path.isfile(p) else {}
+
+
+def tag_of(version: object) -> str:
+    v = norm(version)
+    return f"v{v}" if v else "untagged"
+
+
+def badge_text(tier: str, suite_tag: str, passed: object, applicable: object, day: object,
+               stale: bool, rerun: bool) -> tuple[str, str]:
+    """The two halves of a row's badge. Left: the tier, the suite tag and Optitransfer. Right: checks passed out of
+    applicable checks and the date, or grey 'stale' / 'rerun on current suite'."""
+    left = f"{T.TIER_LABEL[tier]} \u00b7 x402-conformance {suite_tag} \u00b7 Optitransfer"
+    right = ("rerun on current suite" if rerun else "stale" if stale else f"{passed}/{applicable} checks \u00b7 {day}")
+    return left, right
+
+
+def badge_svg(slug: str, left: str, right: str, grey: bool, example: bool = False) -> str:
+    """No script, no remote resource, no logo; the link goes to the project's row on the Pages matrix."""
+    lw, rw = 6 * len(left) + 14, 6 * len(right) + 14
+    color = "#9e9e9e" if grey else "#2e7d32"
     href = f"{PAGES}/matrix/#{slug}"
     title = f"{left}: {slug}, {right}" + (" (example, not a real result)" if example else "")
     return (f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{lw + rw}" '
@@ -260,47 +280,84 @@ def badge_svg(slug: str, version: str, stale: bool, example: bool = False) -> st
             f'<text x="{lw + rw // 2}" y="14">{html.escape(right)}</text>\n</g>\n</a>\n</svg>\n')
 
 
+ALT = "Tested with x402-conformance \u00b7 Optitransfer"
+
+
 def snippets(slug: str) -> tuple[str, str]:
-    """Copy-paste README snippets for one row: Markdown and HTML, each the badge plus the attribution line."""
+    """Copy-paste README snippets for one row: Markdown and HTML, each the badge plus the attribution line. The badge
+    image itself shows the tier, so the snippet stays the same when a row moves from tier 1 to tier 2."""
     img, row = f"{PAGES}/badge/{slug}.svg", f"{PAGES}/matrix/#{slug}"
-    alt = "Tested with x402-conformance \u00b7 Optitransfer"
-    md = f"[![{alt}]({img})]({row}) Conformance tested by [Optitransfer/x402-conformance]({row})"
-    h = (f'<a href="{row}"><img src="{img}" alt="{alt}"></a> '
+    md = f"[![{ALT}]({img})]({row}) Conformance tested by [Optitransfer/x402-conformance]({row})"
+    h = (f'<a href="{row}"><img src="{img}" alt="{ALT}"></a> '
          f'Conformance tested by <a href="{row}">Optitransfer/x402-conformance</a>')
     return md, h
 
 
 EXAMPLE = {
     "slug": "example", "project": "example-org/example-x402-server", "type": "merchant-paid-api",
-    "repo": None, "site": None, "languages": ["TypeScript"], "chains": ["EVM", "SVM"],
-    "networks": ["eip155:84532", "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"], "environment": "testnet",
-    "version": "1.4.0", "contact": "@example-org", "checks_run": 48, "checks_passed": 42, "failed_count": 6,
+    "repo": None, "site": None, "languages": ["TypeScript"], "chains": ["EVM"],
+    "networks": ["eip155:84532"], "environment": "testnet", "tier": T.TIER1, "tier_label": T.TIER_LABEL[T.TIER1],
+    "version": "1.4.0", "contact": "@example-org", "suite_tag": "v1.7.0", "suite_status": "current",
+    "checks_passed": 6, "checks_applicable": 7, "failed_count": 1, "exercised": 7, "not_applicable": 2,
+    "needs_self_hosted": 70, "na_reasons": {"P9": T.EXTERNAL_NA["P9"], "P10": T.EXTERNAL_NA["P10"]},
     "last_run": "2026-10-20", "release_alignment": "behind (v1.4.0 tested, v1.5.0 latest)", "stale": False,
-    "readme_badge": "shown", "free_run": True,
+    "readme_badge": "shown", "free_run": True, "program_end": "2027-04-20",
     "evidence": "evidence/impl-matrix/<slug>/run.json", "example": True,
 }
 EXAMPLE_LABEL = "Example (illustrative, not a real result)"
 
 
+def results_of(r: dict[str, object], run: dict[str, object] | None, root: str) -> tuple[str | None, dict[str, object]]:
+    """The row's tier and what its committed results say. Tier 2 comes only from a verified attestation in
+    matrix/attestations/, tier 1 only from the run queue's external run in evidence/impl-matrix/."""
+    att = os.path.join(root, str(r.get("attestation") or "-"))
+    if r.get("tier") == T.TIER2 and os.path.isfile(att):
+        doc = json.load(open(att, encoding="utf-8"))
+        a = doc["attestation"]
+        res = a["results"]
+        return T.TIER2, {"counts": T.denominator(res, T.TIER2), "last_run": str(a.get("generated_at") or "")[:10],
+                         "suite_tag": tag_of(a["suite"].get("version")), "suite_status": doc.get("suite_status"),
+                         "na": {k: v.get("reason") for k, v in res.items() if v.get("status") == "not_applicable"},
+                         "evidence": f"{REPO}/blob/main/{r['attestation']}"}
+    if run:
+        p = os.path.join(root, str(run["run"]))
+        res = T.tier1_results(T.results_from_run(p)) if os.path.isfile(p) else {}
+        doc = json.load(open(p, encoding="utf-8")) if os.path.isfile(p) else {}
+        version = ((doc.get("versions") or {}).get("x402-conformance") if isinstance(doc, dict) else None)
+        st = "current" if pin(root).get("version") and norm(version) == norm(pin(root).get("version")) \
+            else "rerun on current suite"
+        return T.TIER1, {"counts": T.denominator(res, T.TIER1), "last_run": str(run.get("run_at") or "")[:10],
+                         "suite_tag": tag_of(version), "suite_status": st,
+                         "na": {k: v.get("reason") for k, v in res.items() if v.get("status") == "not_applicable"},
+                         "evidence": f"{REPO}/blob/main/{run['run']}"}
+    return None, {}
+
+
 def view(rows: list[dict[str, object]], root: str) -> list[dict[str, object]]:
-    """What is published for each accepted row: its public fields and the counts from its committed evidence."""
+    """What is published for each accepted row: its public fields, its tier and the counts from its results."""
     compat = compat_rows(root)
     out = []
     for r in rows:
         run = run_of(r, compat)
-        last = str(run.get("run_at") or "")[:10] if run else None
-        align, stale = alignment(str(r["version"]), last or None, r.get("release"), r.get("program_end"))
+        tier, got = results_of(r, run, root)
+        c = got.get("counts") or {}
+        last = str(got.get("last_run") or "") or None
+        align, stale = alignment(str(r["version"]), last, r.get("release"), r.get("program_end"))
         out.append({
             "slug": r["slug"], "project": r["project"], "type": r["type"], "repo": r.get("repo"), "site": r.get("site"),
             "languages": r.get("languages") or [], "chains": r.get("chains") or [], "networks": r.get("networks") or [],
-            "environment": environment(r, run), "version": r["version"], "contact": r["contact"],
-            "checks_run": run["checks_run"] if run else None, "checks_passed": run["checks_passed"] if run else None,
-            "failed_count": run["failed_count"] if run else None, "last_run": last,
+            "environment": environment(r, run), "tier": tier, "tier_label": T.TIER_LABEL.get(str(tier), "not run yet"),
+            "version": r["version"], "contact": r["contact"],
+            "suite_tag": got.get("suite_tag"), "suite_status": got.get("suite_status"),
+            "checks_passed": c.get("passed"), "checks_applicable": c.get("applicable"),  # type: ignore[union-attr]
+            "failed_count": c.get("failed"), "exercised": c.get("exercised"),  # type: ignore[union-attr]
+            "not_applicable": c.get("not_applicable"), "needs_self_hosted": c.get("needs_self_hosted"),  # type: ignore[union-attr]
+            "na_reasons": got.get("na") or {}, "last_run": last,
             "release_alignment": align, "stale": stale, "readme_badge": readme_flag(r.get("release")),
             "free_run": bool((r.get("consent") or {}).get("hook")),  # type: ignore[union-attr]
             "program_end": r.get("program_end"),
-            "evidence": f"{REPO}/blob/main/{run['run']}" if run else None,
-            "badge": f"{PAGES}/badge/{r['slug']}.svg" if run else None,
+            "evidence": got.get("evidence"),
+            "badge": f"{PAGES}/badge/{r['slug']}.svg" if tier else None,
             "source_issue": r["source_issue"],
         })
     return out
@@ -320,6 +377,14 @@ def counts(vs: list[dict[str, object]], key: str) -> str:
     return ", ".join(f"{k} {n}" for k, n in sorted(c.items())) or "none yet"
 
 
+def denom(v: dict[str, object]) -> str:
+    return f"{v['exercised']} exercised / {v['not_applicable']} NA / {v['needs_self_hosted']} needs self-hosted"
+
+
+def suite_cell(v: dict[str, object]) -> str:
+    return f"{v['suite_tag']}" + ("" if v.get("suite_status") == "current" else " (rerun on current suite)")
+
+
 def md_row(v: dict[str, object]) -> str:
     md, _ = snippets(str(v["slug"]))
     if v.get("example"):
@@ -328,30 +393,46 @@ def md_row(v: dict[str, object]) -> str:
         link = v.get("repo") or v.get("site")
         name = f"[{v['project']}]({link})" if link else str(v["project"])
         last = f"[{v['last_run']}]({v['evidence']})"
-    return (f"| <a id=\"project-{v['slug']}\"></a>{name} | {v['type']} | {v['environment']} | {v['version']} | "
-            f"{v['release_alignment']} | {v['checks_passed']}/{v['checks_run']} | {v['failed_count']} | {last} | "
+    return (f"| <a id=\"project-{v['slug']}\"></a>{name} | {v['type']} | {v['tier_label']} | {v['environment']} | "
+            f"{v['version']} | {v['release_alignment']} | {v['checks_passed']}/{v['checks_applicable']} | "
+            f"{v['failed_count']} | {denom(v)} | {suite_cell(v)} | {last} | "
             f"{v['readme_badge']} | `{md}` | [add or update]({FORM}) |")
+
+
+def example_badge() -> tuple[str, str]:
+    e = EXAMPLE
+    return badge_text(T.TIER1, str(e["suite_tag"]), e["checks_passed"], e["checks_applicable"], e["last_run"], False, False)
 
 
 def table(rows: list[dict[str, object]], root: str) -> str:
     vs = view(rows, root)
-    tested = [v for v in vs if v["checks_run"] is not None]
+    tested = [v for v in vs if v["tier"]]
     md, h = snippets("<slug>")
+    el, er = example_badge()
     lines = [START, "",
              "Opt-in only: a project appears here after it accepts, through the "
              f"[Add or update my row]({FORM}) form or a pull request. Generated by `python3 tools/matrix_rows.py "
              "--write` from `matrix/rows/*.json`; CI fails when it is stale. The full searchable table of accepted "
              f"projects is on the [Pages matrix]({PAGES}/matrix/).", "",
+             "Two tiers. **External-verified**: the run queue runs the checks that work from outside a project's "
+             "stack against its public testnet endpoint, with no spend, on each new release. **Full suite "
+             "(self-hosted)**: the project runs the whole suite in its own CI with the Action on each release, and "
+             "the queue verifies the signed attestation; it never runs it. Each row shows its tier, checks passed out "
+             "of applicable checks, the denominator (exercised / not applicable / needs the self-hosted run, out of "
+             f"{len(T.catalogue())} in the catalogue), the suite tag and the date.", "",
              "Listed projects display the badge in their README with the line \"Conformance tested by "
-             "Optitransfer/x402-conformance\", both linking to their row. The badge reads \"Tested with "
-             "x402-conformance \u00b7 Optitransfer\" and the version tested, and turns grey with \"stale\" when the "
-             "row is stale. It is not a certification and not an endorsement, and carries no x402 logo. The weekly "
-             "check reads each project's public README and flags a row whose README no longer links it. "
+             "Optitransfer/x402-conformance\", both linking to their row. The badge reads \"External-verified \u00b7 "
+             "x402-conformance <tag> \u00b7 Optitransfer\" or \"Full suite (self-hosted) \u00b7 x402-conformance <tag> "
+             "\u00b7 Optitransfer\", with checks passed out of applicable and the date, and turns grey when the row "
+             "is stale or needs a rerun on the current suite. It is not a certification and not an endorsement, and "
+             "carries no x402 logo. The weekly check reads each project's public README and flags a row whose README "
+             f"no longer links it. The example row's badge reads \"{el}\" | \"{er}\". "
              "Copy-paste README snippet, per row (each row below has its own):", "",
              f"- Markdown: `{md}`", f"- HTML: `{h}`", "",
              "**Coverage of accepted projects**", "",
              "| by | accepted projects |", "|---|---|",
-             f"| total | {len(vs)} accepted, {len(tested)} with committed evidence |",
+             f"| total | {len(vs)} accepted, {len(tested)} with results |",
+             f"| tier | {counts(tested, 'tier_label') if tested else 'none yet'} |",
              f"| type | {counts(vs, 'type')} |", f"| chain | {counts(vs, 'chains')} |",
              f"| language | {counts(vs, 'languages')} |", f"| environment | {counts(vs, 'environment')} |", "",
              "**Accepted projects with evidence**", "",
@@ -359,12 +440,12 @@ def table(rows: list[dict[str, object]], root: str) -> str:
              f"or stale (no run within {STALE_DAYS} days of the last release check, or behind for {STALE_DAYS} days "
              "or more). tools/matrix_freshness.py checks each project's latest release and default-branch commit "
              "every week.", "",
-             "| project | type | environment | version tested | release alignment | passed/run | failed | last run "
-             "| badge in README | README snippet | add or update |",
-             "|---|---|---|---|---|---|---|---|---|---|---|",
+             "| project | type | tier | environment | version tested | release alignment | passed/applicable | failed "
+             "| denominator | suite | last run | badge in README | README snippet | add or update |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
              md_row(EXAMPLE)]
     if not tested:
-        lines.append(f"| no accepted project yet | | | | | | | | | | [add your row]({FORM}) |")
+        lines.append(f"| no accepted project yet | | | | | | | | | | | | | [add your row]({FORM}) |")
     lines += [md_row(v) for v in tested]
     lines += ["", END]
     return "\n".join(lines)
@@ -383,14 +464,18 @@ def html_row(v: dict[str, object]) -> str:
         link = v.get("repo") or v.get("site")
         name = f'<a href="{esc(link)}">{esc(v["project"])}</a>' if link else esc(v["project"])
         last = f'<a href="{esc(v["evidence"])}">{esc(v["last_run"])}</a>' if v["evidence"] else "-"
-    res = (f'{v["checks_passed"]}/{v["checks_run"]}</td><td>{v["failed_count"]}' if v["checks_run"] is not None
-           else "not run yet</td><td>-")
-    badge = (f'<img src="{PAGES}/badge/{esc(v["slug"])}.svg" alt="Tested with x402-conformance \u00b7 Optitransfer">'
-             f'<br><code>{esc(md)}</code><br><code>{esc(h)}</code>') if v["checks_run"] is not None else "-"
+    ran = v["tier"] is not None
+    res = (f'{v["checks_passed"]}/{v["checks_applicable"]}</td><td>{v["failed_count"]}</td><td>{esc(denom(v))}'
+           if ran else "not run yet</td><td>-</td><td>-")
+    na = "; ".join(f"{k}: {r}" for k, r in (v.get("na_reasons") or {}).items())  # type: ignore[union-attr]
+    badge = (f'<img src="{PAGES}/badge/{esc(v["slug"])}.svg" alt="{ALT}">'
+             f'<br><code>{esc(md)}</code><br><code>{esc(h)}</code>') if ran else "-"
     cls = ' class="example"' if v.get("example") else ""
-    return (f'<tr id="{esc(v["slug"])}"{cls}><td>{name}</td><td>{esc(v["type"])}</td><td>{esc(v["environment"])}</td>'
+    return (f'<tr id="{esc(v["slug"])}"{cls}><td>{name}</td><td>{esc(v["type"])}</td><td>{esc(v["tier_label"])}</td>'
+            f'<td>{esc(v["environment"])}</td>'
             f'<td>{esc(", ".join(v["languages"]))}</td><td>{esc(", ".join(v["networks"]))}</td>'  # type: ignore[arg-type]
-            f'<td>{esc(v["version"])}</td><td>{esc(v["release_alignment"])}</td><td>{res}</td><td>{last}</td>'
+            f'<td>{esc(v["version"])}</td><td>{esc(v["release_alignment"])}</td><td>{res}</td>'
+            f'<td title="{esc(na)}">{esc(suite_cell(v)) if ran else "-"}</td><td>{last}</td>'
             f'<td>{badge}</td><td>{esc(v["readme_badge"])}</td><td>{esc(v["contact"])}</td>'
             f'<td><a href="{FORM}">add or update</a></td></tr>')
 
@@ -398,37 +483,42 @@ def html_row(v: dict[str, object]) -> str:
 def page(rows: list[dict[str, object]], root: str) -> tuple[str, str]:
     """docs/site/matrix/index.html (searchable, one anchor per row for its badge) and docs/site/matrix/rows.json."""
     vs = view(rows, root)
-    data = json.dumps({"schema": "x402-conformance.matrix-pages/1", "license": "CC BY 4.0",
-                       "attribution": f"Optitransfer/x402-conformance, {REPO}", "example": EXAMPLE, "rows": vs},
-                      indent=1, ensure_ascii=False) + "\n"
+    data = json.dumps({"schema": "x402-conformance.matrix-pages/2", "license": "CC BY 4.0",
+                       "attribution": f"Optitransfer/x402-conformance, {REPO}", "catalogue": len(T.catalogue()),
+                       "example": EXAMPLE, "rows": vs}, indent=1, ensure_ascii=False) + "\n"
     body = [html_row(EXAMPLE)] + [html_row(v) for v in vs]
     if not vs:
-        body.append(f'<tr><td colspan="14">No accepted projects yet. <a href="{FORM}">Add your row</a>.</td></tr>')
+        body.append(f'<tr><td colspan="17">No accepted projects yet. <a href="{FORM}">Add your row</a>.</td></tr>')
     doc = f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>x402-conformance matrix: accepted projects</title>
-<style>body{{font-family:system-ui,sans-serif;margin:2rem;max-width:90rem}}table{{border-collapse:collapse;width:100%}}
+<style>body{{font-family:system-ui,sans-serif;margin:2rem;max-width:96rem}}table{{border-collapse:collapse;width:100%}}
 td,th{{border:1px solid #ccc;padding:.3rem .5rem;text-align:left;font-size:.85rem;vertical-align:top}}
 tr:target{{background:#fff8c4}}tr.example{{font-style:italic;background:#f4f4f4}}code{{font-size:.75rem}}
 input{{padding:.4rem;width:20rem;margin:.5rem 0}}</style>
 </head>
 <body>
 <h1>x402-conformance matrix</h1>
-<p>Projects that accepted to be listed, opt-in only. Each row shows checks passed out of checks run and a failed count
-from its committed evidence, and how the version tested lines up with the project's latest release. There is no score
-and no ranking. Listed projects add the badge, "Tested with x402-conformance &middot; Optitransfer", to their own
-README with the line "Conformance tested by Optitransfer/x402-conformance"; both link to their row. The badge
-shows the version tested and turns grey when the row is stale. It is not a
-certification and not an endorsement. <a href="{FORM}">Add or update your row</a>. Data:
-<a href="rows.json">rows.json</a>, CC BY 4.0, "Optitransfer/x402-conformance", <a href="{REPO}">{REPO}</a>.</p>
-<label>Search <input id="q" type="search" placeholder="project, type, chain, language"></label>
+<p>Projects that accepted to be listed, opt-in only, in two tiers. <strong>External-verified</strong>: the checks
+that run from outside a project's stack against its public testnet endpoint, run by the x402-conformance run queue
+on each new release, with no spend. <strong>Full suite (self-hosted)</strong>: the whole suite, run in the project's
+own CI with the Action on each release; the queue verifies its signed attestation and never runs it. Each row shows
+checks passed out of applicable checks, the denominator (exercised / not applicable / needs the self-hosted run, out
+of {len(T.catalogue())}), the suite tag, the date and how the version tested lines up with the project's latest
+release. There is no score and no ranking. Listed projects display the badge in their own README with the line
+"Conformance tested by Optitransfer/x402-conformance"; both link to their row. The badge shows the tier, the suite
+tag, the count and the date, and turns grey when the row is stale. It is not a certification and not an endorsement.
+<a href="{FORM}">Add or update your row</a>. Data: <a href="rows.json">rows.json</a>, CC BY 4.0,
+"Optitransfer/x402-conformance", <a href="{REPO}">{REPO}</a>.</p>
+<label>Search <input id="q" type="search" placeholder="project, type, tier, chain, language"></label>
 <table id="rows">
-<thead><tr><th>project</th><th>type</th><th>environment</th><th>languages</th><th>networks</th><th>version tested</th>
-<th>release alignment</th><th>passed/run</th><th>failed</th><th>last run</th><th>badge and README snippet</th>
-<th>badge in README</th><th>contact</th><th>add or update</th></tr></thead>
+<thead><tr><th>project</th><th>type</th><th>tier</th><th>environment</th><th>languages</th><th>networks</th>
+<th>version tested</th><th>release alignment</th><th>passed/applicable</th><th>failed</th><th>denominator</th>
+<th>suite</th><th>last run</th><th>badge and README snippet</th><th>badge in README</th><th>contact</th>
+<th>add or update</th></tr></thead>
 <tbody>
 {chr(10).join(body)}
 </tbody>
@@ -448,10 +538,14 @@ document.getElementById("q").addEventListener("input", function (e) {{
 
 
 def badges(rows: list[dict[str, object]], root: str) -> dict[str, str]:
-    out = {f"{BADGES}/{EXAMPLE['slug']}.svg": badge_svg(str(EXAMPLE["slug"]), str(EXAMPLE["version"]), False, True)}
+    el, er = example_badge()
+    out = {f"{BADGES}/{EXAMPLE['slug']}.svg": badge_svg(str(EXAMPLE["slug"]), el, er, False, True)}
     for v in view(rows, root):
-        if v["checks_run"] is not None:
-            out[f"{BADGES}/{v['slug']}.svg"] = badge_svg(str(v["slug"]), str(v["version"]), bool(v["stale"]))
+        if v["tier"]:
+            rerun = v.get("suite_status") != "current"
+            left, right = badge_text(str(v["tier"]), str(v["suite_tag"]), v["checks_passed"], v["checks_applicable"],
+                                     v["last_run"], bool(v["stale"]), rerun)
+            out[f"{BADGES}/{v['slug']}.svg"] = badge_svg(str(v["slug"]), left, right, bool(v["stale"]) or rerun)
     return out
 
 
@@ -505,21 +599,8 @@ def main(argv: list[str]) -> int:  # noqa: C901
     root = os.path.abspath(opt.get("--root", ROOT))
     if "--from-issue" in opt:
         body = open(opt["--from-issue"], encoding="utf-8").read()
-        row, evidence, bad = from_issue(body, opt.get("--issue-url", ""), opt.get("--today", ""))
+        row, run_link, bad = from_issue(body, opt.get("--issue-url", ""), opt.get("--today", ""))
         bad += problems(row, root)
-        bundle = None
-        if evidence and not bad:
-            bundle = tempfile.mkdtemp()
-            try:
-                json.loads(evidence)
-            except ValueError:
-                bad.append("the evidence is not JSON: paste the run.json your run wrote, or leave it empty")
-            else:
-                with open(os.path.join(bundle, "run.json"), "w", encoding="utf-8") as f:
-                    f.write(evidence + "\n")
-                with open(os.path.join(bundle, "README.md"), "w", encoding="utf-8") as f:
-                    f.write(f"# {row['slug']}\n\nSubmitted by the project with its own run, for review: "
-                            f"{row['source_issue']}\n")
         if bad:
             print("Your row could not be added yet:\n")
             print("\n".join(f"- {b}" for b in bad))
@@ -528,43 +609,25 @@ def main(argv: list[str]) -> int:  # noqa: C901
         existing = os.path.join(root, ROWS, f"{row['slug']}.json")
         if os.path.isfile(existing):
             prev = json.load(open(existing, encoding="utf-8"))
-            if prev.get("source_issue") == row["source_issue"]:
-                row["release"] = prev.get("release")
-                if row["run"] and prev.get("program_start"):
-                    for k in ("program_start", "program_end", "program_notice"):
-                        if prev.get(k):
-                            row[k] = prev[k]
-                if not bundle:
-                    row["evidence"] = prev.get("evidence")
             if prev.get("source_issue") != row["source_issue"]:
                 print(f"Your row could not be added yet:\n\n- {ROWS}/{row['slug']}.json belongs to another issue "
                       f"({prev.get('source_issue')}); update it from that issue, or choose another project name")
-                shutil.rmtree(bundle, True) if bundle else None
                 return 1
-        elif bundle and os.path.exists(os.path.join(root, "evidence", "impl-matrix", str(row["slug"]))):
-            print(f"Your row could not be added yet:\n\n- evidence/impl-matrix/{row['slug']} already exists for another row; "
-                  "choose another project name")
-            shutil.rmtree(bundle, True)
-            return 1
-        if bundle:
-            rc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "row_from_evidence.py"), bundle,
-                                 "--row", str(row["slug"]), "--consent", str(row["source_issue"]), "--root", root,
-                                 "--update"], capture_output=True, text=True)
-            shutil.rmtree(bundle, True)
-            if rc.returncode:
-                print("Your evidence could not be added:\n")
-                print(rc.stdout.strip())
-                return 1
-            row["evidence"] = f"evidence/impl-matrix/{row['slug']}"
+            # Results, tier and program dates are written by the tools, never by the form: an update keeps them.
+            for k in ("release", "evidence", "tier", "attestation", "program_start", "program_end", "program_notice"):
+                if prev.get(k) and (k not in ("program_start", "program_end", "program_notice") or row["consent"].get("hook")):  # type: ignore[union-attr]
+                    row[k] = prev[k]
         os.makedirs(os.path.join(root, ROWS), exist_ok=True)
         with open(os.path.join(root, ROWS, f"{row['slug']}.json"), "w", encoding="utf-8") as f:
             json.dump(row, f, indent=1, ensure_ascii=False)
             f.write("\n")
         bad = write_md(root)
+        m = RUN_URL.match(run_link)
         if opt.get("--github-output"):
             with open(opt["--github-output"], "a", encoding="utf-8") as f:
-                f.write(f"slug={row['slug']}\nevidence={'yes' if row['evidence'] else 'no'}\n")
-        print(f"Your row is valid: {ROWS}/{row['slug']}.json. A maintainer reviews the pull request before it is listed.")
+                f.write(f"slug={row['slug']}\nattest_repo={m.group(1) if m else ''}\nattest_run={m.group(2) if m else ''}\n")
+        print(f"Your row is valid: {ROWS}/{row['slug']}.json. A maintainer reviews the pull request before it is listed."
+              + (" The attestation of your full-suite run is verified next." if m else ""))
         return 1 if bad else 0
     if "--write" in argv:
         bad = write_md(root)

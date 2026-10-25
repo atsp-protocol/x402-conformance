@@ -1,5 +1,21 @@
 # Changelog
 ## Unreleased
+- Two tiers in the matrix (proposed task XC-98).
+  - **External-verified** (tier 1): the run queue runs the checks that work from outside a project's stack (P1 to
+    P7, P9, P10: unpaid GETs, paced, zero spend) against its public testnet endpoint, with the pinned suite release
+    (`matrix/queue/suite.json`), on each new release. The queue no longer checks out or runs the project's code, and
+    the form no longer asks for a start command.
+  - **Full suite (self-hosted)** (tier 2): the project runs the whole suite in its own CI with the Action's new
+    `attest` and `not-applicable` inputs. The Action writes one entry per catalogue check (with reasons for checks
+    that don't apply), signs it with GitHub artifact attestations and uploads it. The queue verifies it and never
+    reruns it: `tools/attestation.py` with `gh attestation verify` (the row's repository, the attested commit, tag and
+    run, the pinned suite, every applicable check). An older suite is listed as "rerun on current suite".
+  - Rows show the tier, passed/applicable, the denominator (exercised / NA / needs self-hosted), the suite tag and the
+    date. Badges read "External-verified · x402-conformance <tag> · Optitransfer" or "Full suite (self-hosted) ·
+    x402-conformance <tag> · Optitransfer" with the count and date. The README snippet and attribution are unchanged.
+  - The notify hook asks for the tier-1 rerun and, when enabled, runs the full suite and submits its attestation; the
+    weekly check asks for tier-1 reruns of new releases and verifies new attestations. The free six months cover
+    tier-1 reruns and tier-2 verification and listing. A hosted-staging full run is an exception path by arrangement.
 - Free run program (proposed task XC-97). I run the suite for a project, free: one initial run, then queued reruns
   on new releases only, for six months from consent (`program_start`, `program_end` in the row).
   - In return the project is listed with its results, displays the badge in its README with "Conformance tested by
