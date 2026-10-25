@@ -80,3 +80,13 @@ with a link to the evidence. It never shows a score or a rank. If a check fails,
 
 Is a check missing? Propose one with the
 [check proposal](https://github.com/atsp-protocol/x402-conformance/issues/new?template=check-proposal.yml) form.
+
+## Keep your row fresh
+
+Copy [templates/x402-conformance.yml](templates/x402-conformance.yml) into your repository as
+`.github/workflows/x402-conformance.yml` and set your slug. It runs the suite on your own code, on loopback with
+testnet ids, on every push to your default branch, on every release or tag, and weekly, and uploads the evidence
+bundle. Each week the matrix's freshness job (`tools/matrix_freshness.py`) checks your latest release or tag and
+default-branch commit against the version tested, picks up the newest successful run's evidence (the same checks as
+every row), and opens a pull request updating your row, its release alignment (current, behind or stale) and your
+badge. It reads the GitHub API only; it never calls your endpoints.

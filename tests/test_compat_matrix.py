@@ -160,27 +160,13 @@ class RowFormat(unittest.TestCase):
         rc, out = run("--check", root=self.tmp)
         self.assertEqual(rc, 1, out)
 
-    def test_badges_read_tested_with_and_link_their_row(self) -> None:
+    def test_the_reference_baseline_has_no_badge_and_is_not_a_listing(self) -> None:
+        # Opt-in (XC-96): a row without recorded consent is the suite's own baseline; badges belong to listed projects.
+        md = open(os.path.join(ROOT, "docs", "MATRIX.md"), encoding="utf-8").read()
         for name in self.rows:
-            svg = open(os.path.join(ROOT, "docs", "site", "badge", f"{name}.svg"), encoding="utf-8").read()
-            self.assertIn("Tested with x402-conformance", svg)
-            self.assertIn(f"docs/MATRIX.md#row-{name}", svg)
-            self.assertNotRegex(svg.lower(), r"certified|compliant|approved|endorsed|<script|<image|<img")
-
-    def test_a_missing_stale_or_orphan_badge_is_detected(self) -> None:
-        b = os.path.join(self.tmp, "docs", "site", "badge")
-        os.remove(os.path.join(b, f"{self.rows[0]}.svg"))
-        with open(os.path.join(b, f"{self.rows[1]}.svg"), "a", encoding="utf-8") as f:
-            f.write("<!-- edited -->")
-        with open(os.path.join(b, "no-such-row.svg"), "w", encoding="utf-8") as f:
-            f.write("<svg/>")
-        rc, out = run("--check", root=self.tmp)
-        self.assertEqual(rc, 1, out)
-        self.assertIn(f"{self.rows[0]}.svg is missing", out)
-        self.assertIn(f"{self.rows[1]}.svg is stale", out)
-        self.assertIn("no-such-row.svg has no matrix row", out)
-        self.assertEqual(run("--write", root=self.tmp)[0], 0)
-        self.assertEqual(run("--check", root=self.tmp)[0], 0)
+            line = next(x for x in md.splitlines() if f'id="row-{name}"' in x)
+            self.assertIn("| baseline |", line)
+            self.assertFalse(os.path.exists(os.path.join(ROOT, "docs", "site", "badge", f"{name}.svg")))
 
     def test_the_matrix_has_no_score_rank_or_certified_wording(self) -> None:
         # Our own headers and prose only: a third-party project name (for example agent-score) is not wording.

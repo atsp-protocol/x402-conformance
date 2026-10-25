@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>x402-conformance matrix: accepted projects</title>
+<style>body{font-family:system-ui,sans-serif;margin:2rem;max-width:90rem}table{border-collapse:collapse;width:100%}
+td,th{border:1px solid #ccc;padding:.3rem .5rem;text-align:left;font-size:.85rem;vertical-align:top}
+tr:target{background:#fff8c4}tr.example{font-style:italic;background:#f4f4f4}code{font-size:.75rem}
+input{padding:.4rem;width:20rem;margin:.5rem 0}</style>
+</head>
+<body>
+<h1>x402-conformance matrix</h1>
+<p>Projects that accepted to be listed, opt-in only. Each row shows checks passed out of checks run and a failed count
+from its committed evidence, and how the version tested lines up with the project's latest release. There is no score
+and no ranking. Listed projects add the badge, "Tested with x402-conformance &middot; Optitransfer", to their own
+README; it links to their row, shows the version tested and turns grey when the row is stale. It is not a
+certification and not an endorsement. <a href="https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml">Add or update your row</a>. Data:
+<a href="rows.json">rows.json</a>, CC BY 4.0, "x402-conformance by Optitransfer", <a href="https://github.com/atsp-protocol/x402-conformance">https://github.com/atsp-protocol/x402-conformance</a>.</p>
+<label>Search <input id="q" type="search" placeholder="project, type, chain, language"></label>
+<table id="rows">
+<thead><tr><th>project</th><th>type</th><th>environment</th><th>languages</th><th>networks</th><th>version tested</th>
+<th>release alignment</th><th>passed/run</th><th>failed</th><th>last run</th><th>badge</th><th>contact</th>
+<th>add or update</th></tr></thead>
+<tbody>
+<tr id="example" class="example"><td><strong>Example (illustrative, not a real result):</strong> example-org/example-x402-server</td><td>merchant-paid-api</td><td>testnet</td><td>TypeScript</td><td>eip155:84532, solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1</td><td>1.4.0</td><td>behind (v1.4.0 tested, v1.5.0 latest)</td><td>42/48</td><td>6</td><td>2026-10-20: <code>evidence/impl-matrix/&lt;slug&gt;/run.json</code></td><td><img src="https://atsp-protocol.github.io/x402-conformance/badge/example.svg" alt="Tested with x402-conformance · Optitransfer"><br><code>[![Tested with x402-conformance · Optitransfer](https://atsp-protocol.github.io/x402-conformance/badge/example.svg)](https://atsp-protocol.github.io/x402-conformance/matrix/#example)</code><br><code>&lt;a href=&quot;https://atsp-protocol.github.io/x402-conformance/matrix/#example&quot;&gt;&lt;img src=&quot;https://atsp-protocol.github.io/x402-conformance/badge/example.svg&quot; alt=&quot;Tested with x402-conformance · Optitransfer&quot;&gt;&lt;/a&gt;</code></td><td>@example-org</td><td><a href="https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml">add or update</a></td></tr>
+<tr><td colspan="13">No accepted projects yet. <a href="https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml">Add your row</a>.</td></tr>
+</tbody>
+</table>
+<script>
+document.getElementById("q").addEventListener("input", function (e) {
+  var q = e.target.value.toLowerCase();
+  document.querySelectorAll("#rows tbody tr").forEach(function (tr) {
+    tr.hidden = q !== "" && tr.textContent.toLowerCase().indexOf(q) < 0;
+  });
+});
+</script>
+</body>
+</html>

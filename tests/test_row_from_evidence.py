@@ -1,4 +1,4 @@
-"""tools/row_from_evidence.py (XC-94): a bundle becomes one committed row with its badge, and each unsafe bundle is
+"""tools/row_from_evidence.py (XC-94): a bundle becomes one committed, listed row, and each unsafe bundle is
 refused with nothing written: a bad hash, a mainnet network, a facilitator off loopback, a payment against a live
 endpoint, no consent, and an existing row without --update."""
 import hashlib
@@ -53,12 +53,13 @@ class RowFromEvidence(unittest.TestCase):
         self.assertIn(text, out)
         self.assertFalse(os.path.exists(os.path.join(self.root, "evidence", "impl-matrix", "mine-1.0.0")))
 
-    def test_control_a_good_bundle_becomes_a_row_with_its_badge(self) -> None:
+    def test_control_a_good_bundle_becomes_a_listed_row(self) -> None:
         rc, out = self.go("--consent", CONSENT)
         self.assertEqual(rc, 0, out)
         d = os.path.join(self.root, "evidence", "impl-matrix", "mine-1.0.0")
         self.assertIn(CONSENT, open(os.path.join(d, "README.md")).read())
-        self.assertTrue(os.path.isfile(os.path.join(self.root, "docs", "site", "badge", "mine-1.0.0.svg")))
+        self.assertIn("| [listed](", next(x for x in open(os.path.join(self.root, "docs", "MATRIX.md")).read().splitlines()
+                                          if 'id="row-mine-1.0.0"' in x))
         self.assertIn('id="row-mine-1.0.0"', open(os.path.join(self.root, "docs", "MATRIX.md")).read())
         p = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "compat_matrix.py"), "--check", "--root", self.root],
                            capture_output=True, text=True)

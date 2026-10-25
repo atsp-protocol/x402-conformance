@@ -1,5 +1,14 @@
 # Changelog
 ## Unreleased
+- Opt-in matrix (proposed task XC-96): only projects that accept are listed. `docs/MATRIX.md` is compact: a coverage
+  summary of accepted projects (by type, chain, language and environment), the accepted projects with evidence, a
+  labelled example row, and the suite's reference baseline; the full searchable table is generated on Pages
+  (`docs/site/matrix/`, one anchor per row). The named facilitator and self-hosted lists that had not accepted are no
+  longer in the matrix. Badges ("Tested with x402-conformance · Optitransfer", the version tested, grey "stale" when
+  stale) are made only for listed projects, with copy-paste Markdown and HTML per row. Freshness: a vendor workflow
+  template (`docs/templates/x402-conformance.yml`), and a weekly job (`tools/matrix_freshness.py`,
+  `.github/workflows/matrix-freshness.yml`) that records each project's latest release and default-branch commit,
+  pulls the evidence from its own runs and opens a pull request; a release-alignment column (current, behind, stale).
 - Add your project to the matrix (proposed task XC-96): the "Add or update my row" issue form
   (`.github/ISSUE_TEMPLATE/matrix-row.yml`) asks for public details only and three required consents (listing, CC BY
   4.0 for public results, testnet-only probes). The `matrix-row` workflow checks it with `tools/matrix_rows.py` against

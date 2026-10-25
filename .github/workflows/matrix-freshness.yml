@@ -1,0 +1,44 @@
+# XC-96 freshness: every week, check each listed project's latest release or tag and default-branch commit against the
+# version tested, pull the evidence from its own x402-conformance workflow run if it has one, and open a pull request
+# with the updated rows, release alignment and badges for review. GitHub API reads only: no x402 endpoint is called
+# from here. Nothing merges automatically.
+name: matrix-freshness
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+concurrency:
+  group: matrix-freshness
+  cancel-in-progress: false
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check releases and pull vendor evidence
+        run: python3 tools/matrix_freshness.py --today "$(date -u +%F)"
+      - name: Open a pull request for review
+        run: |
+          git add matrix/rows docs/MATRIX.md docs/compat-matrix.json docs/site/badge docs/site/matrix evidence/impl-matrix
+          if git diff --cached --quiet; then echo "every listed row is unchanged"; exit 0; fi
+          branch="matrix-freshness/$(date -u +%F)"
+          # Commits carry the maintainer identity the repository's hygiene check requires.
+          git config user.name "mgillr"
+          git config user.email "36207807+mgillr@users.noreply.github.com"
+          git checkout -b "$branch"
+          git commit -m "Matrix freshness $(date -u +%F): release alignment and vendor evidence"
+          git push origin "$branch"
+          printf 'Weekly freshness check (tools/matrix_freshness.py): latest release and default-branch commit per listed project, release alignment, badges, and evidence from the projects'"'"' own x402-conformance runs (checked by tools/row_from_evidence.py). For review; nothing merges automatically. Pull requests opened by this workflow do not start CI on their own, so a maintainer runs it before merging.\n' > "$RUNNER_TEMP/pr.md"
+          gh pr create --base main --head "$branch" --title "Matrix freshness $(date -u +%F)" --body-file "$RUNNER_TEMP/pr.md"

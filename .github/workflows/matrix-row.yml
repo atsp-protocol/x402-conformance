@@ -67,7 +67,7 @@ jobs:
           # Commits carry the maintainer identity the repository's hygiene check requires.
           git config user.name "mgillr"
           git config user.email "36207807+mgillr@users.noreply.github.com"
-          git add matrix/rows docs/MATRIX.md docs/compat-matrix.json docs/site/badge evidence/impl-matrix
+          git add matrix/rows docs/MATRIX.md docs/compat-matrix.json docs/site/badge docs/site/matrix evidence/impl-matrix
           if git diff --cached --quiet; then echo "no change to the row"; else
             git commit -m "Add or update the matrix row $SLUG (#$ISSUE)"
             git push origin "$BRANCH"

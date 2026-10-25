@@ -10,6 +10,9 @@ import tempfile
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+from matrix_rows import alignment, badge_svg, own_text  # noqa: E402
+
 TOOL = os.path.join(ROOT, "tools", "matrix_rows.py")
 ISSUE = "https://github.com/atsp-protocol/x402-conformance/issues/7"
 FORM = "https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml"
@@ -41,6 +44,7 @@ class MatrixRows(unittest.TestCase):
         for f in ("MATRIX.md", "compat-matrix.json"):
             shutil.copy2(os.path.join(ROOT, "docs", f), os.path.join(self.root, "docs", f))
         shutil.copytree(os.path.join(ROOT, "docs", "site", "badge"), os.path.join(self.root, "docs", "site", "badge"))
+        shutil.copytree(os.path.join(ROOT, "docs", "site", "matrix"), os.path.join(self.root, "docs", "site", "matrix"))
 
     def submit(self, text: str, issue: str = ISSUE) -> tuple[int, str]:
         p = os.path.join(self.root, "issue.md")
@@ -49,6 +53,9 @@ class MatrixRows(unittest.TestCase):
         r = subprocess.run([sys.executable, TOOL, "--from-issue", p, "--issue-url", issue, "--root", self.root],
                            capture_output=True, text=True)
         return r.returncode, r.stdout + r.stderr
+
+    def pages(self) -> dict:
+        return json.load(open(os.path.join(self.root, "docs", "site", "matrix", "rows.json")))
 
     def rows(self) -> list[str]:
         d = os.path.join(self.root, "matrix", "rows")
@@ -63,11 +70,14 @@ class MatrixRows(unittest.TestCase):
         self.assertEqual(row["consent"], {"listing": True, "data_license": True, "testnet_only": True})
         self.assertEqual(row["source_issue"], ISSUE)
         md = open(os.path.join(self.root, "docs", "MATRIX.md")).read()
-        line = next(x for x in md.splitlines() if "project-example-pay" in x)
-        self.assertIn("| testnet |", line)
-        self.assertIn("not run yet", line)
-        self.assertIn(FORM, line)
-        self.assertNotRegex(md.lower(), r"overall score|\branking\b|certified")
+        self.assertIn("| total | 1 accepted, 0 with committed evidence |", md)
+        self.assertNotIn("project-example-pay", md)  # MATRIX.md lists accepted rows with evidence only
+        pages = self.pages()
+        v = next(x for x in pages["rows"] if x["slug"] == "example-pay")
+        self.assertEqual((v["environment"], v["checks_run"], v["release_alignment"]), ("testnet", None, "not run yet"))
+        html = open(os.path.join(self.root, "docs", "site", "matrix", "index.html")).read()
+        self.assertIn('<tr id="example-pay">', html)
+        self.assertNotRegex(own_text(md).lower(), r"overall score|\branking\b|certified")
         r = subprocess.run([sys.executable, TOOL, "--check", "--root", self.root], capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stdout)
 
@@ -109,8 +119,8 @@ class MatrixRows(unittest.TestCase):
     def test_mainnet_only_is_live_not_run(self) -> None:
         rc, out = self.submit(body(**{"Environments you offer": "mainnet-only", "Networks (CAIP-2 ids)": "eip155:8453"}))
         self.assertEqual(rc, 0, out)
-        md = open(os.path.join(self.root, "docs", "MATRIX.md")).read()
-        self.assertIn("| live-not-run |", next(x for x in md.splitlines() if "project-example-pay" in x))
+        v = next(x for x in self.pages()["rows"] if x["slug"] == "example-pay")
+        self.assertEqual(v["environment"], "live-not-run")
 
     def test_another_issue_cannot_take_a_row(self) -> None:
         self.assertEqual(self.submit(body())[0], 0)
@@ -129,6 +139,10 @@ class MatrixRows(unittest.TestCase):
         md = open(os.path.join(self.root, "docs", "MATRIX.md")).read()
         line = next(x for x in md.splitlines() if "project-example-pay" in x)
         self.assertRegex(line, r"\| \d+/\d+ \| \d+ \|")
+        self.assertIn("badge/example-pay.svg)](https://atsp-protocol.github.io/x402-conformance/matrix/#example-pay)", line)
+        svg = open(os.path.join(self.root, "docs", "site", "badge", "example-pay.svg")).read()
+        self.assertIn("Tested with x402-conformance \u00b7 Optitransfer", svg)
+        self.assertIn("v1.4.0", svg)
         bad = json.dumps(doc).replace("solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1", "eip155:8453")
         shutil.rmtree(os.path.join(self.root, "matrix", "rows"))
         shutil.rmtree(os.path.join(self.root, "evidence", "impl-matrix", "example-pay"))
@@ -152,6 +166,77 @@ class MatrixRows(unittest.TestCase):
         r = subprocess.run([sys.executable, TOOL, "--check", "--root", self.root], capture_output=True, text=True)
         self.assertEqual(r.returncode, 1)
         self.assertIn("stale", r.stdout)
+
+
+class Freshness(unittest.TestCase):
+    def test_alignment(self) -> None:
+        rel = {"checked_at": "2026-10-25", "latest": "v1.5.0", "default_branch_commit": None, "behind_since": None}
+        self.assertEqual(alignment("1.5.0", "2026-10-20", rel), ("current", False))
+        self.assertEqual(alignment("1.4.0", "2026-10-20", {**rel, "behind_since": "2026-10-18"}),
+                         ("behind (v1.4.0 tested, v1.5.0 latest)", False))
+        self.assertEqual(alignment("1.4.0", "2026-10-20", {**rel, "behind_since": "2026-09-25"})[1], True)
+        self.assertEqual(alignment("1.5.0", "2026-09-24", rel), ("stale", True))
+        self.assertEqual(alignment("1.5.0", "2026-10-20", None), ("not checked yet", False))
+        self.assertEqual(alignment("1.5.0", None, rel), ("not run yet", False))
+
+    def test_badge_shows_version_and_greys_when_stale(self) -> None:
+        fresh, stale = badge_svg("p", "1.5.0", False), badge_svg("p", "1.5.0", True)
+        self.assertIn(">v1.5.0<", fresh)
+        self.assertIn("#2e7d32", fresh)
+        self.assertIn(">stale<", stale)
+        self.assertIn("#9e9e9e", stale)
+        for svg in (fresh, stale):
+            self.assertIn("Tested with x402-conformance \u00b7 Optitransfer", svg)
+            self.assertIn("https://atsp-protocol.github.io/x402-conformance/matrix/#p", svg)
+            self.assertNotRegex(svg.lower(), r"certified|compliant|approved|endorsed|<script|<image|<img|x402 logo")
+
+    def test_example_row_is_labelled_and_not_counted(self) -> None:
+        md = open(os.path.join(ROOT, "docs", "MATRIX.md"), encoding="utf-8").read()
+        line = next(x for x in md.splitlines() if 'id="project-example"' in x)
+        self.assertIn("Example (illustrative, not a real result)", line)
+        self.assertIn("example-org/example-x402-server", line)
+        html = open(os.path.join(ROOT, "docs", "site", "matrix", "index.html"), encoding="utf-8").read()
+        self.assertIn('<tr id="example" class="example"><td><strong>Example (illustrative, not a real result):', html)
+        pages = json.load(open(os.path.join(ROOT, "docs", "site", "matrix", "rows.json"), encoding="utf-8"))
+        self.assertNotIn("example", [r["slug"] for r in pages["rows"]])
+
+    def test_weekly_check_records_release_and_pulls_vendor_evidence(self) -> None:
+        import io
+        import zipfile
+        t = MatrixRows("test_valid_issue_writes_row_and_table")
+        t.setUp()
+        self.addCleanup(shutil.rmtree, t.root, True)
+        self.assertEqual(t.submit(body())[0], 0)
+        run = open(os.path.join(ROOT, "evidence", "impl-matrix", "express-2.28.0", "run.json"), "rb").read()
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as z:
+            z.writestr("run.json", run)
+            z.writestr("../escape.txt", "x")
+        zp = os.path.join(t.root, "a.zip")
+        open(zp, "wb").write(buf.getvalue())
+        facts = os.path.join(t.root, "facts.json")
+        json.dump({"example-pay": {"latest": "v1.5.0", "latest_commit": "a" * 40, "default_branch_commit": "b" * 40,
+                                   "run": {"head_sha": "a" * 40, "zip": zp}}}, open(facts, "w"))
+        tool = os.path.join(ROOT, "tools", "matrix_freshness.py")
+        r = subprocess.run([sys.executable, tool, "--today", "2026-10-25", "--root", t.root, "--facts", facts],
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        row = json.load(open(os.path.join(t.root, "matrix", "rows", "example-pay.json")))
+        self.assertEqual(row["version"], "1.5.0")
+        self.assertEqual(row["evidence"], "evidence/impl-matrix/example-pay")
+        self.assertEqual(row["release"]["behind_since"], None)
+        self.assertFalse(os.path.exists(os.path.join(t.root, "escape.txt")))
+        v = next(x for x in t.pages()["rows"] if x["slug"] == "example-pay")
+        self.assertEqual(v["release_alignment"], "current")
+        # A later release puts it behind; behind_since stays the first day it fell behind.
+        json.dump({"example-pay": {"latest": "v1.6.0", "latest_commit": "c" * 40, "default_branch_commit": "c" * 40}},
+                  open(facts, "w"))
+        for day in ("2026-11-01", "2026-11-08"):
+            subprocess.run([sys.executable, tool, "--today", day, "--root", t.root, "--facts", facts], capture_output=True)
+        row = json.load(open(os.path.join(t.root, "matrix", "rows", "example-pay.json")))
+        self.assertEqual(row["release"]["behind_since"], "2026-11-01")
+        r = subprocess.run([sys.executable, TOOL, "--check", "--root", t.root], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout)
 
 
 if __name__ == "__main__":

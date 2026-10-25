@@ -1,0 +1,32 @@
+# Save this in your own repository as .github/workflows/x402-conformance.yml to keep your row in the
+# x402-conformance matrix fresh (https://atsp-protocol.github.io/x402-conformance/matrix/).
+#
+# It runs the suite on your own code, on loopback with testnet ids, on every push to your default branch, on every
+# release or tag, and weekly, and uploads the evidence bundle as the artifact x402-conformance-evidence-<your slug>.
+# Each week the matrix picks up the newest successful run of this workflow, checks the evidence (testnet or devnet
+# only, facilitator on loopback, nothing paid live) and opens a pull request updating your row, for review.
+# Your repository must be public and your row must already be accepted (the "Add or update my row" form).
+# Replace YOUR-SLUG with your row's slug and the start command with your server's.
+name: x402-conformance
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  release:
+    types: [published]
+  schedule:
+    - cron: "41 4 * * 2"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  x402:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: atsp-protocol/x402-conformance@v1
+        with:
+          resource-url: http://127.0.0.1:4020/paid
+          start: PORT=4020 npm start
+          evidence: true
+          row: YOUR-SLUG
