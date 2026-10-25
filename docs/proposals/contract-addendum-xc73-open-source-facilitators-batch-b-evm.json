@@ -1,0 +1,106 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-73, part of the 'cover ALL' decomposition (XC-54 to XC-78) drafted on 2026-10-25 from public sources. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except scope, pushed and the unchanged-suite guards fails on the v1.6.0 tree. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 6-8 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-73",
+      "title": "Open-source facilitators, batch B (EVM): at least 12 more self-hosted columns",
+      "phase": "verify",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-51",
+        "XC-54",
+        "XC-60"
+      ],
+      "requirements": [
+        "R-MATRIX",
+        "R-SAFE-GET"
+      ],
+      "description": "x402-sovereign, hummusonrails (Arbitrum), hydra, 0xKoda (Workers, run with wrangler dev on loopback), BofAI, local-x402-facilitator, alcedo, cereza rust, follis, facilixir, x402-gasless, hyper402, ray-protocol (Flare), aigg, x402-dev-facilitator, coltonc3, brave private gateway. TEE-only builds (oasis ROFL) and custody-key builds (Fireblocks) are recorded out of reach unless a free local mode exists.",
+      "scope": {
+        "allow": [
+          "tools/self_hosted_matrix.py",
+          "evidence/self-hosted/batch-b/**",
+          "docs/MATRIX.md",
+          "docs/coverage-ledger.json",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-73-AC01",
+          "mandatory": true,
+          "statement": "At least 12 additional open-source facilitators are built at pinned commits and have evidence, or a setup-failure record with the reason",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/self_hosted_matrix.py --check --min-new 12 --batch xc-73",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-73-AC02",
+          "mandatory": true,
+          "statement": "Every committed run under evidence/self-hosted/batch-b is on an allow-listed testnet CAIP-2 id, called nothing off loopback and made zero /settle calls",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/evidence_guard.py --testnet-only --loopback-only --verify-only evidence/self-hosted/batch-b",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-73-AC03",
+          "mandatory": true,
+          "statement": "No facilitator in the batch was contacted at a hosted URL",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/evidence_guard.py --loopback-only evidence/self-hosted/batch-b",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-73-AC04",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-73-AC05",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-73-AC06",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "A failing third-party result is not published with per-check detail until SECURITY.md's disclosure window clears; if a criterion would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}

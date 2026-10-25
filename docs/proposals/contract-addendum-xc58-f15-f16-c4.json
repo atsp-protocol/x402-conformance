@@ -1,0 +1,131 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-58, part of the 'cover ALL' decomposition (XC-54 to XC-78) drafted on 2026-10-25 from public sources. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except scope, pushed and the unchanged-suite guards fails on the v1.6.0 tree. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 2-3 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-58",
+      "title": "F15, F16, C4: checks from public findings (malformed input never 5xx, no wildcard network accept, resume never re-pays)",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-53",
+        "XC-56"
+      ],
+      "requirements": [
+        "R-F1",
+        "R-F12",
+        "R-CONC"
+      ],
+      "description": "From public issues only: x402-foundation/x402#3929 and the gaps left in PR #3936 (TS `{}` or missing authorization still 500; the library still throws; Python accepts eip155:8453 through an eip155:* registration), #3908 (Python decode raises AttributeError on non-object JSON), #3937/#3938 (Go examples answer 500), and DACS-Agent-commerce/dacs-sdk#43 (session resume can pay twice after a crash between settle and anchor). Each check gets a control and at least one faulty build, per the admission bar.",
+      "scope": {
+        "allow": [
+          "src/x402conf/**",
+          "ts/**",
+          "tests/test_offline.py",
+          "docs/parity/vectors.json",
+          "docs/COVERAGE.md",
+          "docs/SPEC.md",
+          "docs/check-ids.json",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-58-AC01",
+          "mandatory": true,
+          "statement": "F15: a facilitator answers a non-object, empty-object or authorization-less payload with HTTP 400 or isValid false and invalid_payload, never 5xx and never an uncaught library exception; the reference passes and three faulty builds are caught",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.F15",
+            "expect_exit": 0,
+            "timeout_s": 300
+          }
+        },
+        {
+          "id": "XC-58-AC02",
+          "mandatory": true,
+          "statement": "F16: a facilitator registered only for a testnet answers a requirement for a different network on the same family (eip155:8453 when only eip155:84532 is registered) with isValid false and unsupported_scheme or invalid_network, never a wildcard accept",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.F16",
+            "expect_exit": 0,
+            "timeout_s": 300
+          }
+        },
+        {
+          "id": "XC-58-AC03",
+          "mandatory": true,
+          "statement": "C4: a client that resumes a job after a crash between settle and its own record reuses the settled result and never signs a second payment for the same job key; a faulty client that drops the key is caught",
+          "verifier": {
+            "type": "command",
+            "cmd": "cd ts && npm test -- --run test/c4-resume.test.ts",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-58-AC04",
+          "mandatory": true,
+          "statement": "F15 and F16 run in the parity vector set for every SDK",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/parity_report.py --coverage docs/parity/vectors.json --require F15,F16",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-58-AC05",
+          "mandatory": true,
+          "statement": "docs/COVERAGE.md lists F15, F16 and C4",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/COVERAGE.md",
+            "pattern": "\\bF15\\b[\\s\\S]*\\bF16\\b[\\s\\S]*\\bC4\\b",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-58-AC06",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-58-AC07",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-58-AC08",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "A failing third-party result is not published with per-check detail until SECURITY.md's disclosure window clears; if a criterion would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}

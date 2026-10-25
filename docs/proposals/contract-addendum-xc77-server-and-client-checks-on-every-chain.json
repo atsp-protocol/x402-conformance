@@ -1,0 +1,108 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-77, part of the 'cover ALL' decomposition (XC-54 to XC-78) drafted on 2026-10-25 from public sources. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except scope, pushed and the unchanged-suite guards fails on the v1.6.0 tree. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 6-8 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-77",
+      "title": "Server and client checks on every chain family the SDKs serve (not only Base Sepolia and Solana)",
+      "phase": "verify",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-54",
+        "XC-68",
+        "XC-70"
+      ],
+      "requirements": [
+        "R-MATRIX"
+      ],
+      "description": "Today the R and C checks run only on Base Sepolia and Solana devnet ids. The facilitator double learns each family's payload shape from the upstream mechanisms so the stock servers and clients can be probed per family on loopback, with no chain call.",
+      "scope": {
+        "allow": [
+          "src/x402conf/**",
+          "ts/**",
+          "tests/test_offline.py",
+          "tools/compat_matrix.py",
+          "tests/test_compat_matrix.py",
+          "evidence/impl-matrix/**",
+          "docs/compat-matrix.json",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-77-AC01",
+          "mandatory": true,
+          "statement": "The facilitator double and the probe accept every family in the upstream e2e catalog (testnet ids only) and refuse every mainnet id",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.DoubleFamilies",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-77-AC02",
+          "mandatory": true,
+          "statement": "R0-R10 run against the upstream TypeScript server for each non-EVM, non-SVM family, and C1-C3 against the TypeScript client, with hashed rows",
+          "verifier": {
+            "type": "command",
+            "cmd": "! python3 tools/compat_matrix.py --check --zz-unknown-flag >/dev/null 2>&1 && ! python3 tools/compat_matrix.py --check --families zz-no-such-family >/dev/null 2>&1 && python3 tools/compat_matrix.py --check --families aptos,avm,cardano,casper,ccd,hedera,keeta,near,stellar,tvm,xrpl",
+            "expect_exit": 0,
+            "timeout_s": 300
+          }
+        },
+        {
+          "id": "XC-77-AC03",
+          "mandatory": true,
+          "statement": "Python TON rows run where the upstream Python SDK supports the family",
+          "verifier": {
+            "type": "command",
+            "cmd": "! python3 tools/compat_matrix.py --check --require zz-no-such-row >/dev/null 2>&1 && python3 tools/compat_matrix.py --check --require python-tvm && python3 -c \"import json,sys;d=json.load(open('docs/compat-matrix.json'));have={r['stack'] for r in d['rows'] if r.get('sha256',{}).get('run.json') and r.get('sha256',{}).get('README.md')};miss=[s for s in ['python-tvm'] if s not in have];print(miss);sys.exit(1 if miss else 0)\"",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-77-AC04",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-77-AC05",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-77-AC06",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "A failing third-party result is not published with per-check detail until SECURITY.md's disclosure window clears; if a criterion would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-59, part of the 'cover ALL' decomposition (XC-54 to XC-78) drafted on 2026-10-25 from public sources. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except scope, pushed and the unchanged-suite guards fails on the v1.6.0 tree. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 4-6 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-59",
+      "title": "F17-F19: the USENIX 2026 rules the suite does not test yet (sponsor-cost bounds, re-verify at settle, execution-template allow-list)",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-55",
+        "XC-51"
+      ],
+      "requirements": [
+        "R-F10",
+        "R-SAFE-GET"
+      ],
+      "description": "Wang et al. (USENIX Security 2026) report SR5 and SR7 violations in 14 of 15 facilitators and SR8 in 9. The suite already covers parts of SR1-SR5 (F1, F2, F3, F4, F12-F14). This task adds the three rules with no check, as controls plus faulty builds offline, then verify-only runs on the owner's loopback reference. A fee-payer fixture (the payer key equal to the facilitator fee payer) is one F19 vector. Third-party columns get F17-F19 through XC-51's runner, never hosted instances.",
+      "scope": {
+        "allow": [
+          "src/x402conf/**",
+          "tests/test_offline.py",
+          "tests/test_devnet.py",
+          "evidence/self-hosted/**",
+          "docs/crosswalk/**",
+          "docs/COVERAGE.md",
+          "docs/SPEC.md",
+          "docs/check-ids.json",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-59-AC01",
+          "mandatory": true,
+          "statement": "F17 (SR6): a facilitator refuses a payload whose sponsored cost exceeds a configured bound (oversized ERC-1271/6492 validation, extra accounts or signers on SVM); reference passes, faulty builds caught",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.F17",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-59-AC02",
+          "mandatory": true,
+          "statement": "F18 (SR7): /settle re-validates time-, nonce- and balance-sensitive conditions instead of trusting an earlier /verify; a proof that expires between verify and settle is refused before submission",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.F18",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-59-AC03",
+          "mandatory": true,
+          "statement": "F19 (SR8): /verify rejects any execution outside an allow-listed template: an unexpected instruction, an alternative token program or contract, an extra signer, or a fee payer that is also a transfer authority",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.F19",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-59-AC04",
+          "mandatory": true,
+          "statement": "F17-F19 run on Base Sepolia and Solana devnet against the owner's loopback reference facilitator in verify-only mode, with evidence",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/evidence_guard.py --testnet-only --loopback-only --verify-only evidence/self-hosted/reference-sr",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-59-AC05",
+          "mandatory": true,
+          "statement": "The USENIX crosswalk marks SR6, SR7 and SR8 as mapped",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/spec_anchors.py --crosswalk usenix-2026 --require SR6,SR7,SR8",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-59-AC06",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-59-AC07",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-59-AC08",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "A failing third-party result is not published with per-check detail until SECURITY.md's disclosure window clears; if a criterion would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}

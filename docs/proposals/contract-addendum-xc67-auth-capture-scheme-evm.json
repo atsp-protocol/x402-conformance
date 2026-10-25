@@ -1,0 +1,104 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-67, part of the 'cover ALL' decomposition (XC-54 to XC-78) drafted on 2026-10-25 from public sources. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except scope, pushed and the unchanged-suite guards fails on the v1.6.0 tree. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 4-5 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-67",
+      "title": "auth-capture scheme (EVM): capture, void and double-capture checks, settles explicitly allowed on Base Sepolia",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-35",
+        "XC-54"
+      ],
+      "requirements": [
+        "R-SCHEMES"
+      ],
+      "description": "auth-capture cannot be tested verify-only: capture and void are settlement steps. This task therefore asks the owner to allow /settle on Base Sepolia against his own loopback facilitator (Go and TS mechanisms), with testnet tokens only. If the owner does not allow settles, the task stays offline-only and the ledger says so.",
+      "scope": {
+        "allow": [
+          "src/x402conf/**",
+          "tests/test_offline.py",
+          "tests/test_devnet.py",
+          "evidence/self-hosted/auth-capture/**",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-67-AC01",
+          "mandatory": true,
+          "statement": "AC1-AC3: capture never exceeds the authorized amount, void releases the hold, and a second capture of the same authorization is refused; reference passes, faulty builds caught offline",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.AuthCapture",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-67-AC02",
+          "mandatory": true,
+          "statement": "Every committed run under evidence/self-hosted/auth-capture is on an allow-listed testnet CAIP-2 id, called nothing off loopback",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/evidence_guard.py --testnet-only --loopback-only --settle-allowed evidence/self-hosted/auth-capture",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-67-AC03",
+          "mandatory": true,
+          "statement": "Every settle in the evidence is on eip155:84532, against the owner's loopback facilitator, with a testnet amount below 1 USDC",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/evidence_guard.py --max-amount 1000000 evidence/self-hosted/auth-capture",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-67-AC04",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-67-AC05",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-67-AC06",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "A failing third-party result is not published with per-check detail until SECURITY.md's disclosure window clears; if a criterion would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}
