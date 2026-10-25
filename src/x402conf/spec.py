@@ -152,6 +152,13 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
                      "amount, asset and payTo match (facilitator-layer network substitution)",
             "controls": [_OFF + "test_f14_reference_rejects_network_substitution"],
             "faulty": ["fault:trust_network"]},
+    "F14a": {"profile": "security-profile",
+             "basis": "EIP-712 and EVM exact (EIP-3009): a signature is bound to a chain only by the domain's "
+                      "chainId; an authorization signed over a domain without chainId is valid on every chain with "
+                      "the same token address, so the verifier requires the domain's chainId to be the requirement's "
+                      "network and rejects a chainless domain replayed on another network",
+             "controls": [_OFF + "test_f14a_reference_rejects_chainless_domain_replay"],
+             "faulty": ["fault:chainless_domain"]},
     "R0": {"profile": "normative", "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED",
            "controls": [_TS_OK, _TS_STOCK], "faulty": ["ts:a server that serves without payment is caught"]},
     "R1": {"profile": "normative", "basis": "V2 7.2: the resource server settles through its facilitator",

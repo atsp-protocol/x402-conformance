@@ -200,14 +200,16 @@ Every result carries its **profile** (`normative`: the spec says MUST; `security
 leaves open; `resilience`: behaviour under failure), its spec **basis** and a **fix** link (results format
 `x402-conformance-evidence/2`).
 
-**Safety suite (`x402conf offline` and `devnet`, F1-F14 and S5):** a malformed payment accepted (F1), an underpayment
+**Safety suite (`x402conf offline` and `devnet`, F1-F14, F14a and S5):** a malformed payment accepted (F1), an underpayment
 accepted (F2), a payment settled twice (F3), a memo or nonce replayed (F4), success before confirmation, or
 `settlement_pending` without a transaction and network (F5), a timeout or garbage answer credited (F6), a pending
 payment never finalised or credited twice (F7), a failure stuck pending (F8), a broken `/settle` transport credited
 (F9), a payment accepted under requirements it wasn't made for (F10), `/verify` committing payment state (F11),
 `/verify` accepting, or refusing without a reason, a payment on a network the facilitator doesn't advertise or in an
 asset with no token contract (F12), a payment in a different asset at the quoted amount and recipient accepted (F13), a
-payment authorized for another network accepted when amount, recipient and asset match (F14), and a facilitator whose
+payment authorized for another network accepted when amount, recipient and asset match (F14), an EIP-3009 signature
+over an EIP-712 domain without `chainId` replayed from one network onto another and accepted (F14a, a real signature
+from a throwaway key generated per run), and a facilitator whose
 `/supported` lists no kinds, or a listed kind that `/verify` answers with an exception or with `isValid: false` and no
 `invalidReason` (S5). F13 and F14 are new in 1.6.0, F12 and S5 in 1.5.0. `offline` runs them against built-in doubles:
 it's a self-test of the suite and doesn't test your code. `devnet` runs F1-F6 over real `/verify` and `/settle` on
@@ -239,7 +241,7 @@ follows the latest 1.x release.
 x402conf demo [--fault no_fee_payer|no_402] [--dir DIR] # a bundled mock on loopback, then the self-test
 x402conf live https://x402.org/facilitator             # S0-S4, GET /supported only
 x402conf resource https://api.example.com/paid         # P1-P7, one unpaid GET
-x402conf offline                                       # F1-F14 and S5 self-test against the built-in doubles
+x402conf offline                                       # F1-F14, F14a and S5 self-test against the built-in doubles
 x402conf report --dir DIR --sarif out.sarif --junit junit.xml --badge badge.json
 x402conf pr-comment DIR/pr-comment.md                  # sticky PR comment (GITHUB_TOKEN, in a pull_request run)
 x402conf devnet --faults --keys DIR                    # F1-F6 over real /verify and /settle on Solana devnet

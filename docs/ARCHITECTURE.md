@@ -10,7 +10,7 @@ flowchart LR
     PROBE[x402conf-svm probe<br/>R0-R11, R14, R20] --> DBL[Facilitator double<br/>loopback, fault modes]
     LIB[x402-conformance-svm library<br/>R12, R13, R15-R19, R16a, R22-R24, C1-C3] --> DBL
     DBL -->|X402_FACILITATOR_URL| RS[(Your resource server<br/>Solana devnet or Base Sepolia)]
-    CLI --> OFF[Safety checks F1-F14, S5]
+    CLI --> OFF[Safety checks F1-F14, F14a, S5]
     OFF --> DOUBLES[Facilitator doubles<br/>Reference + Faulty]
     CLI --> DEVNET[Devnet runner F1-F6<br/>self-hosted or permitted facilitator]
     GUARD[ResourceServerGuard<br/>credit rule] --- OFF
