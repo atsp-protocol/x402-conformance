@@ -63,7 +63,7 @@ graph LR
   XC_53["XC-53<br/>Governance and stewardship, and check ids that n..."]
   XC_79("XC-79<br/>Dexter: the open-source build of a hosted facili...")
   XC_80("XC-80<br/>Hosted-only facilitators: documented out-of-reac...")
-  XC_81("XC-81<br/>Coverage exclusions, decided by the owner: settl...")
+  XC_81("XC-81<br/>Coverage decisions recorded by the owner: no exc...")
   XC_82("XC-82<br/>Spec traceability: every check classified as nor...")
   XC_83("XC-83<br/>An offline CI job template another repo can past...")
   XC_84("XC-84<br/>Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, w...")
@@ -265,7 +265,7 @@ Dependencies on tasks that are in no contract or addendum here: XC-54, XC-55, XC
 | XC-53 Governance and stewardship, and check ids that never change meaning | design | signed | XC-00, XC-23 | XC-82 | R-GOV, R-OPEN | 9 (command 4, file_exists 1, grep 2, pushed 1, scope 1) | `GOVERNANCE.md`; `README.md`; `CONTRIBUTING.md`; `tools/check_ids.py`; `tests/test_check_ids.py`; `docs/check-ids.json`; `.github/workflows/ci.yml`; `docs/**`; `CHANGELOG.md` |
 | XC-79 Dexter: the open-source build of a hosted facilitator as a self-hosted column | verify | proposed | XC-51, XC-54, XC-61 | - | R-MATRIX, R-SAFE-GET | 6 (command 4, pushed 1, scope 1) | `tools/self_hosted_matrix.py`; `evidence/self-hosted/dexter/**`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
 | XC-80 Hosted-only facilitators: documented out-of-reach rows and an operator-permission track | verify | proposed | XC-54 | - | R-MATRIX, R-SAFE-GET | 7 (command 4, grep 1, pushed 1, scope 1) | `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `CHANGELOG.md` |
-| XC-81 Coverage exclusions, decided by the owner: settle off Solana devnet and Base Sepolia, live Starknet, Canton and Lightning, mainnet-only defaults | design | proposed | XC-54 | - | R-MATRIX | 6 (command 3, grep 1, pushed 1, scope 1) | `docs/coverage-decisions.json`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `CHANGELOG.md` |
+| XC-81 Coverage decisions recorded by the owner: no exclusions; live settle on Solana devnet and Base Sepolia, fixtures for Canton, Lightning and mainnet-only defaults, a Starknet Sepolia path | design | proposed | XC-54 | - | R-MATRIX | 9 (command 5, grep 2, pushed 1, scope 1) | `docs/coverage-decisions.json`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `CHANGELOG.md` |
 | XC-82 Spec traceability: every check classified as normative (a spec clause) or hardening (beyond the spec) | design | proposed | XC-53, XC-55 | - | R-SPEC | 8 (command 3, grep 3, pushed 1, scope 1) | `tools/traceability.py`; `tests/test_traceability.py`; `docs/traceability.json`; `docs/TRACEABILITY.md`; `docs/COVERAGE.md`; `README.md`; `.github/workflows/ci.yml`; `CHANGELOG.md` |
 | XC-83 An offline CI job template another repo can paste in: no wallet, no funds, no secrets | implement | proposed | XC-26 | - | R-ADOPT | 7 (command 2, file_exists 1, grep 2, pushed 1, scope 1) | `docs/ci/**`; `docs/USING.md`; `.github/workflows/ci.yml`; `tests/test_ci_template.py`; `CHANGELOG.md` |
 | XC-84 Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, with a reason pointing to 1.4.0 | release | proposed | - | - | R-RELEASE | 5 (command 2, grep 1, pushed 1, scope 1) | `evidence/registry/pypi-yank-1.3.json`; `docs/RELEASES.md`; `CHANGELOG.md` |

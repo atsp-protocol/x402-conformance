@@ -41,13 +41,13 @@
     },
     {
       "id": "XC-81",
-      "title": "Coverage exclusions, decided by the owner: settle off Solana devnet and Base Sepolia, live Starknet, Canton and Lightning, mainnet-only defaults",
+      "title": "Coverage decisions recorded by the owner: no exclusions; live settle on Solana devnet and Base Sepolia, fixtures for Canton, Lightning and mainnet-only defaults, a Starknet Sepolia path",
       "deps": [
         "XC-54"
       ],
       "effort": "1",
       "file": "contract-addendum-xc81-coverage-exclusions-decision.json",
-      "criteria": 6
+      "criteria": 9
     },
     {
       "id": "XC-82",
