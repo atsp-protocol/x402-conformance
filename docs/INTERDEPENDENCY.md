@@ -87,12 +87,12 @@ graph LR
   XC_76["XC-76<br/>Industry matrix v2: a faceted, evidence-only sco..."]
   XC_77["XC-77<br/>Server and client checks on every chain family t..."]
   XC_78["XC-78<br/>Coverage closure: every inventoried facilitator,..."]
-  XC_79("XC-79<br/>Dexter: the open-source build of a hosted facili...")
-  XC_80("XC-80<br/>Hosted-only facilitators: documented out-of-reac...")
-  XC_81("XC-81<br/>Coverage decisions recorded by the owner: no exc...")
-  XC_82("XC-82<br/>Spec traceability: every check classified as nor...")
-  XC_83("XC-83<br/>An offline CI job template another repo can past...")
-  XC_84("XC-84<br/>Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, w...")
+  XC_79["XC-79<br/>Dexter: the open-source build of a hosted facili..."]
+  XC_80["XC-80<br/>Hosted-only facilitators: documented out-of-reac..."]
+  XC_81["XC-81<br/>Coverage decisions recorded by the owner: no exc..."]
+  XC_82["XC-82<br/>Spec traceability: every check classified as nor..."]
+  XC_83["XC-83<br/>An offline CI job template another repo can past..."]
+  XC_84["XC-84<br/>Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, w..."]
   XC_85["XC-85<br/>P9 and P10: a seller's discovery metadata is con..."]
   XC_86["XC-86<br/>R16a amendment: an unpaid HEAD refused with 405..."]
   XC_87["XC-87<br/>C2 and C3 not applicable to a client declared no..."]
@@ -320,7 +320,6 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_08,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_20,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_48,XC_49,XC_50,XC_M1,XC_M3,XC_M4 done
-  class XC_79,XC_80,XC_81,XC_82,XC_83,XC_84 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -408,12 +407,12 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-76 Industry matrix v2: a faceted, evidence-only scoreboard with parity and coverage views | integrate | signed | XC-52, XC-54, XC-55, XC-56 | XC-78 | R-MATRIX, R-ADOPT | 7 (command 4, grep 1, pushed 1, scope 1) | `tools/scoreboard.py`; `tests/test_scoreboard.py`; `docs/site/**`; `docs/**`; `CHANGELOG.md` |
 | XC-77 Server and client checks on every chain family the SDKs serve (not only Base Sepolia and Solana) | verify | signed | XC-54, XC-68, XC-70 | XC-78 | R-MATRIX | 6 (command 4, pushed 1, scope 1) | `src/x402conf/**`; `ts/**`; `tests/test_offline.py`; `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `evidence/impl-matrix/**`; `docs/compat-matrix.json`; `docs/**`; `CHANGELOG.md` |
 | XC-78 Coverage closure: every inventoried facilitator, chain, language, scheme and extension has evidence or a stated reason | release | signed | XC-54, XC-56, XC-57, XC-58, XC-59, XC-60, XC-61, XC-62, XC-63, XC-64, XC-65, XC-66, XC-67, XC-68, XC-69, XC-70, XC-71, XC-72, XC-73, XC-74, XC-75, XC-76, XC-77 | - | R-RELEASE, R-MATRIX | 4 (command 2, pushed 1, scope 1) | `docs/coverage-ledger.json`; `README.md`; `docs/**`; `CHANGELOG.md` |
-| XC-79 Dexter: the open-source build of a hosted facilitator as a self-hosted column | verify | proposed | XC-51, XC-54, XC-61 | - | R-MATRIX, R-SAFE-GET | 6 (command 4, pushed 1, scope 1) | `tools/self_hosted_matrix.py`; `evidence/self-hosted/dexter/**`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
-| XC-80 Hosted-only facilitators: documented out-of-reach rows and an operator-permission track | verify | proposed | XC-54 | - | R-MATRIX, R-SAFE-GET | 7 (command 4, grep 1, pushed 1, scope 1) | `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `CHANGELOG.md` |
-| XC-81 Coverage decisions recorded by the owner: no exclusions; live settle on Solana devnet and Base Sepolia, fixtures for Canton, Lightning and mainnet-only defaults, a Starknet Sepolia path | design | proposed | XC-54 | - | R-MATRIX | 9 (command 5, grep 2, pushed 1, scope 1) | `docs/coverage-decisions.json`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `CHANGELOG.md` |
-| XC-82 Spec traceability: every check classified as normative (a spec clause) or hardening (beyond the spec) | design | proposed | XC-53, XC-55 | - | R-SPEC | 8 (command 3, grep 3, pushed 1, scope 1) | `tools/traceability.py`; `tests/test_traceability.py`; `docs/traceability.json`; `docs/TRACEABILITY.md`; `docs/COVERAGE.md`; `README.md`; `.github/workflows/ci.yml`; `CHANGELOG.md` |
-| XC-83 An offline CI job template another repo can paste in: no wallet, no funds, no secrets | implement | proposed | XC-26 | - | R-ADOPT | 7 (command 2, file_exists 1, grep 2, pushed 1, scope 1) | `docs/ci/**`; `docs/USING.md`; `.github/workflows/ci.yml`; `tests/test_ci_template.py`; `CHANGELOG.md` |
-| XC-84 Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, with a reason pointing to 1.4.0 | release | proposed | - | - | R-RELEASE | 5 (command 2, grep 1, pushed 1, scope 1) | `evidence/registry/pypi-yank-1.3.json`; `docs/RELEASES.md`; `CHANGELOG.md` |
+| XC-79 Dexter: the open-source build of a hosted facilitator as a self-hosted column | verify | signed | XC-51, XC-54, XC-61 | - | R-MATRIX, R-SAFE-GET | 6 (command 4, pushed 1, scope 1) | `tools/self_hosted_matrix.py`; `evidence/self-hosted/dexter/**`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-80 Hosted-only facilitators: documented out-of-reach rows and an operator-permission track | verify | signed | XC-54 | - | R-MATRIX, R-SAFE-GET | 7 (command 4, grep 1, pushed 1, scope 1) | `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `CHANGELOG.md` |
+| XC-81 Coverage decisions recorded by the owner: no exclusions; live settle on Solana devnet and Base Sepolia, fixtures for Canton, Lightning and mainnet-only defaults, a Starknet Sepolia path | design | signed | XC-54 | - | R-MATRIX | 9 (command 5, grep 2, pushed 1, scope 1) | `docs/coverage-decisions.json`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `CHANGELOG.md` |
+| XC-82 Spec traceability: every check classified as normative (a spec clause) or hardening (beyond the spec) | design | signed | XC-53, XC-55 | - | R-SPEC | 8 (command 3, grep 3, pushed 1, scope 1) | `tools/traceability.py`; `tests/test_traceability.py`; `docs/traceability.json`; `docs/TRACEABILITY.md`; `docs/COVERAGE.md`; `README.md`; `.github/workflows/ci.yml`; `CHANGELOG.md` |
+| XC-83 An offline CI job template another repo can paste in: no wallet, no funds, no secrets | implement | signed | XC-26 | - | R-ADOPT | 7 (command 2, file_exists 1, grep 2, pushed 1, scope 1) | `docs/ci/**`; `docs/USING.md`; `.github/workflows/ci.yml`; `tests/test_ci_template.py`; `CHANGELOG.md` |
+| XC-84 Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, with a reason pointing to 1.4.0 | release | signed | - | - | R-RELEASE | 5 (command 2, grep 1, pushed 1, scope 1) | `evidence/registry/pypi-yank-1.3.json`; `docs/RELEASES.md`; `CHANGELOG.md` |
 | XC-85 P9 and P10: a seller's discovery metadata is consistent with its own schema and its live 402 | implement | signed | XC-16, XC-23 | - | R-DISCOVERY | 8 (command 4, grep 2, pushed 1, scope 1) | `src/x402conf/discovery.py`; `src/x402conf/harness.py`; `src/x402conf/cli.py`; `src/x402conf/spec.py`; `tests/test_discovery_pacing.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-86 R16a amendment: an unpaid HEAD refused with 405 never reaches the handler and passes | implement | signed | XC-39 | - | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/src/head-unpaid.ts`; `ts/example/head-unpaid-server.ts`; `ts/test/head-unpaid.test.ts`; `ts/src/index.ts`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-87 C2 and C3 not applicable to a client declared not to sign, shown as N/A in every report | implement | signed | XC-44, XC-45, XC-11 | - | R-C2, R-C3 | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/src/client-offers.ts`; `ts/src/client-version.ts`; `ts/src/probe.ts`; `ts/src/report.ts`; `ts/src/index.ts`; `ts/test/client-offers.test.ts`; `ts/test/client-version.test.ts`; `src/x402conf/cli.py`; `tests/test_discovery_pacing.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
