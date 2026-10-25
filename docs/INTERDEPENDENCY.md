@@ -545,7 +545,7 @@ graph LR
 | corpus | data | `corpus/**` | the corpus of anonymised cases and its fixtures |
 | evidence | data | `evidence/**` | hashed evidence from live and devnet runs |
 | impl-matrix | code | `.github/workflows/impl-matrix.yml` | the implementation matrix workflow: the probe against stock servers at pinned versions, one job per evidence row |
-| compat-matrix | code | `tools/compat_matrix.py`; `.github/workflows/compat-matrix.yml` | the compatibility matrix: docs/compat-matrix.json and the table in docs/MATRIX.md, generated from the implementation-matrix runs and rebuilt on a schedule |
+| compat-matrix | code | `tools/compat_matrix.py`; `tools/row_from_evidence.py`; `.github/workflows/compat-matrix.yml` | the compatibility matrix: docs/compat-matrix.json and the table in docs/MATRIX.md, generated from the implementation-matrix runs and rebuilt on a schedule |
 | readme | doc | `README.md`; `RELEASES.md` | the project README and the release map |
 | changelog | doc | `CHANGELOG.md` | the changelog |
 | docs | doc | `docs/**` | architecture, spec mapping, threat model, usage, adoption, matrix and roadmap |

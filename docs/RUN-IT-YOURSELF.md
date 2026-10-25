@@ -68,7 +68,8 @@ See [USING.md](USING.md) for the tools it offers.
 2. Open the [Add or update my row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=add-or-update-row.yml)
    form: entity name, type, languages, networks, environment, endpoint, version or commit, contact, and your consent
    to be listed.
-3. Open a PR that adds the bundle as `evidence/impl-matrix/<row>/`, then run `python3 tools/compat_matrix.py --write`.
+3. Open a PR made with `python3 tools/row_from_evidence.py <bundle> --row <row> --consent <issue URL>`, which checks
+   the bundle and writes `evidence/impl-matrix/<row>/`, the table row and the badge.
    Or link the artifact in the issue and I'll open the PR. CI rebuilds the row and its badge from the evidence.
 
 Your row shows the environment, checks passed out of checks run, the failed count, the version tested and the run date

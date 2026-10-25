@@ -83,9 +83,10 @@ your own code or your own testnet endpoint.
    server, as in [RUN-IT-YOURSELF.md](RUN-IT-YOURSELF.md). Never point it at mainnet or at someone else's facilitator.
 2. Open the [Add or update my row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=add-or-update-row.yml)
    issue form with your details, your consent to be listed and a link to your run.
-3. Open a PR (or I open it from your issue) that adds the run as `evidence/impl-matrix/<row>/` with its `run.json`, a
-   README and `SHA256SUMS`, then run `python3 tools/compat_matrix.py --write`. CI regenerates the row and its badge from
-   that evidence and fails if anything was edited by hand.
+3. Open a PR (or I open it from your issue) that adds the run as a row:
+   `python3 tools/row_from_evidence.py <bundle> --row <row> --consent <issue or PR URL>` checks the bundle, writes
+   `evidence/impl-matrix/<row>/` with its `run.json`, a README and `SHA256SUMS`, and regenerates the table and badge.
+   CI rebuilds the row from that evidence and fails if anything was edited by hand.
 
 A row is listed only with consent recorded in the issue or the PR. A failing check in a third-party project goes to that
 project privately first (SECURITY.md); until then the row shows the failed count and "under disclosure".
