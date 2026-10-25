@@ -107,7 +107,11 @@ tier (or both):
 2. **Full suite (self-hosted)**: link a release run of the Action with `attest: true` in your own repository. The
    workflow downloads the attestation, checks its signature (`gh attestation verify`: a workflow in your repository,
    at the attested commit and tag) and its contents (`tools/attestation.py`: the pinned suite, every applicable check
-   present) and upgrades your row. Nothing is rerun on our side.
+   present) and upgrades your row. Nothing is rerun on our side. The signature shows where and on which commit the
+   run happened; the row reads as your own signed report.
+
+Can't add a CI step? A full run against a hosted testnet staging stack is possible by arrangement, with written
+permission. It is the exception, not part of the queue.
 
 A workflow checks the issue and opens a pull request with your row for review. Your row shows its tier, checks
 passed out of applicable checks, the failed count, the denominator (exercised / not applicable / needs the

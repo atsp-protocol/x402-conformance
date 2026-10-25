@@ -31,11 +31,12 @@ when `gh attestation verify` shows it was signed by a workflow in the row's own 
 tag and run, over that exact file, and every check of the pinned suite (`matrix/queue/suite.json`) is present. A
 check that neither ran nor was declared not applicable counts as missing, and the attestation is refused. An
 attestation from an older suite release is listed and marked "rerun on current suite", with a grey badge. The
-attestation says what the project's CI ran and reported; the signature proves where and on which commit it ran.
+attestation says what the project's CI ran and reported; the signature proves where and on which commit it ran,
+not that the results were not altered on the way. Read a tier-2 row as the project's own signed report.
 
 A hosted-staging full run is the exception path, for a project that can't add a CI step: it exposes a testnet
-staging stack with its facilitator reachable and fault injection allowed, and the full suite runs against it by
-arrangement, with written permission. It is not part of the queue.
+staging stack with its facilitator reachable and fault injection allowed, and the full suite runs against it
+by arrangement, with written permission. It is not part of the queue.
 
 A hosted facilitator is run only with its operator's written **permission**, and only on devnet or testnet; the
 add-row issue or the PR is the permission record. Disclosure: a failing check in someone else's project goes to that
@@ -154,9 +155,9 @@ only, and runs within its caps (`matrix/queue/caps.json`):
 The full tier-1 results go to you privately first: they're sealed to my key, and your row is updated by a pull
 request for review only after you've had them. A failing check follows SECURITY.md. Tier 2 is never rerun on our
 side: the queue downloads your signed attestation and verifies it. At five months I open a renewal heads-up issue.
-After six months your row stays listed with its last result, marked stale, and the badge greys out; nothing is
-deleted. Running the suite yourself with the Action ([RUN-IT-YOURSELF.md](RUN-IT-YOURSELF.md)) stays free and
-unlimited.
+After six months your row stays listed with its last result, marked stale, and the badge greys out;
+nothing is deleted. Running the suite yourself with the Action ([RUN-IT-YOURSELF.md](RUN-IT-YOURSELF.md))
+stays free and unlimited.
 
 ## Badge and data licence
 
