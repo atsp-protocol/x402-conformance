@@ -1,0 +1,1182 @@
+{
+ "generated": "2026-10-25",
+ "note": "Public sources only. Coverage levels describe committed evidence in atsp-protocol/x402-conformance at main (36280a1) plus the planned XC-51..53.",
+ "facilitators": [
+  {
+   "name": "x402 TypeScript example",
+   "kind": "open source",
+   "source": "x402-foundation/x402",
+   "chains": "EVM, SVM",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51, XC-61",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "x402 Python example",
+   "kind": "open source",
+   "source": "x402-foundation/x402",
+   "chains": "EVM, SVM",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51, XC-61",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "x402 Go example",
+   "kind": "open source",
+   "source": "x402-foundation/x402",
+   "chains": "EVM, SVM",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51, XC-61",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "x402-rs",
+   "kind": "open source",
+   "source": "x402-rs/x402-rs",
+   "chains": "EVM",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "qntx facilitator",
+   "kind": "open source",
+   "source": "qntx/facilitator",
+   "chains": "EVM",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "faremeter",
+   "kind": "open source",
+   "source": "faremeter/faremeter",
+   "chains": "EVM (Base Sepolia, SKALE, Monad testnets)",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51, XC-60",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "daydreams",
+   "kind": "open source",
+   "source": "daydreamsai/facilitator",
+   "chains": "EVM",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "mogami",
+   "kind": "open source",
+   "source": "mogami-tech/x402-facilitator",
+   "chains": "EVM (V1)",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "raid-guild",
+   "kind": "open source",
+   "source": "raid-guild/x402-facilitator-go",
+   "chains": "EVM",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "agent-guide go-x402-facilitator",
+   "kind": "open source",
+   "source": "agent-guide/go-x402-facilitator",
+   "chains": "EVM (V1)",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-51",
+   "reachable": "yes",
+   "note": "V1 only"
+  },
+  {
+   "name": "Stellar x402",
+   "kind": "open source",
+   "source": "stellar/x402-stellar",
+   "chains": "Stellar",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-62",
+   "reachable": "yes",
+   "note": "needs Stellar exact client"
+  },
+  {
+   "name": "Accensa Stellar",
+   "kind": "open source",
+   "source": "accensa/x402-facilitator-stellar",
+   "chains": "Stellar",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-62",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "Casper x402",
+   "kind": "open source",
+   "source": "make-software/casper-x402",
+   "chains": "Casper",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "S0-S4 loopback",
+   "proposed": "XC-64",
+   "reachable": "yes",
+   "note": "needs Casper client"
+  },
+  {
+   "name": "Fireblocks",
+   "kind": "open source",
+   "source": "fireblocks/x402-facilitator",
+   "chains": "EVM",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "no",
+   "note": "needs a Fireblocks custody key (account); out of reach unless a free sandbox exists"
+  },
+  {
+   "name": "OpenZeppelin relayer plugin",
+   "kind": "open source",
+   "source": "OpenZeppelin/relayer-plugin-x402-facilitator",
+   "chains": "Stellar",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "partial",
+   "note": "needs a self-hosted OpenZeppelin Relayer"
+  },
+  {
+   "name": "TRDEFI Arc",
+   "kind": "open source",
+   "source": "TRDEFI/arc-x402-facilitator",
+   "chains": "Arc (eip155:5042002 testnet)",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "none",
+   "proposed": "XC-60",
+   "reachable": "partial",
+   "note": "no testnet config at pin"
+  },
+  {
+   "name": "PipRail",
+   "kind": "open source",
+   "source": "piprail/piprail",
+   "chains": "multi",
+   "listed_in": "docs/MATRIX.md self-hosted",
+   "covered_today": "n/a (client)",
+   "proposed": "XC-72",
+   "reachable": "yes",
+   "note": "SDK, not a server"
+  },
+  {
+   "name": "x402.org facilitator",
+   "kind": "hosted",
+   "source": "self-hostable build: x402 TS example",
+   "chains": "EVM, SVM",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "via self-hosted build",
+   "reachable": "via source build",
+   "note": ""
+  },
+  {
+   "name": "PayAI",
+   "kind": "hosted",
+   "source": "",
+   "chains": "multi",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Dexter",
+   "kind": "hosted",
+   "source": "self-hostable build: BranchManager69/dexter-x402 (archived v1)",
+   "chains": "EVM, SVM",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "via self-hosted build",
+   "reachable": "via source build",
+   "note": ""
+  },
+  {
+   "name": "Ultraviolet DAO",
+   "kind": "hosted",
+   "source": "",
+   "chains": "multi",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "xpay.sh",
+   "kind": "hosted",
+   "source": "",
+   "chains": "EVM",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Polygon",
+   "kind": "hosted",
+   "source": "",
+   "chains": "EVM (Polygon, Amoy)",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "GoPlausible",
+   "kind": "hosted",
+   "source": "",
+   "chains": "Algorand",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Pieverse",
+   "kind": "hosted",
+   "source": "",
+   "chains": "multi",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "facilitator.x402.rs",
+   "kind": "hosted",
+   "source": "self-hostable build: x402-rs",
+   "chains": "EVM",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "via self-hosted build",
+   "reachable": "via source build",
+   "note": ""
+  },
+  {
+   "name": "Daydreams (hosted)",
+   "kind": "hosted",
+   "source": "self-hostable build: daydreams",
+   "chains": "EVM",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "via self-hosted build",
+   "reachable": "via source build",
+   "note": ""
+  },
+  {
+   "name": "Mogami (hosted)",
+   "kind": "hosted",
+   "source": "self-hostable build: mogami",
+   "chains": "EVM",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "GET /supported S0-S4",
+   "proposed": "via self-hosted build",
+   "reachable": "via source build",
+   "note": ""
+  },
+  {
+   "name": "CDP (Coinbase)",
+   "kind": "hosted",
+   "source": "",
+   "chains": "EVM, SVM",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "attempted (401 or TLS failure)",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Cascade",
+   "kind": "hosted",
+   "source": "",
+   "chains": "multi",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "attempted (401 or TLS failure)",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Corbits",
+   "kind": "hosted",
+   "source": "self-hostable build: faremeter",
+   "chains": "EVM, SVM",
+   "listed_in": "live run 2026-10-20",
+   "covered_today": "attempted (401 or TLS failure)",
+   "proposed": "via self-hosted build",
+   "reachable": "via source build",
+   "note": ""
+  },
+  {
+   "name": "Built on Stellar",
+   "kind": "hosted + open source",
+   "source": "stellar/x402-stellar",
+   "chains": "Stellar",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "XC-62",
+   "reachable": "yes, source build",
+   "note": ""
+  },
+  {
+   "name": "Celo Facilitator",
+   "kind": "hosted",
+   "source": "",
+   "chains": "EVM (Celo, Celo Sepolia)",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "FTP Canton",
+   "kind": "hosted",
+   "source": "",
+   "chains": "Canton",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "HPP Facilitator",
+   "kind": "hosted",
+   "source": "",
+   "chains": "EVM (HPP, HPP Sepolia)",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Meridian",
+   "kind": "hosted",
+   "source": "",
+   "chains": "multi",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "NEAR x402 Facilitator",
+   "kind": "hosted + open source",
+   "source": "fastnear/x402-facilitator",
+   "chains": "NEAR, Base",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes, source build",
+   "note": ""
+  },
+  {
+   "name": "Solvador",
+   "kind": "hosted",
+   "source": "",
+   "chains": "multi",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Sui Facilitator (UIG Studios)",
+   "kind": "hosted + open source",
+   "source": "DrVelvetFog/sui-x402-facilitator",
+   "chains": "Sui",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes, source build",
+   "note": ""
+  },
+  {
+   "name": "T54 XRPL",
+   "kind": "hosted",
+   "source": "",
+   "chains": "XRPL",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "X Pay (x-pay.llc)",
+   "kind": "hosted",
+   "source": "",
+   "chains": "EVM (Base)",
+   "listed_in": "docs.x402.org/dev-tools/facilitators",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "402104",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "AurraCloud",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Auto",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "CodeNut",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Heurist",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Kamiyo",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "OpenX402",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Questflow",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "thirdweb",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Virtuals",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "xEcho",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "facilitators.x402.watch",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Figment",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "x402stats.io share",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "FluxA",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "x402stats.io share",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "three-ws",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "x402stats.io share",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "RelAI",
+   "kind": "hosted",
+   "source": "",
+   "chains": "see source",
+   "listed_in": "x402stats.io methodology",
+   "covered_today": "none",
+   "proposed": "none",
+   "reachable": "no: hosted-only",
+   "note": ""
+  },
+  {
+   "name": "Dhaiwat10/x402-sovereign",
+   "kind": "open source",
+   "source": "github.com/Dhaiwat10/x402-sovereign",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "hummusonrails/x402-facilitator",
+   "kind": "open source",
+   "source": "github.com/hummusonrails/x402-facilitator",
+   "chains": "EVM (Arbitrum)",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "devsoniclk/hydra",
+   "kind": "open source",
+   "source": "github.com/devsoniclk/hydra",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "0xKoda/x402-facilitator",
+   "kind": "open source",
+   "source": "github.com/0xKoda/x402-facilitator",
+   "chains": "EVM (Cloudflare Workers)",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "BofAI/x402-facilitator",
+   "kind": "open source",
+   "source": "github.com/BofAI/x402-facilitator",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "fortylabs/local-x402-facilitator",
+   "kind": "open source",
+   "source": "github.com/fortylabs/local-x402-facilitator",
+   "chains": "EVM (Tenderly vnets)",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "alcedo/x402-facilitator",
+   "kind": "open source",
+   "source": "github.com/alcedo/x402-facilitator",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "cereza-rainier/rust-facilitator",
+   "kind": "open source",
+   "source": "github.com/cereza-rainier/rust-facilitator",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "brendanjryan/follis",
+   "kind": "open source",
+   "source": "github.com/brendanjryan/follis",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "sean-regents/facilixir",
+   "kind": "open source",
+   "source": "github.com/sean-regents/facilixir",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "usmaneth/x402-gasless",
+   "kind": "open source",
+   "source": "github.com/usmaneth/x402-gasless",
+   "chains": "EVM (ERC-4337)",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "Jnix2007/hyper402",
+   "kind": "open source",
+   "source": "github.com/Jnix2007/hyper402",
+   "chains": "EVM (HyperEVM)",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "ray-protocol/facilitator",
+   "kind": "open source",
+   "source": "github.com/ray-protocol/facilitator",
+   "chains": "EVM (Flare)",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "fastnear/x402-facilitator",
+   "kind": "open source",
+   "source": "github.com/fastnear/x402-facilitator",
+   "chains": "NEAR, Base",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "brave-experiments/private-x402-gateway",
+   "kind": "open source",
+   "source": "github.com/brave-experiments/private-x402-gateway",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "oasisprotocol/rofl-x402-facilitator",
+   "kind": "open source",
+   "source": "github.com/oasisprotocol/rofl-x402-facilitator",
+   "chains": "EVM (TEE)",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "partial",
+   "note": "TEE attestation not reproducible on loopback"
+  },
+  {
+   "name": "DrVelvetFog/sui-x402-facilitator",
+   "kind": "open source",
+   "source": "github.com/DrVelvetFog/sui-x402-facilitator",
+   "chains": "Sui",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "57blocks/agentsmith-oss",
+   "kind": "open source",
+   "source": "github.com/57blocks/agentsmith-oss",
+   "chains": "Stellar",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "HeylmStoned/x402-stellar-bazaar",
+   "kind": "open source",
+   "source": "github.com/HeylmStoned/x402-stellar-bazaar",
+   "chains": "Stellar",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "0d1026/Rialto",
+   "kind": "open source",
+   "source": "github.com/0d1026/Rialto",
+   "chains": "Stellar",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "LumenRoute/lumenbazaar-backend",
+   "kind": "open source",
+   "source": "github.com/LumenRoute/lumenbazaar-backend",
+   "chains": "Stellar",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "kunaldrall29/walras",
+   "kind": "open source",
+   "source": "github.com/kunaldrall29/walras",
+   "chains": "Stellar",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "CodeStrux/aether",
+   "kind": "open source",
+   "source": "github.com/CodeStrux/aether",
+   "chains": "Stellar",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "miralandlabs/pr402",
+   "kind": "open source",
+   "source": "github.com/miralandlabs/pr402",
+   "chains": "SVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "adamdelphantom/x402-cash-facilitator",
+   "kind": "open source",
+   "source": "github.com/adamdelphantom/x402-cash-facilitator",
+   "chains": "SVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "gonkalabs/x402-gonka",
+   "kind": "open source",
+   "source": "github.com/gonkalabs/x402-gonka",
+   "chains": "Gonka",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-74",
+   "reachable": "partial",
+   "note": "no public testnet confirmed"
+  },
+  {
+   "name": "Blockchain-Oracle/sotto",
+   "kind": "open source",
+   "source": "github.com/Blockchain-Oracle/sotto",
+   "chains": "Canton",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-66",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "jianmliu/aigg-facilitator",
+   "kind": "open source",
+   "source": "github.com/jianmliu/aigg-facilitator",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "delta003/x402-dev-facilitator",
+   "kind": "open source",
+   "source": "github.com/delta003/x402-dev-facilitator",
+   "chains": "EVM (Tenderly vnets)",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  },
+  {
+   "name": "coltonc3/x402-facilitator",
+   "kind": "open source",
+   "source": "github.com/coltonc3/x402-facilitator",
+   "chains": "EVM",
+   "listed_in": "GitHub search 2026-10-25",
+   "covered_today": "none",
+   "proposed": "XC-73",
+   "reachable": "yes",
+   "note": ""
+  }
+ ],
+ "chains": [
+  {
+   "family": "EVM: Base Sepolia",
+   "testnet": "eip155:84532",
+   "upstream_sdks": "TS, Go, Python",
+   "covered_today": "double + probe (all R/C checks); real /verify with XC-51",
+   "proposed": "XC-51, XC-60",
+   "reachable": "yes"
+  },
+  {
+   "family": "EVM: 10 more testnets with SDK default assets (Monad, Stable, Arbitrum Sepolia, Mezo, Radius, HPP Sepolia, XDC Apothem, Celo Sepolia, Sei, Arc)",
+   "testnet": "eip155:10143, 2201, 421614, 31611, 72344, 181228, 51, 11142220, 1328, 5042002",
+   "upstream_sdks": "TS (Go/Python share EVM)",
+   "covered_today": "read-only (/supported, 402)",
+   "proposed": "XC-60",
+   "reachable": "yes, if faucet tokens exist"
+  },
+  {
+   "family": "EVM: mainnet-only defaults (Ethereum, Avalanche, MegaETH, Polygon, ADI, Igra, Flare)",
+   "testnet": "no SDK testnet default",
+   "upstream_sdks": "TS",
+   "covered_today": "read-only",
+   "proposed": "XC-60 (testnet twins where a token exists)",
+   "reachable": "partial: never mainnet"
+  },
+  {
+   "family": "Solana",
+   "testnet": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "upstream_sdks": "TS, Go, Python",
+   "covered_today": "real /verify and /settle F1-F6 (reference)",
+   "proposed": "XC-61",
+   "reachable": "yes"
+  },
+  {
+   "family": "Stellar",
+   "testnet": "stellar:testnet",
+   "upstream_sdks": "TS",
+   "covered_today": "S0-S4 on 2 self-hosted columns",
+   "proposed": "XC-62",
+   "reachable": "yes"
+  },
+  {
+   "family": "Aptos",
+   "testnet": "aptos:2",
+   "upstream_sdks": "TS",
+   "covered_today": "none",
+   "proposed": "XC-63",
+   "reachable": "yes"
+  },
+  {
+   "family": "Sui",
+   "testnet": "sui testnet",
+   "upstream_sdks": "none upstream (third-party facilitator)",
+   "covered_today": "none",
+   "proposed": "XC-63",
+   "reachable": "yes"
+  },
+  {
+   "family": "NEAR",
+   "testnet": "near:testnet",
+   "upstream_sdks": "TS",
+   "covered_today": "none",
+   "proposed": "XC-64",
+   "reachable": "yes"
+  },
+  {
+   "family": "Hedera",
+   "testnet": "hedera:testnet",
+   "upstream_sdks": "TS",
+   "covered_today": "none",
+   "proposed": "XC-64",
+   "reachable": "yes"
+  },
+  {
+   "family": "Algorand (AVM)",
+   "testnet": "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe",
+   "upstream_sdks": "TS",
+   "covered_today": "read-only S2 (one hosted facilitator)",
+   "proposed": "XC-64",
+   "reachable": "yes"
+  },
+  {
+   "family": "Concordium",
+   "testnet": "ccd:4221332d34e1694168c2a0c0b3fd0f27",
+   "upstream_sdks": "TS",
+   "covered_today": "none",
+   "proposed": "XC-64",
+   "reachable": "yes"
+  },
+  {
+   "family": "Keeta",
+   "testnet": "keeta:1413829460",
+   "upstream_sdks": "TS",
+   "covered_today": "none",
+   "proposed": "XC-64",
+   "reachable": "yes"
+  },
+  {
+   "family": "Casper",
+   "testnet": "casper:casper-test",
+   "upstream_sdks": "TS",
+   "covered_today": "S0-S4 on 1 self-hosted column",
+   "proposed": "XC-64",
+   "reachable": "yes"
+  },
+  {
+   "family": "XRPL",
+   "testnet": "xrpl:1",
+   "upstream_sdks": "TS",
+   "covered_today": "none",
+   "proposed": "XC-65",
+   "reachable": "yes"
+  },
+  {
+   "family": "TON (TVM)",
+   "testnet": "tvm:-3",
+   "upstream_sdks": "TS, Python",
+   "covered_today": "none",
+   "proposed": "XC-65",
+   "reachable": "yes"
+  },
+  {
+   "family": "Cardano",
+   "testnet": "cardano:preprod",
+   "upstream_sdks": "TS",
+   "covered_today": "none",
+   "proposed": "XC-65",
+   "reachable": "yes"
+  },
+  {
+   "family": "Starknet",
+   "testnet": "Sepolia (spec only)",
+   "upstream_sdks": "none",
+   "covered_today": "none",
+   "proposed": "XC-66",
+   "reachable": "partial: spec only, no SDK"
+  },
+  {
+   "family": "Canton",
+   "testnet": "LocalNet (spec only)",
+   "upstream_sdks": "none (third-party SDK)",
+   "covered_today": "none",
+   "proposed": "XC-66",
+   "reachable": "partial: needs LocalNet"
+  },
+  {
+   "family": "Lightning (lnbtc)",
+   "testnet": "regtest (spec only)",
+   "upstream_sdks": "none",
+   "covered_today": "none",
+   "proposed": "XC-66",
+   "reachable": "partial: spec only"
+  }
+ ],
+ "languages": [
+  {
+   "language": "TypeScript",
+   "status": "official",
+   "surfaces": "Express, Hono, Next, Fastify; fetch, axios; MCP",
+   "covered_today": "Express and Hono rows; fetch client checks; reference facilitator",
+   "proposed": "XC-68",
+   "reachable": "yes"
+  },
+  {
+   "language": "Python",
+   "status": "official",
+   "surfaces": "FastAPI, Flask; httpx, requests; MCP",
+   "covered_today": "FastAPI and Flask rows (Solana devnet)",
+   "proposed": "XC-70",
+   "reachable": "yes"
+  },
+  {
+   "language": "Go",
+   "status": "official",
+   "surfaces": "gin, echo, net/http; client",
+   "covered_today": "quickstart only, no matrix row; facilitator S0-S4 loopback",
+   "proposed": "XC-69",
+   "reachable": "yes"
+  },
+  {
+   "language": "Java",
+   "status": "official, V1 only",
+   "surfaces": "servlet PaymentFilter, HttpClient (X-PAYMENT)",
+   "covered_today": "none",
+   "proposed": "XC-71",
+   "reachable": "yes (V1 profile)"
+  },
+  {
+   "language": "Rust",
+   "status": "third party",
+   "surfaces": "x402-rs (axum, reqwest, facilitator); qntx",
+   "covered_today": "facilitators S0-S4 loopback",
+   "proposed": "XC-72",
+   "reachable": "yes"
+  },
+  {
+   "language": "Ruby",
+   "status": "third party",
+   "surfaces": "x402-rails (Quicknode)",
+   "covered_today": "none",
+   "proposed": "XC-72",
+   "reachable": "yes"
+  },
+  {
+   "language": "Elixir",
+   "status": "third party",
+   "surfaces": "raxol_payments client; facilixir facilitator",
+   "covered_today": "none",
+   "proposed": "XC-72, XC-73",
+   "reachable": "yes"
+  }
+ ],
+ "schemes": [
+  {
+   "scheme": "exact",
+   "status": "EVM, SVM covered; 15 other families none"
+  },
+  {
+   "scheme": "upto",
+   "status": "P7 only; checks signed as XC-35"
+  },
+  {
+   "scheme": "batch-settlement",
+   "status": "none; signed as XC-35"
+  },
+  {
+   "scheme": "auth-capture",
+   "status": "none; proposed XC-67 (needs settles)"
+  }
+ ]
+}

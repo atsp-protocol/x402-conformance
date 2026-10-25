@@ -1,0 +1,143 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-82, part of the addendum XC-79 to XC-84 drafted on 2026-10-25. It extends the 'cover ALL' decomposition proposed as XC-54 to XC-78 (pull request #80) without changing any of its files. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub, after XC-51 to XC-53 and XC-54 to XC-78. Every criterion except scope, pushed and the unchanged-suite guards fails on today's tree and passes only on committed evidence. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 2-3 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-82",
+      "title": "Spec traceability: every check classified as normative (a spec clause) or hardening (beyond the spec)",
+      "phase": "design",
+      "owner": "mgillr",
+      "team": "engineering",
+      "agent": "code agent",
+      "depends_on": [
+        "XC-53",
+        "XC-55"
+      ],
+      "requirements": [
+        "R-SPEC"
+      ],
+      "deadline": {
+        "from": "signed into proofline.json and every depends_on task done",
+        "days": 3
+      },
+      "lease": {
+        "hours": 24,
+        "heartbeat_hours": 2,
+        "on_lapse": [
+          "retry by the same agent",
+          "reassign to the next free agent",
+          "raise to the owner"
+        ]
+      },
+      "description": "A table, generated from the check catalog, that puts every check in one of two classes: normative, where it tests a MUST or SHOULD clause of the x402 v2 spec or an extension (with the clause anchor from XC-55), and hardening, where it tests safety beyond what the spec requires (with the reason). It is the honest answer to 'how much of the spec does the suite cover', in place of any single coverage percentage. It uses the stable check ids from XC-53 and the anchors from XC-55 and adds no anchors of its own. tools/traceability.py writes docs/traceability.json and docs/TRACEABILITY.md, and CI checks they are fresh. Assumption: an earlier count gave 32 normative and 31 hardening checks; the table is computed from the catalog at build time, so the counts are whatever the catalog says then.",
+      "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+      "scope": {
+        "allow": [
+          "tools/traceability.py",
+          "tests/test_traceability.py",
+          "docs/traceability.json",
+          "docs/TRACEABILITY.md",
+          "docs/COVERAGE.md",
+          "README.md",
+          ".github/workflows/ci.yml",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-82-AC01",
+          "mandatory": true,
+          "statement": "Every check in the catalog is classified exactly once, every normative row has a spec anchor that resolves, every hardening row has a reason, and the committed table is fresh",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/traceability.py --check",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-82-AC02",
+          "mandatory": true,
+          "statement": "The checker fails on an unclassified check, a check in both classes, a normative row with no anchor and a stale table",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_traceability",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-82-AC03",
+          "mandatory": true,
+          "statement": "docs/TRACEABILITY.md states the normative and hardening counts",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/TRACEABILITY.md",
+            "pattern": "^\\| normative \\| [0-9]+ \\|[\\s\\S]*^\\| hardening \\| [0-9]+ \\|",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-82-AC04",
+          "mandatory": true,
+          "statement": "CI runs the traceability check on every push",
+          "verifier": {
+            "type": "grep",
+            "file": ".github/workflows/ci.yml",
+            "pattern": "tools/traceability\\.py --check",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-82-AC05",
+          "mandatory": true,
+          "statement": "docs/COVERAGE.md links the table",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/COVERAGE.md",
+            "pattern": "TRACEABILITY\\.md",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-82-AC06",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-82-AC07",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-82-AC08",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "No coverage percentage is published from this table; it states counts per class only."
+      ]
+    }
+  ]
+}

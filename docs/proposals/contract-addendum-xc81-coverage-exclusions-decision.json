@@ -1,0 +1,246 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-81, part of the addendum XC-79 to XC-84 drafted on 2026-10-25. It extends the 'cover ALL' decomposition proposed as XC-54 to XC-78 (pull request #80) without changing any of its files. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub, after XC-51 to XC-53 and XC-54 to XC-78. Every criterion except scope, pushed and the unchanged-suite guards fails on today's tree and passes only on committed evidence. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 1 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-81",
+      "title": "Coverage decisions recorded by the owner: no exclusions; live settle on Solana devnet and Base Sepolia, fixtures for Canton, Lightning and mainnet-only defaults, a Starknet Sepolia path",
+      "phase": "design",
+      "owner": "mgillr",
+      "team": "exec",
+      "agent": "owner",
+      "depends_on": [
+        "XC-54"
+      ],
+      "requirements": [
+        "R-MATRIX"
+      ],
+      "deadline": {
+        "from": "signed into proofline.json",
+        "within": "the owner's next decision batch"
+      },
+      "lease": {
+        "hours": 24,
+        "heartbeat_hours": 2,
+        "on_lapse": [
+          "retry by the same agent",
+          "reassign to the next free agent",
+          "raise to the owner"
+        ]
+      },
+      "description": "The owner decided on 2026-10-25 that the cover-all plan has no exclusions. Every cell is covered one of three ways. Live settlement runs on Solana devnet and Base Sepolia only. Canton, Lightning and mainnet-only SDK defaults count as covered by fixtures (offline recorded and synthetic request and response bodies) until a usable testnet exists; they are covered, not excluded, and move to a live testnet run when one exists. Starknet stays in scope and gets a testnet path on Starknet Sepolia. The cover-all matrix keeps every merchant, vendor, SDK and facilitator; no decision removes a row. This task writes those decisions to docs/coverage-decisions.json (question, outcome, networks or families, the tasks each affects, decided_by and the date), makes the ledger check enforce them (no cell marked excluded, every fixture-covered cell cites its decision id and a committed fixture, live settle only on the two named networks, every inventory row present), and states the same in docs/COVERAGE.md. It builds no new live run itself; the per-family tasks it lists in affects do that.",
+      "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+      "scope": {
+        "allow": [
+          "docs/coverage-decisions.json",
+          "docs/coverage-ledger.json",
+          "docs/COVERAGE.md",
+          "tools/coverage_ledger.py",
+          "tests/test_coverage_ledger.py",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-81-AC01",
+          "mandatory": true,
+          "statement": "docs/coverage-decisions.json has exactly COV-D1 to COV-D5, each with a question, the affected task ids, status decided, decided_by mgillr, decided_at 2026-10-25 and an outcome of live, fixtures, testnet or in-scope; no decision or default anywhere in the file is 'excluded'",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import json,sys;s=open('docs/coverage-decisions.json').read();d={x['id']:x for x in json.loads(s)['decisions']};ok=set(d)=={'COV-D1','COV-D2','COV-D3','COV-D4','COV-D5'} and all(x.get('question') and x.get('affects') and x.get('status')=='decided' and x.get('decided_by')=='mgillr' and x.get('decided_at')=='2026-10-25' and x.get('outcome') in ('live','fixtures','testnet','in-scope') for x in d.values()) and '\\\"excluded\\\"' not in s;sys.exit(0 if ok else 1)\"",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-81-AC02",
+          "mandatory": true,
+          "statement": "The outcomes match the owner's decision: COV-D1 live settlement on Solana devnet and Base Sepolia only; COV-D2 Canton and Lightning covered by fixtures until a usable testnet exists; COV-D3 mainnet-only SDK defaults covered by fixtures until a usable testnet exists; COV-D4 Starknet on Starknet Sepolia; COV-D5 every merchant, vendor, SDK and facilitator row kept",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import json,sys;d={x['id']:x for x in json.load(open('docs/coverage-decisions.json'))['decisions']};ok=d['COV-D1']['outcome']=='live' and set(d['COV-D1']['networks'])=={'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1','eip155:84532'} and d['COV-D2']['outcome']=='fixtures' and {'canton','lightning'}<=set(d['COV-D2']['families']) and d['COV-D2'].get('until') and d['COV-D3']['outcome']=='fixtures' and d['COV-D3'].get('until') and d['COV-D4']['outcome']=='testnet' and d['COV-D4']['networks']==['starknet:SN_SEPOLIA'] and d['COV-D5']['outcome']=='in-scope' and {'merchant','vendor','sdk','facilitator'}<=set(d['COV-D5']['rows']);sys.exit(0 if ok else 1)\"",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-81-AC03",
+          "mandatory": true,
+          "statement": "The ledger check passes with the decisions: no cell is excluded, every Canton, Lightning and mainnet-only-default cell is 'fixtures' and cites its decision id and at least one committed fixture that exists, every Starknet cell has Starknet Sepolia evidence or the task id that builds it, no live settle cell is on a network outside COV-D1, and no row of the cover-all inventory is missing",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/coverage_ledger.py --check --decisions docs/coverage-decisions.json",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-81-AC04",
+          "mandatory": true,
+          "statement": "The ledger tests catch each violation: an excluded cell, a fixtures cell with no decision id or a missing fixture path, a live settle cell off Solana devnet and Base Sepolia, a Starknet cell with neither Sepolia evidence nor a task id, and a dropped inventory row",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_coverage_ledger",
+            "expect_exit": 0,
+            "min_tests": 5,
+            "max_skipped": 0,
+            "timeout_s": 300
+          }
+        },
+        {
+          "id": "XC-81-AC05",
+          "mandatory": true,
+          "statement": "docs/coverage-ledger.json has no cell marked excluded",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/coverage-ledger.json",
+            "pattern": "\"excluded\"",
+            "must": "absent"
+          }
+        },
+        {
+          "id": "XC-81-AC06",
+          "mandatory": true,
+          "statement": "docs/COVERAGE.md links the decision record",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/COVERAGE.md",
+            "pattern": "coverage-decisions\\.json",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-81-AC07",
+          "mandatory": true,
+          "statement": "docs/COVERAGE.md states that Canton, Lightning and mainnet-only defaults are covered by fixtures and names the Starknet Sepolia path",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import sys;s=open('docs/COVERAGE.md').read().lower();sys.exit(0 if 'covered by fixtures' in s and 'starknet sepolia' in s else 1)\"",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-81-AC08",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-81-AC09",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "The decisions are the owner's and were recorded on 2026-10-25. No agent changes one. When a usable testnet appears for Canton or Lightning, or a testnet twin for a mainnet-only default, raise it to the owner as a new decision; do not switch a cell from fixtures to live on your own.",
+        "No live settlement on any network other than Solana devnet and Base Sepolia, and no mainnet call of any kind."
+      ],
+      "decisions": [
+        {
+          "id": "COV-D1",
+          "question": "Which networks run live settlement?",
+          "status": "decided",
+          "outcome": "live",
+          "networks": [
+            "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+            "eip155:84532"
+          ],
+          "note": "Solana devnet and Base Sepolia. Every other network is covered by verify-only runs, fixtures or a testnet path below, never excluded.",
+          "decided_by": "mgillr",
+          "decided_at": "2026-10-25",
+          "affects": [
+            "XC-60",
+            "XC-62",
+            "XC-63",
+            "XC-64",
+            "XC-65",
+            "XC-67",
+            "XC-77"
+          ]
+        },
+        {
+          "id": "COV-D2",
+          "question": "How are Canton and Lightning covered while neither has a usable testnet?",
+          "status": "decided",
+          "outcome": "fixtures",
+          "families": [
+            "canton",
+            "lightning"
+          ],
+          "until": "a usable testnet exists",
+          "note": "Covered by offline recorded and synthetic bodies. Not excluded.",
+          "decided_by": "mgillr",
+          "decided_at": "2026-10-25",
+          "affects": [
+            "XC-66"
+          ]
+        },
+        {
+          "id": "COV-D3",
+          "question": "How are mainnet-only SDK defaults covered?",
+          "status": "decided",
+          "outcome": "fixtures",
+          "families": [
+            "mainnet-only SDK defaults"
+          ],
+          "until": "a usable testnet exists",
+          "note": "Covered by offline recorded and synthetic bodies; a compatible testnet twin is used where one exists. Not excluded.",
+          "decided_by": "mgillr",
+          "decided_at": "2026-10-25",
+          "affects": [
+            "XC-60"
+          ]
+        },
+        {
+          "id": "COV-D4",
+          "question": "Is Starknet in scope, and on which testnet?",
+          "status": "decided",
+          "outcome": "testnet",
+          "networks": [
+            "starknet:SN_SEPOLIA"
+          ],
+          "note": "Starknet stays in scope with a testnet path on Starknet Sepolia.",
+          "decided_by": "mgillr",
+          "decided_at": "2026-10-25",
+          "affects": [
+            "XC-66"
+          ]
+        },
+        {
+          "id": "COV-D5",
+          "question": "Does the cover-all matrix drop any row?",
+          "status": "decided",
+          "outcome": "in-scope",
+          "rows": [
+            "merchant",
+            "vendor",
+            "sdk",
+            "facilitator"
+          ],
+          "note": "Every merchant, vendor, SDK and facilitator stays in the matrix.",
+          "decided_by": "mgillr",
+          "decided_at": "2026-10-25",
+          "affects": [
+            "XC-54",
+            "XC-76",
+            "XC-78"
+          ]
+        }
+      ]
+    }
+  ]
+}

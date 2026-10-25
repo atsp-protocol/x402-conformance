@@ -46,6 +46,7 @@ graph LR
   XC_35["XC-35<br/>Schemes: upto (U1-U3) and batch-settlement (B1-B..."]
   XC_36["XC-36<br/>Discovery and A2A: D1 (Bazaar) and G1 (A2A)"]
   XC_37["XC-37<br/>SIWX normative: W1-W3"]
+  XC_38["XC-38<br/>R20c: a same-id re-signed retry is graded as a s..."]
   XC_39["XC-39<br/>R16a: an unpaid HEAD on a paid GET route gets th..."]
   XC_40["XC-40<br/>R22: the paid response keeps the handler's 2xx s..."]
   XC_41["XC-41<br/>R23: a client abort during settle is recoverable"]
@@ -61,11 +62,43 @@ graph LR
   XC_51["XC-51<br/>Self-hosted open-source facilitators as matrix c..."]
   XC_52["XC-52<br/>A static per-implementation scoreboard on the Pa..."]
   XC_53["XC-53<br/>Governance and stewardship, and check ids that n..."]
+  XC_54["XC-54<br/>Coverage ledger: every facilitator, chain, langu..."]
+  XC_55["XC-55<br/>Spec-clause anchors pinned to upstream commits,..."]
+  XC_56["XC-56<br/>Cross-SDK parity oracle: one vector set, every o..."]
+  XC_57["XC-57<br/>Parity backtest on historical cross-SDK fixes, a..."]
+  XC_58["XC-58<br/>F15, F16, C4: checks from public findings (malfo..."]
+  XC_59["XC-59<br/>F17-F19: the USENIX 2026 rules the suite does no..."]
+  XC_60["XC-60<br/>EVM: exact (EIP-3009 and Permit2) verify-only on..."]
+  XC_61["XC-61<br/>Solana: verify-only F checks on every SVM-capabl..."]
+  XC_62["XC-62<br/>Stellar: an exact client and verify-only checks..."]
+  XC_63["XC-63<br/>Move chains: Aptos and Sui exact verify-only"]
+  XC_64["XC-64<br/>Account chains: NEAR, Hedera, Algorand, Concordi..."]
+  XC_65["XC-65<br/>XRPL, TON and Cardano: exact verify-only across..."]
+  XC_66["XC-66<br/>Spec-only families: Starknet, Canton, Lightning..."]
+  XC_67["XC-67<br/>auth-capture scheme (EVM): capture, void and dou..."]
+  XC_68["XC-68<br/>TypeScript: every upstream server and client sur..."]
+  XC_69["XC-69<br/>Go: gin, echo, net/http servers and the Go clien..."]
+  XC_70["XC-70<br/>Python: httpx and requests clients, MCP, and the..."]
+  XC_71["XC-71<br/>Java: the V1 servlet filter and client under a V..."]
+  XC_72["XC-72<br/>Third-party SDKs: Rust (x402-rs axum, reqwest),..."]
+  XC_73["XC-73<br/>Open-source facilitators, batch B (EVM): at leas..."]
+  XC_74["XC-74<br/>Open-source facilitators, batch C (non-EVM): Sui..."]
+  XC_75["XC-75<br/>Extensions: gas sponsoring, offer-and-receipt, b..."]
+  XC_76["XC-76<br/>Industry matrix v2: a faceted, evidence-only sco..."]
+  XC_77["XC-77<br/>Server and client checks on every chain family t..."]
+  XC_78["XC-78<br/>Coverage closure: every inventoried facilitator,..."]
+  XC_79["XC-79<br/>Dexter: the open-source build of a hosted facili..."]
+  XC_80["XC-80<br/>Hosted-only facilitators: documented out-of-reac..."]
+  XC_81["XC-81<br/>Coverage decisions recorded by the owner: no exc..."]
+  XC_82["XC-82<br/>Spec traceability: every check classified as nor..."]
+  XC_83["XC-83<br/>An offline CI job template another repo can past..."]
+  XC_84["XC-84<br/>Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, w..."]
   XC_85["XC-85<br/>P9 and P10: a seller's discovery metadata is con..."]
   XC_86["XC-86<br/>R16a amendment: an unpaid HEAD refused with 405..."]
   XC_87["XC-87<br/>C2 and C3 not applicable to a client declared no..."]
   XC_88["XC-88<br/>Polite pacing for live targets: --min-interval a..."]
   XC_89["XC-89<br/>x402conf-svm mcp: X1 and the offer checks on one..."]
+  XC_90["XC-90<br/>R24: null, empty and non-object payment headers,..."]
   XC_91("XC-91<br/>.NET / C#: a harness that builds a .NET x402 SDK...")
   XC_92("XC-92<br/>Merchant and paid-API rows on opt-in: a passive,...")
   XC_93("XC-93<br/>Matrix rows: Environment, passed/run counts, ver...")
@@ -158,6 +191,7 @@ graph LR
   XC_16 --> XC_35
   XC_16 --> XC_36
   XC_10 --> XC_37
+  XC_22 --> XC_38
   XC_18 --> XC_39
   XC_18 --> XC_40
   XC_22 --> XC_41
@@ -190,6 +224,89 @@ graph LR
   XC_51 --> XC_52
   XC_00 --> XC_53
   XC_23 --> XC_53
+  XC_52 --> XC_54
+  XC_53 --> XC_54
+  XC_53 --> XC_55
+  XC_55 --> XC_56
+  XC_56 --> XC_57
+  XC_53 --> XC_58
+  XC_56 --> XC_58
+  XC_55 --> XC_59
+  XC_51 --> XC_59
+  XC_51 --> XC_60
+  XC_54 --> XC_60
+  XC_51 --> XC_61
+  XC_54 --> XC_61
+  XC_51 --> XC_62
+  XC_54 --> XC_62
+  XC_51 --> XC_63
+  XC_54 --> XC_63
+  XC_51 --> XC_64
+  XC_54 --> XC_64
+  XC_51 --> XC_65
+  XC_54 --> XC_65
+  XC_54 --> XC_66
+  XC_55 --> XC_66
+  XC_35 --> XC_67
+  XC_54 --> XC_67
+  XC_56 --> XC_68
+  XC_54 --> XC_68
+  XC_56 --> XC_69
+  XC_54 --> XC_69
+  XC_56 --> XC_70
+  XC_54 --> XC_70
+  XC_56 --> XC_71
+  XC_54 --> XC_71
+  XC_56 --> XC_72
+  XC_54 --> XC_72
+  XC_51 --> XC_73
+  XC_54 --> XC_73
+  XC_60 --> XC_73
+  XC_61 --> XC_74
+  XC_62 --> XC_74
+  XC_63 --> XC_74
+  XC_64 --> XC_74
+  XC_54 --> XC_74
+  XC_55 --> XC_75
+  XC_34 --> XC_75
+  XC_52 --> XC_76
+  XC_54 --> XC_76
+  XC_55 --> XC_76
+  XC_56 --> XC_76
+  XC_54 --> XC_77
+  XC_68 --> XC_77
+  XC_70 --> XC_77
+  XC_54 --> XC_78
+  XC_56 --> XC_78
+  XC_57 --> XC_78
+  XC_58 --> XC_78
+  XC_59 --> XC_78
+  XC_60 --> XC_78
+  XC_61 --> XC_78
+  XC_62 --> XC_78
+  XC_63 --> XC_78
+  XC_64 --> XC_78
+  XC_65 --> XC_78
+  XC_66 --> XC_78
+  XC_67 --> XC_78
+  XC_68 --> XC_78
+  XC_69 --> XC_78
+  XC_70 --> XC_78
+  XC_71 --> XC_78
+  XC_72 --> XC_78
+  XC_73 --> XC_78
+  XC_74 --> XC_78
+  XC_75 --> XC_78
+  XC_76 --> XC_78
+  XC_77 --> XC_78
+  XC_51 --> XC_79
+  XC_54 --> XC_79
+  XC_61 --> XC_79
+  XC_54 --> XC_80
+  XC_54 --> XC_81
+  XC_53 --> XC_82
+  XC_55 --> XC_82
+  XC_26 --> XC_83
   XC_16 --> XC_85
   XC_23 --> XC_85
   XC_39 --> XC_86
@@ -202,6 +319,7 @@ graph LR
   XC_39 --> XC_88
   XC_33 --> XC_89
   XC_88 --> XC_89
+  XC_42 --> XC_90
   XC_28 --> XC_91
   XC_54 --> XC_91
   XC_93 --> XC_91
@@ -251,8 +369,6 @@ graph LR
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 
-Dependencies on tasks that are in no contract or addendum here: XC-54.
-
 ## Tasks
 
 | task | phase | status | depends on | needed by | requirements | criteria | scope |
@@ -279,11 +395,11 @@ Dependencies on tasks that are in no contract or addendum here: XC-54.
 | XC-19 Implementation matrix: stock servers at pinned versions | verify | done | XC-10, XC-17, XC-18 | XC-28, XC-48 | R-MATRIX | 3 (command 1, pushed 1, scope 1) | `evidence/impl-matrix/**`; `docs/MATRIX.md`; `.github/workflows/**`; `ts/**` |
 | XC-20 Adoption track A1-A8, built into the code | integrate | done | XC-10, XC-16 | XC-26, XC-30 | R-ADOPT | 8 (command 5, file_exists 1, pushed 1, scope 1) | `corpus/**`; `examples/**`; `ts/**`; `src/x402conf/**`; `tests/**`; `action.yml`; `.github/**`; `docs/**`; `README.md` |
 | XC-21 R14: a crash between a successful /settle and the response | implement | done | XC-05, XC-M4 | XC-22, XC-31 | R-CONC | 8 (command 3, file_exists 1, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `src/x402conf/cli.py`; `tests/test_offline.py`; `tests/test_live.py`; `action.yml`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
-| XC-22 R20: a client retry never pays twice for one request | implement | done | XC-17, XC-21 | XC-41, XC-48 | R-CONC | 8 (command 4, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `tests/test_live.py`; `action.yml`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
+| XC-22 R20: a client retry never pays twice for one request | implement | done | XC-17, XC-21 | XC-38, XC-41, XC-48 | R-CONC | 8 (command 4, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `tests/test_live.py`; `action.yml`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
 | XC-23 Docs in sync with the build, and a generated interdependency map | integrate | done | XC-04, XC-05 | XC-27, XC-30, XC-31, XC-53, XC-85 | R-DOCS | 7 (command 3, grep 2, pushed 1, scope 1) | `README.md`; `CHANGELOG.md`; `CONTRIBUTING.md`; `docs/**`; `ts/README.md`; `ts/mcp/README.md`; `tools/interdeps.py`; `tests/test_interdeps.py`; `.github/workflows/ci.yml` |
 | XC-24 Lean: n replicas, shared atomic check-and-set versus partitioned caches | verify | done | XC-03, XC-M3 | XC-48 | R-LEAN | 4 (command 2, pushed 1, scope 1) | `lean/X402Conformance/Replicas.lean`; `lean/X402Conformance.lean`; `lean/Axioms.lean`; `docs/SPEC.md` |
 | XC-25 A2 and A5: the PR summary comment and the results badge | integrate | done | XC-M4, XC-16 | XC-30, XC-31, XC-94, XC-95, XC-96 | R-ADOPT | 6 (command 3, grep 1, pushed 1, scope 1) | `action.yml`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `README.md`; `docs/**` |
-| XC-26 A4: framework quickstarts, clone to first result, run in CI | integrate | done | XC-20, XC-14 | XC-48 | R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `examples/**`; `tools/quickstart.sh`; `.github/workflows/ci.yml`; `docs/USING.md`; `README.md` |
+| XC-26 A4: framework quickstarts, clone to first result, run in CI | integrate | done | XC-20, XC-14 | XC-48, XC-83 | R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `examples/**`; `tools/quickstart.sh`; `.github/workflows/ci.yml`; `docs/USING.md`; `README.md` |
 | XC-27 A8: every docs example is run by CI | integrate | done | XC-23 | XC-48 | R-ADOPT | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/doc_examples.py`; `tests/test_doc_examples.py`; `.github/workflows/ci.yml`; `README.md`; `docs/**`; `examples/**`; `Makefile.example` |
 | XC-28 A7: the compatibility matrix is generated from runs, on a schedule | verify | done | XC-19 | XC-48, XC-52, XC-91, XC-93 | R-MATRIX | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `.github/workflows/compat-matrix.yml`; `evidence/impl-matrix/**` |
 | XC-29 Credibility: the mutation matrix and false-positive handling, published | verify | done | XC-16 | XC-48, XC-52 | R-CRED | 6 (command 2, grep 2, pushed 1, scope 1) | `tools/mutation_matrix.py`; `tests/test_mutation_matrix.py`; `docs/site/**`; `docs/FALSE-POSITIVES.md`; `.github/workflows/**` |
@@ -291,14 +407,15 @@ Dependencies on tasks that are in no contract or addendum here: XC-54.
 | XC-31 Release 1.5.0 | release | done | XC-17, XC-21, XC-23, XC-25, XC-30, XC-39, XC-40, XC-41, XC-42, XC-43, XC-44, XC-45, XC-46 | XC-32, XC-48 | R-RELEASE | 9 (command 6, grep 1, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**`; `RELEASES.md`; `tools/build_coverage.py`; `tests/test_coverage_doc.py` |
 | XC-32 The release gate: dropping the experimental label | monitor | signed | XC-31, XC-M6 | - | R-GATE | 5 (command 1, grep 2, pushed 1, scope 1) | `docs/ROADMAP.md`; `docs/ADOPTION.md`; `README.md`; `docs/site/**` |
 | XC-33 MCP transport: X1 and X2 for paid MCP tools | implement | signed | XC-12, XC-16 | XC-89 | R-MCP | 6 (command 3, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
-| XC-34 R21: settlement preemption for caller-unbound settlement (Permit2 on EVM) | implement | signed | XC-17 | - | R-PREEMPT | 5 (command 2, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
-| XC-35 Schemes: upto (U1-U3) and batch-settlement (B1-B3) | implement | signed | XC-16 | - | R-SCHEMES | 10 (command 7, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
+| XC-34 R21: settlement preemption for caller-unbound settlement (Permit2 on EVM) | implement | signed | XC-17 | XC-75 | R-PREEMPT | 5 (command 2, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
+| XC-35 Schemes: upto (U1-U3) and batch-settlement (B1-B3) | implement | signed | XC-16 | XC-67 | R-SCHEMES | 10 (command 7, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-36 Discovery and A2A: D1 (Bazaar) and G1 (A2A) | implement | signed | XC-16 | - | R-DISCOVERY | 6 (command 3, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
 | XC-37 SIWX normative: W1-W3 | implement | signed | XC-10 | - | R-SIWX | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `action.yml`; `corpus/cases/**` |
+| XC-38 R20c: a same-id re-signed retry is graded as a safe refusal | implement | signed | XC-22 | - | R-CONC | 11 (command 4, grep 5, pushed 1, scope 1) | `ts/src/retry.ts`; `ts/src/catalog.ts`; `ts/src/cli.ts`; `ts/src/double.ts`; `ts/test/retry.test.ts`; `src/x402conf/spec.py`; `src/x402conf/cli.py`; `tests/test_offline.py`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
 | XC-39 R16a: an unpaid HEAD on a paid GET route gets the same 402 as GET | implement | done | XC-18 | XC-31, XC-86, XC-88 | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
 | XC-40 R22: the paid response keeps the handler's 2xx status and headers | implement | done | XC-18 | XC-31 | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
 | XC-41 R23: a client abort during settle is recoverable | implement | done | XC-22 | XC-31 | R-CONC | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
-| XC-42 R24: a malformed payment header is a 4xx | implement | done | XC-10 | XC-31, XC-88, XC-110 | R-R24 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
+| XC-42 R24: a malformed payment header is a 4xx | implement | done | XC-10 | XC-31, XC-88, XC-90, XC-110 | R-R24 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
 | XC-43 C1: a client never treats 402 as success | implement | done | XC-M4 | XC-31 | R-C1 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
 | XC-44 C2: a client pays an offer within its own policy | implement | done | XC-M4 | XC-31, XC-87 | R-C2 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
 | XC-45 C3: a client pays V2 and never falls back to V1 when a V2 offer is present | implement | done | XC-M4 | XC-31, XC-87 | R-C3 | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `docs/**`; `CHANGELOG.md` |
@@ -307,14 +424,46 @@ Dependencies on tasks that are in no contract or addendum here: XC-54.
 | XC-48 Release 1.6.0: the rest of the v1.5 build list | release | done | XC-18, XC-19, XC-22, XC-24, XC-26, XC-27, XC-28, XC-29, XC-31, XC-49, XC-50 | - | R-RELEASE | 9 (command 6, grep 1, pushed 1, scope 1) | `pyproject.toml`; `src/x402conf/__init__.py`; `ts/package.json`; `ts/package-lock.json`; `ts/mcp/package.json`; `ts/mcp/package-lock.json`; `ts/mcp/server.json`; `CHANGELOG.md`; `README.md`; `docs/**`; `RELEASES.md`; `tools/build_coverage.py`; `tests/test_coverage_doc.py` |
 | XC-49 F13: a payment whose asset differs from the requirement's asset is rejected (asset substitution) | implement | done | XC-08 | XC-48, XC-51 | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
 | XC-50 F14: a payment authorized for another network is rejected (facilitator-layer network substitution) | implement | done | XC-08 | XC-48, XC-51 | R-F10 | 3 (command 3) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `CHANGELOG.md` |
-| XC-51 Self-hosted open-source facilitators as matrix columns: verify-only F checks over real /verify on Base Sepolia, loopback only | verify | signed | XC-M1, XC-46, XC-49, XC-50 | XC-52 | R-MATRIX, R-SAFE-GET | 12 (command 8, grep 2, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet.py`; `tests/test_self_hosted_matrix.py`; `tools/self_hosted_matrix.py`; `tools/interdeps.py`; `evidence/self-hosted/**`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
-| XC-52 A static per-implementation scoreboard on the Pages site, generated from committed evidence, never a certification | integrate | signed | XC-28, XC-29, XC-51 | XC-95 | R-MATRIX, R-ADOPT | 9 (command 4, grep 3, pushed 1, scope 1) | `tools/scoreboard.py`; `tests/test_scoreboard.py`; `docs/site/**`; `.github/workflows/ci.yml`; `.github/workflows/compat-matrix.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
-| XC-53 Governance and stewardship, and check ids that never change meaning | design | signed | XC-00, XC-23 | XC-93 | R-GOV, R-OPEN | 9 (command 4, file_exists 1, grep 2, pushed 1, scope 1) | `GOVERNANCE.md`; `README.md`; `CONTRIBUTING.md`; `tools/check_ids.py`; `tests/test_check_ids.py`; `docs/check-ids.json`; `.github/workflows/ci.yml`; `docs/**`; `CHANGELOG.md` |
+| XC-51 Self-hosted open-source facilitators as matrix columns: verify-only F checks over real /verify on Base Sepolia, loopback only | verify | signed | XC-M1, XC-46, XC-49, XC-50 | XC-52, XC-59, XC-60, XC-61, XC-62, XC-63, XC-64, XC-65, XC-73, XC-79 | R-MATRIX, R-SAFE-GET | 12 (command 8, grep 2, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet.py`; `tests/test_self_hosted_matrix.py`; `tools/self_hosted_matrix.py`; `tools/interdeps.py`; `evidence/self-hosted/**`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-52 A static per-implementation scoreboard on the Pages site, generated from committed evidence, never a certification | integrate | signed | XC-28, XC-29, XC-51 | XC-54, XC-76, XC-95 | R-MATRIX, R-ADOPT | 9 (command 4, grep 3, pushed 1, scope 1) | `tools/scoreboard.py`; `tests/test_scoreboard.py`; `docs/site/**`; `.github/workflows/ci.yml`; `.github/workflows/compat-matrix.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-53 Governance and stewardship, and check ids that never change meaning | design | signed | XC-00, XC-23 | XC-54, XC-55, XC-58, XC-82, XC-93 | R-GOV, R-OPEN | 9 (command 4, file_exists 1, grep 2, pushed 1, scope 1) | `GOVERNANCE.md`; `README.md`; `CONTRIBUTING.md`; `tools/check_ids.py`; `tests/test_check_ids.py`; `docs/check-ids.json`; `.github/workflows/ci.yml`; `docs/**`; `CHANGELOG.md` |
+| XC-54 Coverage ledger: every facilitator, chain, language, scheme, transport and extension has evidence, a task, or a stated out-of-reach reason | verify | signed | XC-52, XC-53 | XC-60, XC-61, XC-62, XC-63, XC-64, XC-65, XC-66, XC-67, XC-68, XC-69, XC-70, XC-71, XC-72, XC-73, XC-74, XC-76, XC-77, XC-78, XC-79, XC-80, XC-81, XC-91, XC-92, XC-93, XC-94 | R-MATRIX, R-EVID | 8 (command 4, grep 2, pushed 1, scope 1) | `tools/coverage_ledger.py`; `tools/evidence_guard.py`; `tests/test_coverage_ledger.py`; `tests/test_evidence_guard.py`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `.github/workflows/ci.yml`; `docs/**`; `CHANGELOG.md` |
+| XC-55 Spec-clause anchors pinned to upstream commits, a spec-drift report, and a crosswalk to the USENIX 2026 facilitator rules | design | signed | XC-53 | XC-56, XC-59, XC-66, XC-75, XC-76, XC-82 | R-GOV, R-CRED | 7 (command 4, grep 1, pushed 1, scope 1) | `tools/spec_anchors.py`; `tests/test_spec_anchors.py`; `docs/spec-snapshots/**`; `docs/crosswalk/**`; `docs/check-ids.json`; `src/x402conf/spec.py`; `.github/workflows/ci.yml`; `docs/**`; `CHANGELOG.md` |
+| XC-56 Cross-SDK parity oracle: one vector set, every official SDK library, offline, with spec anchors | implement | signed | XC-55 | XC-57, XC-58, XC-68, XC-69, XC-70, XC-71, XC-72, XC-76, XC-78 | R-ORACLE, R-MATRIX | 10 (command 7, grep 1, pushed 1, scope 1) | `src/x402conf/parity/**`; `src/x402conf/cli.py`; `ts/parity-harness/**`; `examples/python/parity_harness.py`; `examples/go/parity/**`; `tools/parity_report.py`; `tests/test_parity.py`; `docs/parity/**`; `docs/PARITY.md`; `evidence/parity/**`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-57 Parity backtest on historical cross-SDK fixes, and a nightly read-only shadow run against upstream main | verify | signed | XC-56 | XC-78 | R-EVID, R-ADOPT | 5 (command 3, pushed 1, scope 1) | `tools/parity_backtest.py`; `tests/test_parity_backtest.py`; `docs/parity/**`; `evidence/parity/**`; `.github/workflows/parity-nightly.yml`; `docs/**`; `CHANGELOG.md` |
+| XC-58 F15, F16, C4: checks from public findings (malformed input never 5xx, no wildcard network accept, resume never re-pays) | implement | signed | XC-53, XC-56 | XC-78 | R-F1, R-F12, R-CONC | 8 (command 5, grep 1, pushed 1, scope 1) | `src/x402conf/**`; `ts/**`; `tests/test_offline.py`; `docs/parity/vectors.json`; `docs/COVERAGE.md`; `docs/SPEC.md`; `docs/check-ids.json`; `docs/**`; `CHANGELOG.md` |
+| XC-59 F17-F19: the USENIX 2026 rules the suite does not test yet (sponsor-cost bounds, re-verify at settle, execution-template allow-list) | implement | signed | XC-55, XC-51 | XC-78 | R-F10, R-SAFE-GET | 8 (command 6, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `tests/test_devnet.py`; `evidence/self-hosted/**`; `docs/crosswalk/**`; `docs/COVERAGE.md`; `docs/SPEC.md`; `docs/check-ids.json`; `docs/**`; `CHANGELOG.md` |
+| XC-60 EVM: exact (EIP-3009 and Permit2) verify-only on every SDK-default EVM testnet | verify | signed | XC-51, XC-54 | XC-73, XC-78 | R-MATRIX, R-SAFE-GET | 7 (command 5, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet_families.py`; `evidence/self-hosted/evm/**`; `tools/self_hosted_matrix.py`; `docs/coverage-ledger.json`; `docs/MATRIX.md`; `docs/COVERAGE.md`; `docs/**`; `CHANGELOG.md` |
+| XC-61 Solana: verify-only F checks on every SVM-capable self-hosted column | verify | signed | XC-51, XC-54 | XC-74, XC-78, XC-79 | R-MATRIX, R-SAFE-GET | 7 (command 5, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet_families.py`; `evidence/self-hosted/svm/**`; `tools/self_hosted_matrix.py`; `docs/coverage-ledger.json`; `docs/MATRIX.md`; `docs/COVERAGE.md`; `docs/**`; `CHANGELOG.md` |
+| XC-62 Stellar: an exact client and verify-only checks on Stellar testnet | verify | signed | XC-51, XC-54 | XC-74, XC-78 | R-MATRIX, R-SAFE-GET | 7 (command 5, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet_families.py`; `evidence/self-hosted/stellar/**`; `tools/self_hosted_matrix.py`; `docs/coverage-ledger.json`; `docs/MATRIX.md`; `docs/COVERAGE.md`; `docs/**`; `CHANGELOG.md` |
+| XC-63 Move chains: Aptos and Sui exact verify-only | verify | signed | XC-51, XC-54 | XC-74, XC-78 | R-MATRIX, R-SAFE-GET | 7 (command 5, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet_families.py`; `evidence/self-hosted/move/**`; `tools/self_hosted_matrix.py`; `docs/coverage-ledger.json`; `docs/MATRIX.md`; `docs/COVERAGE.md`; `docs/**`; `CHANGELOG.md` |
+| XC-64 Account chains: NEAR, Hedera, Algorand, Concordium, Keeta, Casper verify-only | verify | signed | XC-51, XC-54 | XC-74, XC-78 | R-MATRIX, R-SAFE-GET | 7 (command 5, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet_families.py`; `evidence/self-hosted/account/**`; `tools/self_hosted_matrix.py`; `docs/coverage-ledger.json`; `docs/MATRIX.md`; `docs/COVERAGE.md`; `docs/**`; `CHANGELOG.md` |
+| XC-65 XRPL, TON and Cardano: exact verify-only across every transfer method | verify | signed | XC-51, XC-54 | XC-78 | R-MATRIX, R-SAFE-GET | 7 (command 5, pushed 1, scope 1) | `src/x402conf/devnet/**`; `src/x402conf/cli.py`; `tests/test_devnet_families.py`; `evidence/self-hosted/utxo-ledger/**`; `tools/self_hosted_matrix.py`; `docs/coverage-ledger.json`; `docs/MATRIX.md`; `docs/COVERAGE.md`; `docs/**`; `CHANGELOG.md` |
+| XC-66 Spec-only families: Starknet, Canton, Lightning as offline profiles, live only where an open implementation exists | implement | signed | XC-54, XC-55 | XC-78 | R-MATRIX | 5 (command 3, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `corpus/fixtures/**`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-67 auth-capture scheme (EVM): capture, void and double-capture checks, settles explicitly allowed on Base Sepolia | implement | signed | XC-35, XC-54 | XC-78 | R-SCHEMES | 6 (command 4, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `tests/test_devnet.py`; `evidence/self-hosted/auth-capture/**`; `docs/**`; `CHANGELOG.md` |
+| XC-68 TypeScript: every upstream server and client surface in the matrix | verify | signed | XC-56, XC-54 | XC-77, XC-78 | R-MATRIX, R-ADOPT | 6 (command 4, pushed 1, scope 1) | `examples/next/**`; `examples/fastify/**`; `ts/**`; `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `evidence/impl-matrix/**`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-69 Go: gin, echo, net/http servers and the Go client in the matrix | verify | signed | XC-56, XC-54 | XC-78 | R-MATRIX, R-ADOPT | 6 (command 4, pushed 1, scope 1) | `examples/go/**`; `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `evidence/impl-matrix/**`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-70 Python: httpx and requests clients, MCP, and the TON/SVM mechanisms | verify | signed | XC-56, XC-54 | XC-77, XC-78 | R-MATRIX, R-ADOPT | 6 (command 4, pushed 1, scope 1) | `examples/python/**`; `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `evidence/impl-matrix/**`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-71 Java: the V1 servlet filter and client under a V1 profile | verify | signed | XC-56, XC-54 | XC-78 | R-MATRIX, R-ADOPT | 6 (command 4, pushed 1, scope 1) | `examples/java/**`; `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `evidence/impl-matrix/**`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-72 Third-party SDKs: Rust (x402-rs axum, reqwest), Ruby (x402-rails), Elixir (raxol_payments), PipRail, Mogami Java | verify | signed | XC-56, XC-54 | XC-78 | R-MATRIX, R-ADOPT | 6 (command 4, pushed 1, scope 1) | `examples/rust/**`; `examples/ruby/**`; `examples/elixir/**`; `examples/piprail/**`; `examples/mogami/**`; `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `evidence/impl-matrix/**`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-73 Open-source facilitators, batch B (EVM): at least 12 more self-hosted columns | verify | signed | XC-51, XC-54, XC-60 | XC-78 | R-MATRIX, R-SAFE-GET | 6 (command 4, pushed 1, scope 1) | `tools/self_hosted_matrix.py`; `evidence/self-hosted/batch-b/**`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-74 Open-source facilitators, batch C (non-EVM): Sui, NEAR, Stellar, Solana and others | verify | signed | XC-61, XC-62, XC-63, XC-64, XC-54 | XC-78 | R-MATRIX, R-SAFE-GET | 6 (command 4, pushed 1, scope 1) | `tools/self_hosted_matrix.py`; `evidence/self-hosted/batch-c/**`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-75 Extensions: gas sponsoring, offer-and-receipt, builder-code, HTTP message signatures, auth hints | implement | signed | XC-55, XC-34 | XC-78 | R-SCHEMES | 5 (command 3, pushed 1, scope 1) | `src/x402conf/**`; `tests/test_offline.py`; `corpus/fixtures/**`; `docs/**`; `CHANGELOG.md` |
+| XC-76 Industry matrix v2: a faceted, evidence-only scoreboard with parity and coverage views | integrate | signed | XC-52, XC-54, XC-55, XC-56 | XC-78 | R-MATRIX, R-ADOPT | 7 (command 4, grep 1, pushed 1, scope 1) | `tools/scoreboard.py`; `tests/test_scoreboard.py`; `docs/site/**`; `docs/**`; `CHANGELOG.md` |
+| XC-77 Server and client checks on every chain family the SDKs serve (not only Base Sepolia and Solana) | verify | signed | XC-54, XC-68, XC-70 | XC-78 | R-MATRIX | 6 (command 4, pushed 1, scope 1) | `src/x402conf/**`; `ts/**`; `tests/test_offline.py`; `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `evidence/impl-matrix/**`; `docs/compat-matrix.json`; `docs/**`; `CHANGELOG.md` |
+| XC-78 Coverage closure: every inventoried facilitator, chain, language, scheme and extension has evidence or a stated reason | release | signed | XC-54, XC-56, XC-57, XC-58, XC-59, XC-60, XC-61, XC-62, XC-63, XC-64, XC-65, XC-66, XC-67, XC-68, XC-69, XC-70, XC-71, XC-72, XC-73, XC-74, XC-75, XC-76, XC-77 | - | R-RELEASE, R-MATRIX | 4 (command 2, pushed 1, scope 1) | `docs/coverage-ledger.json`; `README.md`; `docs/**`; `CHANGELOG.md` |
+| XC-79 Dexter: the open-source build of a hosted facilitator as a self-hosted column | verify | signed | XC-51, XC-54, XC-61 | - | R-MATRIX, R-SAFE-GET | 6 (command 4, pushed 1, scope 1) | `tools/self_hosted_matrix.py`; `evidence/self-hosted/dexter/**`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/**`; `CHANGELOG.md` |
+| XC-80 Hosted-only facilitators: documented out-of-reach rows and an operator-permission track | verify | signed | XC-54 | - | R-MATRIX, R-SAFE-GET | 7 (command 4, grep 1, pushed 1, scope 1) | `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `CHANGELOG.md` |
+| XC-81 Coverage decisions recorded by the owner: no exclusions; live settle on Solana devnet and Base Sepolia, fixtures for Canton, Lightning and mainnet-only defaults, a Starknet Sepolia path | design | signed | XC-54 | - | R-MATRIX | 9 (command 5, grep 2, pushed 1, scope 1) | `docs/coverage-decisions.json`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `tools/coverage_ledger.py`; `tests/test_coverage_ledger.py`; `CHANGELOG.md` |
+| XC-82 Spec traceability: every check classified as normative (a spec clause) or hardening (beyond the spec) | design | signed | XC-53, XC-55 | - | R-SPEC | 8 (command 3, grep 3, pushed 1, scope 1) | `tools/traceability.py`; `tests/test_traceability.py`; `docs/traceability.json`; `docs/TRACEABILITY.md`; `docs/COVERAGE.md`; `README.md`; `.github/workflows/ci.yml`; `CHANGELOG.md` |
+| XC-83 An offline CI job template another repo can paste in: no wallet, no funds, no secrets | implement | signed | XC-26 | - | R-ADOPT | 7 (command 2, file_exists 1, grep 2, pushed 1, scope 1) | `docs/ci/**`; `docs/USING.md`; `.github/workflows/ci.yml`; `tests/test_ci_template.py`; `CHANGELOG.md` |
+| XC-84 Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, with a reason pointing to 1.4.0 | release | signed | - | - | R-RELEASE | 5 (command 2, grep 1, pushed 1, scope 1) | `evidence/registry/pypi-yank-1.3.json`; `docs/RELEASES.md`; `CHANGELOG.md` |
 | XC-85 P9 and P10: a seller's discovery metadata is consistent with its own schema and its live 402 | implement | signed | XC-16, XC-23 | XC-92 | R-DISCOVERY | 8 (command 4, grep 2, pushed 1, scope 1) | `src/x402conf/discovery.py`; `src/x402conf/harness.py`; `src/x402conf/cli.py`; `src/x402conf/spec.py`; `tests/test_discovery_pacing.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-86 R16a amendment: an unpaid HEAD refused with 405 never reaches the handler and passes | implement | signed | XC-39 | XC-110 | R-DELIV | 6 (command 2, grep 2, pushed 1, scope 1) | `ts/src/head-unpaid.ts`; `ts/example/head-unpaid-server.ts`; `ts/test/head-unpaid.test.ts`; `ts/src/index.ts`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-87 C2 and C3 not applicable to a client declared not to sign, shown as N/A in every report | implement | signed | XC-44, XC-45, XC-11 | - | R-C2, R-C3 | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/src/client-offers.ts`; `ts/src/client-version.ts`; `ts/src/probe.ts`; `ts/src/report.ts`; `ts/src/index.ts`; `ts/test/client-offers.test.ts`; `ts/test/client-version.test.ts`; `src/x402conf/cli.py`; `tests/test_discovery_pacing.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-88 Polite pacing for live targets: --min-interval and --max-requests on every live request, logged | implement | signed | XC-01, XC-11, XC-42, XC-39 | XC-89, XC-92, XC-110 | R-SAFE-GET, R-R24 | 7 (command 4, grep 1, pushed 1, scope 1) | `src/x402conf/pacing.py`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `ts/src/pace.ts`; `ts/src/cli.ts`; `ts/src/header.ts`; `ts/src/resource.ts`; `ts/src/index.ts`; `ts/test/pace.test.ts`; `tests/test_discovery_pacing.py`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-89 x402conf-svm mcp: X1 and the offer checks on one unpaid call of a paid MCP tool, paced | implement | signed | XC-33, XC-88 | - | R-MCP, R-SAFE-GET | 8 (command 5, grep 1, pushed 1, scope 1) | `ts/src/mcp-transport.ts`; `ts/src/mcp-seller.ts`; `ts/src/cli.ts`; `ts/src/index.ts`; `ts/example/mcp-server.ts`; `ts/test/mcp-seller.test.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `ts/README.md`; `CHANGELOG.md` |
+| XC-90 R24: null, empty and non-object payment headers, and the V1 X-PAYMENT header | implement | signed | XC-42 | - | R24 | 5 (command 5) | `ts/src/header.ts`; `ts/test/malformed-header.test.ts`; `ts/example/**`; `docs/SPEC.md`; `docs/COVERAGE.md`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
 | XC-91 .NET / C#: a harness that builds a .NET x402 SDK from source and runs server R0-R10 and client C1-C3 locally against testnet fixtures, rows on opt-in | verify | proposed | XC-28, XC-54, XC-93, XC-96 | - | R-MATRIX, R-ADOPT | 9 (command 7, pushed 1, scope 1) | `examples/dotnet/**`; `tests/test_dotnet_harness.py`; `.github/workflows/impl-matrix.yml`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `README.md`; `CHANGELOG.md` |
 | XC-92 Merchant and paid-API rows on opt-in: a passive, unpaid 402-challenge check (P1-P7), testnet where offered, run only for a merchant that accepted | verify | proposed | XC-54, XC-85, XC-88, XC-93, XC-96 | - | R-MATRIX, R-SAFE-GET, R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `tools/merchant_rows.py`; `tests/test_merchant_rows.py`; `tools/evidence_guard.py`; `tests/test_evidence_guard.py`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `README.md`; `CHANGELOG.md` |
 | XC-93 Matrix rows: Environment, passed/run counts, version, release alignment, date and evidence on every listed row, a compact MATRIX.md, rerun and missing-check links | integrate | proposed | XC-28, XC-53, XC-54 | XC-91, XC-92, XC-94, XC-95, XC-96 | R-MATRIX, R-ADOPT | 9 (command 7, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `tools/matrix_rows.py`; `tests/test_matrix_rows.py`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/COVERAGE.md`; `docs/INTERDEPENDENCY.md`; `GOVERNANCE.md`; `README.md`; `CHANGELOG.md` |
@@ -366,6 +515,11 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | F12 | built | security-profile | V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network | - | XC-46 | action.yml, src/x402conf/cli.py, src/x402conf/harness.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md |
 | F13 | built | security-profile | V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment | - | XC-49 | src/x402conf/harness.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/VV.md |
 | F14 | built | security-profile | V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution) | - | XC-50 | src/x402conf/harness.py, src/x402conf/spec.py, ts/src/catalog.ts | tests/test_offline.py | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/VV.md |
+| F15 | planned | - | - | - | XC-58 | - | - | docs/ROADMAP.md, docs/VV.md |
+| F16 | planned | - | - | - | XC-58 | - | - | docs/ROADMAP.md, docs/VV.md |
+| F17 | planned | - | - | - | XC-59 | - | - | docs/ROADMAP.md, docs/VV.md |
+| F18 | planned | - | - | - | XC-59 | - | - | docs/ROADMAP.md, docs/VV.md |
+| F19 | planned | - | - | - | XC-59 | - | - | docs/ROADMAP.md, docs/VV.md |
 | R0 | built | normative | V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED | - | XC-91 | action.yml, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/example/server.ts, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/crash.ts, ts/src/mcp-transport.ts, ts/src/probe.ts, ts/src/testing.ts | tests/test_attestation.py, tests/test_evidence_guard.py, tests/test_live.py, tests/test_mutation_matrix.py, ts/test/delivery.test.ts, ts/test/probe.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/MATRIX.md, docs/RELEASES.md, docs/ROADMAP.md, docs/RUN-IT-YOURSELF.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md, ts/mcp/README.md |
 | R1 | built | normative | V2 7.2: the resource server settles through its facilitator | - | XC-91 | action.yml, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/crash.ts, ts/src/mcp-transport.ts, ts/src/probe.ts, ts/src/testing.ts | tests/test_offline.py, ts/test/delivery.test.ts, ts/test/probe.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/MATRIX.md, docs/RELEASES.md, docs/ROADMAP.md, docs/RUN-IT-YOURSELF.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md, ts/mcp/README.md |
 | R2 | built | normative | F3, F5, F6, F8 and F9 applied to a running resource server | - | XC-91 | action.yml, src/x402conf/pytest_plugin.py, src/x402conf/spec.py, ts/mcp/src/tools.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/mcp-transport.ts, ts/src/probe.ts, ts/src/testing.ts | tests/check_pytest_plugin.py, tests/test_attestation.py, ts/mcp/test/mcp.test.ts, ts/test/delivery.test.ts, ts/test/ports.test.ts, ts/test/probe.test.ts, ts/test/testing.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/MATRIX.md, docs/RELEASES.md, docs/ROADMAP.md, docs/RUN-IT-YOURSELF.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md, ts/mcp/README.md |
@@ -396,10 +550,11 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | R20 | built | security-profile | control: the route answers 402 with an exact offer the probe can pay | - | XC-22 | action.yml, src/x402conf/spec.py, ts/example/retry-server.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/double.ts, ts/src/retry.ts | tests/test_offline.py, ts/test/retry.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
 | R20a | built | security-profile | payment-identifier: a retry with the same id and a fresh payment is not charged again | - | - | action.yml, src/x402conf/spec.py, ts/src/catalog.ts, ts/src/cli.ts, ts/src/retry.ts | tests/test_offline.py, ts/test/retry.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md, ts/README.md |
 | R20b | built | security-profile | a retry resending the same signed payment is settled once and gets the original result | - | - | action.yml, src/x402conf/spec.py, ts/example/client-offers-clients.ts, ts/example/retry-clients.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/retry.ts | tests/test_offline.py, ts/test/retry.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/ROADMAP.md, docs/SPEC.md, docs/VV.md, ts/README.md |
+| R20c | planned | - | - | - | XC-38 | - | - | docs/VV.md |
 | R21 | built | security-profile | EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again | - | XC-34 | src/x402conf/spec.py, ts/example/preempt-server.ts, ts/src/catalog.ts, ts/src/double.ts, ts/src/index.ts, ts/src/preempt.ts | tests/test_offline.py, ts/test/preempt.test.ts | README.md, docs/COVERAGE.md, docs/FIXES.md, docs/SPEC.md, docs/VV.md, ts/README.md |
 | R22 | built | normative | after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15) | - | XC-40 | src/x402conf/spec.py, ts/src/catalog.ts, ts/src/index.ts, ts/src/status.ts | tests/test_offline.py, ts/test/handler-status.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
 | R23 | built | security-profile | a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again | - | XC-41 | src/x402conf/spec.py, ts/example/retry-server.ts, ts/src/abort.ts, ts/src/catalog.ts | tests/test_offline.py, ts/test/abort.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
-| R24 | built | resilience | V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures | - | XC-42, XC-110 | src/x402conf/cli.py, src/x402conf/external.py, src/x402conf/harness.py, src/x402conf/spec.py, src/x402conf/tiers.py, ts/example/header-server.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/header.ts | tests/test_attestation.py, tests/test_external.py, tests/test_offline.py, ts/test/malformed-header.test.ts, ts/test/pace.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/MATRIX.md, docs/RELEASES.md, docs/ROADMAP.md, docs/RUN-IT-YOURSELF.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
+| R24 | built | resilience | V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures | - | XC-42, XC-90, XC-110 | src/x402conf/cli.py, src/x402conf/external.py, src/x402conf/harness.py, src/x402conf/spec.py, src/x402conf/tiers.py, ts/example/header-server.ts, ts/src/catalog.ts, ts/src/cli.ts, ts/src/header.ts | tests/test_attestation.py, tests/test_external.py, tests/test_offline.py, ts/test/malformed-header.test.ts, ts/test/pace.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/MATRIX.md, docs/RELEASES.md, docs/ROADMAP.md, docs/RUN-IT-YOURSELF.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
 | B1 | built | normative | batch-settlement: the settlement result MUST include a non-empty commitment identifier on success, the charge is at most the per-request amount, and the same authorization MUST NOT execute the handler twice | - | XC-35 | src/x402conf/spec.py, ts/example/batch-server.ts, ts/src/catalog.ts, ts/src/index.ts, ts/src/schemes.ts | tests/test_attestation.py, tests/test_offline.py, ts/test/schemes.test.ts | README.md, docs/COVERAGE.md, docs/FIXES.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md, ts/README.md |
 | B2 | built | security-profile | batch-settlement redemption: the server claims each channel's latest cumulative voucher, which supersedes the older ones, and a claim cannot advance accounting twice | - | XC-35 | src/x402conf/spec.py, ts/example/batch-server.ts, ts/src/catalog.ts, ts/src/index.ts, ts/src/schemes.ts | tests/test_attestation.py, tests/test_offline.py, ts/test/schemes.test.ts | README.md, docs/COVERAGE.md, docs/FIXES.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md, ts/README.md |
 | B3 | built | resilience | batch-settlement redemption in batches: a channel is not silently dropped from a batch, and a voucher whose claim failed stays claimable, so a partly failed run is reported and retried per item | - | XC-35 | src/x402conf/spec.py, ts/example/batch-server.ts, ts/src/catalog.ts, ts/src/index.ts, ts/src/schemes.ts | tests/test_attestation.py, tests/test_offline.py, ts/test/schemes.test.ts | README.md, docs/COVERAGE.md, docs/FIXES.md, docs/SPEC.md, docs/THREAT-MODEL.md, docs/VV.md, ts/README.md |
@@ -416,6 +571,7 @@ Built checks are the entries in `src/x402conf/spec.py` CATALOG (and `ts/src/cata
 | C1 | built | security-profile | V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error | - | XC-43, XC-91 | src/x402conf/spec.py, ts/example/client-status-clients.ts, ts/src/catalog.ts, ts/src/client-offers.ts, ts/src/client-status.ts | tests/test_discovery_pacing.py, tests/test_offline.py, ts/test/client-status.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
 | C2 | built | security-profile | given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific | - | XC-44, XC-87, XC-91 | src/x402conf/spec.py, ts/example/client-offers-clients.ts, ts/src/catalog.ts, ts/src/client-offers.ts, ts/src/probe.ts | tests/test_discovery_pacing.py, tests/test_offline.py, ts/test/client-offers.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
 | C3 | built | security-profile | V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none | - | XC-45, XC-87, XC-91 | src/x402conf/spec.py, ts/example/client-version-clients.ts, ts/src/catalog.ts, ts/src/client-offers.ts, ts/src/client-version.ts, ts/src/probe.ts | tests/test_discovery_pacing.py, tests/test_offline.py, ts/test/client-version.test.ts | README.md, docs/ARCHITECTURE.md, docs/COVERAGE.md, docs/FIXES.md, docs/RELEASES.md, docs/ROADMAP.md, docs/SPEC.md, docs/USING.md, docs/VV.md, ts/README.md |
+| C4 | planned | - | - | - | XC-58 | - | - | docs/ROADMAP.md, docs/VV.md |
 
 Upstream references are issue and PR numbers in x402-foundation/x402.
 

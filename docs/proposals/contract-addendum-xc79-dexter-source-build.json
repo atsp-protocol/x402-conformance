@@ -1,0 +1,122 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-79, part of the addendum XC-79 to XC-84 drafted on 2026-10-25. It extends the 'cover ALL' decomposition proposed as XC-54 to XC-78 (pull request #80) without changing any of its files. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub, after XC-51 to XC-53 and XC-54 to XC-78. Every criterion except scope, pushed and the unchanged-suite guards fails on today's tree and passes only on committed evidence. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 2-3 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-79",
+      "title": "Dexter: the open-source build of a hosted facilitator as a self-hosted column",
+      "phase": "verify",
+      "owner": "mgillr",
+      "team": "engineering",
+      "agent": "code agent",
+      "depends_on": [
+        "XC-51",
+        "XC-54",
+        "XC-61"
+      ],
+      "requirements": [
+        "R-MATRIX",
+        "R-SAFE-GET"
+      ],
+      "deadline": {
+        "from": "signed into proofline.json and every depends_on task done",
+        "days": 3
+      },
+      "lease": {
+        "hours": 24,
+        "heartbeat_hours": 2,
+        "on_lapse": [
+          "retry by the same agent",
+          "reassign to the next free agent",
+          "raise to the owner"
+        ]
+      },
+      "description": "Dexter is listed on the public facilitators page as a hosted facilitator for EVM and SVM. The cover-all inventory marks it reachable only 'via source build', and no task in XC-54 to XC-78 names it. This task builds Dexter from its published source at a pinned commit, runs it on 127.0.0.1 and records verify-only evidence on Base Sepolia and Solana devnet through tools/self_hosted_matrix.py (batch xc-79), or a setup-failure record with the reason if the source does not build or needs credentials. The hosted Dexter endpoint is never called. Assumption: the published source is complete enough to run a facilitator; if it is not, the setup-failure record is the deliverable and the coverage ledger row says why.",
+      "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+      "scope": {
+        "allow": [
+          "tools/self_hosted_matrix.py",
+          "evidence/self-hosted/dexter/**",
+          "docs/MATRIX.md",
+          "docs/coverage-ledger.json",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-79-AC01",
+          "mandatory": true,
+          "statement": "Dexter is built at a pinned commit and has committed evidence, or a setup-failure record with the reason",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/self_hosted_matrix.py --check --min-new 1 --batch xc-79",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-79-AC02",
+          "mandatory": true,
+          "statement": "Every committed run under evidence/self-hosted/dexter is on an allow-listed testnet CAIP-2 id, called nothing off loopback and made zero /settle calls",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/evidence_guard.py --testnet-only --loopback-only --verify-only evidence/self-hosted/dexter",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-79-AC03",
+          "mandatory": true,
+          "statement": "The coverage ledger row for Dexter points at this evidence (or the setup-failure reason) and names XC-79",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import json,sys;d=json.load(open('docs/coverage-ledger.json'));r=[x for x in d['facilitators'] if 'dexter' in json.dumps(x).lower()];sys.exit(0 if r and all(('evidence' in x or 'reason' in x) and 'XC-79' in json.dumps(x) for x in r) else 1)\"",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-79-AC04",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-79-AC05",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-79-AC06",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "A failing result is not published with per-check detail until SECURITY.md's disclosure window clears; if a criterion would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}

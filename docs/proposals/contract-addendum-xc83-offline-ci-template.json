@@ -1,0 +1,126 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-83, part of the addendum XC-79 to XC-84 drafted on 2026-10-25. It extends the 'cover ALL' decomposition proposed as XC-54 to XC-78 (pull request #80) without changing any of its files. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub, after XC-51 to XC-53 and XC-54 to XC-78. Every criterion except scope, pushed and the unchanged-suite guards fails on today's tree and passes only on committed evidence. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 1-2 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-83",
+      "title": "An offline CI job template another repo can paste in: no wallet, no funds, no secrets",
+      "phase": "implement",
+      "owner": "mgillr",
+      "team": "engineering",
+      "agent": "code agent",
+      "depends_on": [
+        "XC-26"
+      ],
+      "requirements": [
+        "R-ADOPT"
+      ],
+      "deadline": {
+        "from": "signed into proofline.json",
+        "days": 2
+      },
+      "lease": {
+        "hours": 24,
+        "heartbeat_hours": 2,
+        "on_lapse": [
+          "retry by the same agent",
+          "reassign to the next free agent",
+          "raise to the owner"
+        ]
+      },
+      "description": "docs/ci/x402-conformance-offline.yml is a copy-paste GitHub Actions job that installs the suite and runs the offline checks (x402conf offline and the doubles) against the repo it sits in. It needs no wallet, no funds, no secret and no network beyond installing packages. This repo's CI runs the template as written, so it cannot rot. docs/USING.md shows it. It is the job a tests-only pull request would add to a maintainer's repo; opening such pull requests is not part of this task.",
+      "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+      "scope": {
+        "allow": [
+          "docs/ci/**",
+          "docs/USING.md",
+          ".github/workflows/ci.yml",
+          "tests/test_ci_template.py",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-83-AC01",
+          "mandatory": true,
+          "statement": "The template exists",
+          "verifier": {
+            "type": "file_exists",
+            "path": "docs/ci/x402-conformance-offline.yml"
+          }
+        },
+        {
+          "id": "XC-83-AC02",
+          "mandatory": true,
+          "statement": "The template references no secret, no key variable, no wallet and no paid endpoint, and pins the suite version",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_ci_template",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-83-AC03",
+          "mandatory": true,
+          "statement": "This repo's CI runs the template job as written",
+          "verifier": {
+            "type": "grep",
+            "file": ".github/workflows/ci.yml",
+            "pattern": "docs/ci/x402-conformance-offline\\.yml",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-83-AC04",
+          "mandatory": true,
+          "statement": "docs/USING.md shows the template",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/USING.md",
+            "pattern": "x402-conformance-offline\\.yml",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-83-AC05",
+          "mandatory": true,
+          "statement": "The full offline suite passes unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-83-AC06",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-83-AC07",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Nothing is opened, sent or posted to another repo from this task."
+      ]
+    }
+  ]
+}

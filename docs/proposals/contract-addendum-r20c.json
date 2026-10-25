@@ -1,0 +1,180 @@
+{
+  "about": "PROPOSED, UNSIGNED. One new Proofline task, XC-38, for R20c: a retry that re-signs a payment under the same payment-identifier id. XC-38 was reserved for this check in docs/ROADMAP.md and never used. Nothing here is binding and vv does not read this file. The task becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. It builds on XC-22 (R20, R20a, R20b), which is signed and done. Every criterion except scope and pushed fails on today's tree and passes only on committed code, tests and docs. Estimated effort: 2-3 days.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "tasks": [
+    {
+      "id": "XC-38",
+      "title": "R20c: a same-id re-signed retry is graded as a safe refusal",
+      "phase": "implement",
+      "owner": "mgillr",
+      "team": "engineering",
+      "agent": "code agent",
+      "depends_on": [
+        "XC-22"
+      ],
+      "requirements": [
+        "R-CONC"
+      ],
+      "deadline": {
+        "from": "signed into proofline.json",
+        "days": 3
+      },
+      "lease": {
+        "hours": 24,
+        "heartbeat_hours": 2,
+        "on_lapse": [
+          "retry by the same agent",
+          "reassign to the next free agent",
+          "raise to the owner"
+        ]
+      },
+      "description": "The client times out before /settle answers and retries with a newly signed payment under the same payment-identifier id. The payment-identifier extension lets a server refuse a request whose id it has already seen with a different payload; the upstream payment-identifier example answers 409 here, and R20a grades that as a failure today. R20c grades it: it passes when the server either refuses the re-signed retry with a clear 409 (or another 4xx naming the id) and settles nothing a second time, or returns the original result without a second settle. It fails when the re-signed retry is settled. Same harness as R20a and R20b (ts/src/retry.ts, real @x402/express servers behind the double), with the control and one faulty build, wired into the CLI --retry run, the JSON, SARIF and JUnit reports, docs/SPEC.md, docs/FIXES.md and CHANGELOG.md. Assumption, not stated in the issue: whether R20a keeps failing a 409-refusing server or leaves that case to R20c is decided at build time and written in docs/FIXES.md.",
+      "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the vv strict receipt that claims XC-38.",
+      "scope": {
+        "allow": [
+          "ts/src/retry.ts",
+          "ts/src/catalog.ts",
+          "ts/src/cli.ts",
+          "ts/src/double.ts",
+          "ts/test/retry.test.ts",
+          "src/x402conf/spec.py",
+          "src/x402conf/cli.py",
+          "tests/test_offline.py",
+          "docs/**",
+          "README.md",
+          "CHANGELOG.md",
+          "corpus/cases/**"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-38-AC01",
+          "mandatory": true,
+          "statement": "R20c passes its control (a server that refuses a same-id re-signed retry with a clear 409 and settles nothing a second time) and catches its faulty build (a server that settles the re-signed retry), on Solana devnet and Base Sepolia (exact)",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='R20c' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" 'R20c' 2",
+            "expect_exit": 0,
+            "timeout_s": 900,
+            "test_file": "ts/test/retry.test.ts"
+          }
+        },
+        {
+          "id": "XC-38-AC02",
+          "mandatory": true,
+          "statement": "R20c is in the Python check catalog with its profile, spec basis, control and faulty build",
+          "verifier": {
+            "type": "grep",
+            "file": "src/x402conf/spec.py",
+            "pattern": "\"R20c\": \\{",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-38-AC03",
+          "mandatory": true,
+          "statement": "R20c is in the TypeScript catalog",
+          "verifier": {
+            "type": "grep",
+            "file": "ts/src/catalog.ts",
+            "pattern": "\"R20c\": \\{",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-38-AC04",
+          "mandatory": true,
+          "statement": "The two catalogs match, every catalog check has a control and a faulty build, and docs/FIXES.md has a section for every check (so for R20c too)",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+            "expect_exit": 0,
+            "timeout_s": 300,
+            "min_tests": 3,
+            "max_skipped": 0
+          }
+        },
+        {
+          "id": "XC-38-AC05",
+          "mandatory": true,
+          "statement": "docs/SPEC.md maps R20c to the payment-identifier extension text it tests",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/SPEC.md",
+            "pattern": "^\\| R20c \\|.*payment-identifier",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-38-AC06",
+          "mandatory": true,
+          "statement": "docs/FIXES.md has an R20c section",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/FIXES.md",
+            "pattern": "^#+ .*R20c",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-38-AC07",
+          "mandatory": true,
+          "statement": "CHANGELOG.md records R20c",
+          "verifier": {
+            "type": "grep",
+            "file": "CHANGELOG.md",
+            "pattern": "R20c",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-38-AC08",
+          "mandatory": true,
+          "statement": "R20, R20a and R20b still pass their controls and catch their faulty builds (no regression in the retry checks)",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='R20[ab]? ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" 'R20[ab]? ' 6",
+            "expect_exit": 0,
+            "timeout_s": 900,
+            "test_file": "ts/test/retry.test.ts"
+          }
+        },
+        {
+          "id": "XC-38-AC09",
+          "mandatory": true,
+          "statement": "R20c is documented in SPEC.md, FIXES.md and CHANGELOG.md, phrased as the payment-identifier requirement with no vendor name (wording checked in review)",
+          "verifier": {
+            "type": "command",
+            "cmd": "grep -q R20c docs/SPEC.md && grep -q R20c docs/FIXES.md && grep -q R20c CHANGELOG.md",
+            "expect_exit": 0,
+            "timeout_s": 30
+          }
+        },
+        {
+          "id": "XC-38-AC10",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-38-AC11",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "The check text stays generic: the payment-identifier requirement only, no finding id, no vendor name."
+      ]
+    }
+  ]
+}
