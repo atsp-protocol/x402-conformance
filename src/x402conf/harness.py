@@ -23,7 +23,9 @@ from typing import Any
 
 from . import __version__
 from . import spec as S
+from .discovery import check_bazaar, check_well_known, fetch_well_known, well_known_url
 from .mock import Chain, Vectors
+from .pacing import RequestBudgetExceeded
 from .types import CheckResult, Facilitator, Json, Severity
 
 MAX_BYTES = 1 << 20
@@ -158,6 +160,8 @@ def run_live(base: str, *, timeout: float = 10, opener: Opener | None = None,
     auth_header(base, env)  # a credential without a host is a usage error, before any request is made
     try:
         r = fetch_supported(base, timeout=timeout, opener=opener, env=env)
+    except RequestBudgetExceeded as e:
+        return {"target": base, "mode": "live-GET-only", "skipped": str(e), "checks": []}
     except Exception as e:  # noqa: BLE001  a network or JSON failure is itself a result
         status = getattr(e, "code", None)
         err = _redact(repr(e)[:200], env)
@@ -322,16 +326,53 @@ def check_402(resp: Json) -> list[CheckResult]:
                              "non-authorization flow, so V2 6.1 requires extra.paymentFlow"})
         # A warning: the upto SVM scheme spec says paymentFlow may be omitted, while V2 6.1 says it MUST be present.
         out.append(result(P7, not flow, {"problems": flow[:10]}, severity="warning"))
+    out += check_bazaar(pr)
     return out
 
 
-def run_resource(url: str, *, timeout: float = 15, opener: Opener | None = None) -> Json:
+def offers_of(resp: Json) -> list[Any]:
+    """The live accepts[] of a 402 answer (header first, then a V1 body), or [] when there is none."""
+    try:
+        hv = resp["headers"].get("payment-required")
+        pr = _decode_header(hv.strip()) if hv else json.loads(resp["body"] or b"null")
+    except Exception:  # noqa: BLE001
+        return []
+    acc = pr.get("accepts") if isinstance(pr, dict) else None
+    return acc if isinstance(acc, list) else []
+
+
+def run_resource(url: str, *, timeout: float = 15, opener: Opener | None = None, well_known: bool = False,
+                 manifests: dict[str, Json] | None = None) -> Json:
+    """One unpaid GET (P1-P7, and P9 when the 402 carries the bazaar extension). With well_known, also one GET of the
+    origin's /.well-known/x402 (P10), shared through `manifests` by every target on the same origin."""
     try:
         r = fetch_402(url, timeout=timeout, opener=opener)
+    except RequestBudgetExceeded as e:
+        return {"target": url, "mode": "resource-GET-only", "skipped": str(e), "checks": []}
     except Exception as e:  # noqa: BLE001
         return {"target": url, "mode": "resource-GET-only", "error": repr(e)[:200],
                 "checks": [result(P1, False, {"error": repr(e)[:200]})]}
-    return {"target": url, "mode": "resource-GET-only", "http": r["status"], "ms": r["ms"], "checks": check_402(r)}
+    out = {"target": url, "mode": "resource-GET-only", "http": r["status"], "ms": r["ms"], "checks": check_402(r)}
+    if well_known and r["status"] == 402:
+        out["checks"] += well_known_checks(url, offers_of(r), timeout=timeout, opener=opener, manifests=manifests)
+    return out
+
+
+def well_known_checks(url: str, offers: list[Any], *, timeout: float = 15, opener: Opener | None = None,
+                      manifests: dict[str, Json] | None = None) -> list[CheckResult]:
+    cache = manifests if manifests is not None else {}
+    key = well_known_url(url)
+    if key not in cache:
+        try:
+            cache[key] = fetch_well_known(url, timeout=timeout, opener=opener)
+        except RequestBudgetExceeded as e:
+            cache[key] = {"url": key, "status": 0, "doc": None, "skipped": str(e)}
+        except Exception as e:  # noqa: BLE001
+            cache[key] = {"url": key, "status": 0, "doc": None, "error": repr(e)[:200]}
+    wk = cache[key]
+    if wk.get("skipped") or wk.get("error"):
+        return []
+    return check_well_known(wk, url, offers)
 
 
 # ---------------- offline safety checks ----------------

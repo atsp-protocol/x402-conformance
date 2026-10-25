@@ -8,6 +8,8 @@ is historical: it grades Base Sepolia too. The double never touches a chain, a k
 ```
 npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start "node server.js" --out results.json
 npx -y x402-conformance-svm resource --url https://your.api/paid --out answer.json   # P1-P7: one unpaid GET, any network
+npx -y x402-conformance-svm live --url https://your.api/paid --out live.json       # P1-P7, R16a, R24: 7 unpaid requests, 5 s apart
+npx -y x402-conformance-svm mcp --url https://your.api/mcp --tool <paid-tool>       # X1, P3-P5, P7: one unpaid tools/call
 npx -y x402-conformance-svm demo                                                     # R0-R10 against a bundled mock, no wallet
 npx -y x402-conformance-svm --help
 npx -y x402-conformance-svm --version
@@ -16,7 +18,12 @@ npx -y x402-conformance-svm --version
 `demo --fault serve_on_any_settle` shows a failing run and its fix hints. `--share` on `probe` and `resource` also writes
 an anonymised corpus case next to `--out` (or to `./x402-conformance-case.json`) and, when a check failed, prints a link
 to a pre-filled GitHub issue; nothing is sent. `X402CONF_VIA` names the entry point in the report and the User-Agent.
-`resource` and `demo` exit 0 when every check passes, 1 when one fails and 2 on a usage error.
+`resource` and `demo` exit 0 when every check passes, 1 when one fails and 2 on a usage error. `resource` and `live`
+wait at least `--min-interval` seconds (default 5) between requests to a host that is not loopback, stop before
+`--max-requests` is exceeded, log each request on stderr and record the log under `pacing` in the JSON. Run `live`
+only against a server whose operator agreed to it: it sends one `HEAD` and five malformed payment headers. `mcp` takes
+`--tool`, `--arguments '<json>'` and `--no-initialize` (one `tools/call` without a session; 3 requests with one), and
+is paced the same way; MCP is JSON-RPC over `POST`, so the same operator rule applies.
 
 | id | what the double does on `/settle` | your server must |
 |---|---|---|
@@ -85,7 +92,7 @@ settled once and the retry must get the earlier result or a `PAYMENT-RESPONSE` n
 with no record it pays twice. `checkClientRetry(client, url, double)` grades a client's own retry the same way: it must
 resend the payment or keep the payment id.
 
-**From code only (1.5.0): R12, R13, R15, R16, R16a, R22, R23, R24 and C1 to C3.** These checks are exports of the
+**From code only (1.5.0): R12, R13, R15, R16, R16a, R21, R22, R23, R24 and C1 to C3.** These checks are exports of the
 package, not commands: the CLI, the Action, `runConformance`, the pytest plugin and the MCP server don't run them. Each
 takes the facilitator double from `startDouble()`, except `probeUnpaidHead`, and your server or client must use the
 double's `url` as its facilitator. Each returns the same `Result[]` as `probe`, so `makeReport` and `explain` work on
@@ -97,16 +104,39 @@ them.
 | R13 | `probeReplicas(urlA, urlB, double)` | settle one payment-identifier id once across two replicas: sent to one, then the other, then both at once |
 | R15 | `probeDelivery({ error, redirect, throws }, double)` | not settle, and send no `PAYMENT-RESPONSE`, when the paid handler answers 5xx, redirects or throws |
 | R16 | `probeHead(url, double)` | not settle a paid `HEAD`: no 2xx, no `/settle` call, no `PAYMENT-RESPONSE` |
-| R16a | `probeUnpaidHead(url)` | answer an unpaid `HEAD` with the same 402 and `PAYMENT-REQUIRED` offer as `GET` |
+| R16a | `probeUnpaidHead(url)` | answer an unpaid `HEAD` with the same 402 and `PAYMENT-REQUIRED` offer as `GET`, or refuse it with 405, so it never reaches the handler |
+| D1 | `checkDiscovery(facilitatorUrl)` | serve `/discovery/resources` and `/discovery/search` in the V2 section 8 shapes, with complete items, and honour `limit` and the `network` filter. GET only, no double |
+| G1 | `checkA2aMirrorsHttp({ a2aUrl, httpUrl })` | answer an unpaid A2A `message/send` with an `input-required` task whose `x402.payment.required` asks for the same `accepts` as the HTTP route's 402. Sends no payment |
 | R17 | `probeCacheLeak(url, double)` | mark the paid response `private` or `no-store`, or vary it on the payment header, so a shared cache in front of the route never serves the paid content to an unpaid request (RFC 9111) |
 | R18 | `probePending(url, double)` | never serve while a settlement is pending, late or unanswered, serve once after it is final, and surface the transaction on every refusal (V2 section 9) |
 | R19 | `probeFlows(url, double)` | on an `upfront` or `escrow` offer, settle before the resource executes and reject an unsupported flow (V2 section 6.1) |
+| R21 | `probePreempt(url, double)` | on a Base Sepolia Permit2 offer, serve only on its own successful settle: never on a settlement a third party made first, and never twice for a spent payment |
 | R22 | `probeStatus(routes, double)`, each route `{ url, status, headers? }` | keep the handler's 2xx status and headers on the paid response: a 201 stays a 201 with its `Location` |
 | R23 | `probeAbort(url, double)` | not charge a client that disconnects while `/settle` is in flight, or charge it once and give a resend of the same payment the settled result |
 | R24 | `probeMalformedHeader(url, double)` | answer five malformed `PAYMENT-SIGNATURE` values with 402 or 400 and a structured error, never a 5xx, a dropped connection or the content |
+| X1 | `checkMcpPaymentRequired({ url, tool })` | answer an unpaid call of a paid MCP tool with a tool result: `isError: true`, the `PaymentRequired` object in `structuredContent` and the same JSON in `content[0].text` (MCP transport). Sends no payment |
+| X2 | `probeMcpTransport({ url, tool }, double)` | return a paid MCP tool's result only on a final first-time settle, with `_meta["x402/payment-response"]`, and nothing on a `/settle` timeout, a broken answer, `settlement_pending`, a failed settle or a duplicate |
 | C1 | `checkClientHandles402(client, url, double)` | never hand a 402 to its caller as a success: pay and get a 2xx, or reject with an error |
 | C2 | `checkClientOfferPolicy(client, url, double, { networks, maxAmount })` | pay one of several offers on its configured networks and within its maximum, and never sign for a network outside its set |
 | C3 | `checkClientKeepsV2(client, url, double)` | pay with `PAYMENT-SIGNATURE` at `x402Version` 2 when the 402 also carries a V1 body |
+| W1-W3 | `probeSiwx(url, double)` | on a paid route that declares sign-in-with-x: check `domain` and `uri` against the configured origin, never `Host` (W1); take each nonce once (W2); refuse a stale, future or expired message (W3). Needs `@x402/extensions` and `viem` |
+
+C2 and C3 take `{ signsPayments: false }` for a client that has no payment path by design: if it signs nothing the
+check is `not_applicable` (N/A in reports, never a failure); if it signs anyway it is graded as usual.
+
+**The `upto` and `batch-settlement` schemes (unreleased): U1 to U3 and B1 to B3.** These take the scheme double from
+`startSchemeDouble()` instead of `startDouble()`; it serves both schemes on Solana devnet and Base Sepolia and settles
+whatever amount it is asked for, so the probe sees what your server asked. `probeBatch` also needs `redeem`, a function
+that runs your server's redemption once and returns one `{ channelId, ok }` item per channel it tried.
+
+| id | export | what your server must do |
+|---|---|---|
+| U1 | `probeUpto(url, double, { network? })` | settle at most the maximum the client signed; point `url` at a request whose usage you want graded |
+| U2 | `probeUpto(url, double)` | report the settled `amount` and its transaction in `PAYMENT-RESPONSE` |
+| U3 | `probeUpto(url, double)` | declare no `extra.paymentFlow` or the binding's own (`authorization` on EVM, `escrow` on Solana), never `upfront` |
+| B1 | `probeBatch(url, double, { redeem })` | serve a deposit and each fresh voucher once, with a commitment identifier and a charge within the per-request amount, and refuse a voucher already paid with |
+| B2 | `probeBatch(url, double, { redeem })` | claim each channel once per run, at its latest voucher, and nothing on a run with nothing new |
+| B3 | `probeBatch(url, double, { redeem })` | when a claim batch fails, report each channel with its own outcome and claim only the failed ones on the next run |
 
 A client check takes your client as a function that fetches a URL, pays and returns the final `Response`. The controls
 and the faulty builds each check catches are in `example/` and `test/`, and

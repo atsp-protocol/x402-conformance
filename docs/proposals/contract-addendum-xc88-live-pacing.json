@@ -1,0 +1,129 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-88: built-in polite pacing for live targets, and `x402conf-svm live`. Two live runs on 2026-10-25 had to wrap fetch by hand to keep checks at least 5 s apart and under a request cap the operators had agreed to. This makes that the default: --min-interval (default 5 s, non-loopback only) and --max-requests on every live CLI mode, one log line per request, and the log in the JSON. `x402conf-svm live` runs P1-P7, R16a and R24 on one paid URL from one shared unpaid GET (7 requests), unpaid; it is for servers the operator lets you test. Owner's go, 2026-10-25T12:48Z, in chat: 'fix mcp and endpoints and then test'. Under D-AUTO-4 sys may batch-sign contracts covered by an owner go; nothing here binds until the owner key signs it into proofline.json.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "applies_after": [
+    "XC-01",
+    "XC-42"
+  ],
+  "tasks": [
+    {
+      "id": "XC-88",
+      "title": "Polite pacing for live targets: --min-interval and --max-requests on every live request, logged",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-01",
+        "XC-11",
+        "XC-42",
+        "XC-39"
+      ],
+      "requirements": [
+        "R-SAFE-GET",
+        "R-R24"
+      ],
+      "description": "src/x402conf/pacing.py (Pacer) and ts/src/pace.ts (createPacedFetch): at least min-interval seconds between request starts to a non-loopback host (default 5), concurrent calls queued, at most max-requests in the run (a request over the cap is not sent; RequestBudgetExceeded, and the target or check is reported skipped), one stderr line per request (time, method, URL, wait), and the log in the JSON under `pacing`. x402conf live and resource, and x402conf-svm resource and live, take --min-interval and --max-requests. probeMalformedHeader takes { fetch, unpaidGetStatus }. x402conf-svm live --url sends one unpaid GET (P1-P7), one HEAD (R16a) and five malformed headers (R24).",
+      "scope": {
+        "allow": [
+          "src/x402conf/pacing.py",
+          "src/x402conf/cli.py",
+          "src/x402conf/harness.py",
+          "ts/src/pace.ts",
+          "ts/src/cli.ts",
+          "ts/src/header.ts",
+          "ts/src/resource.ts",
+          "ts/src/index.ts",
+          "ts/test/pace.test.ts",
+          "tests/test_discovery_pacing.py",
+          "tools/build_coverage.py",
+          "docs/**",
+          "README.md",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-88-AC01",
+          "mandatory": true,
+          "statement": "The Python pacer spaces live requests, exempts loopback, stops before sending over the cap, and the CLI flags and log work",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_discovery_pacing.Pacing",
+            "expect_exit": 0,
+            "timeout_s": 120,
+            "min_tests": 4,
+            "max_skipped": 0
+          }
+        },
+        {
+          "id": "XC-88-AC02",
+          "mandatory": true,
+          "statement": "The TypeScript pacer does the same, and x402conf-svm live grades P1-P7, R16a and R24 in 7 logged requests and honours --max-requests",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^pace: ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^pace: ' 5",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-88-AC03",
+          "mandatory": true,
+          "statement": "Live and resource modes stay GET-only",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_live.Live.test_live_mode_is_get_only tests.test_live.Live.test_resource_mode_is_get_only",
+            "expect_exit": 0,
+            "timeout_s": 120,
+            "min_tests": 2,
+            "max_skipped": 0
+          }
+        },
+        {
+          "id": "XC-88-AC04",
+          "mandatory": true,
+          "statement": "The docs name both flags for both CLIs (no drift)",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/interdeps.py --drift",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-88-AC05",
+          "mandatory": true,
+          "statement": "docs/USING.md documents the pacing",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/USING.md",
+            "pattern": "^### Live targets: pacing",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-88-AC06",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-88-AC07",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Never lower the default interval below 5 s for non-loopback targets, and never send a request the cap refused."
+      ]
+    }
+  ]
+}

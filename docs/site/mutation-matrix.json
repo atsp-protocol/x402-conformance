@@ -1,5 +1,41 @@
 {
  "checks": {
+  "B1": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'B1 catches a server that serves a voucher it has already been paid with (accept_replay)' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:B1 catches a server that serves a voucher it has already been paid with (accept_replay)"
+    }
+   ],
+   "profile": "normative"
+  },
+  "B2": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled \"B2 catches a server that claims every voucher it stored, not each channel's latest (claim_every_voucher)\" exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:B2 catches a server that claims every voucher it stored, not each channel's latest (claim_every_voucher)"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "B3": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'B3 catches a server that records a failed claim batch as claimed (drop_failed)' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:B3 catches a server that records a failed claim batch as claimed (drop_failed)"
+    }
+   ],
+   "profile": "resilience"
+  },
   "C1": {
    "caught": 3,
    "faults": [
@@ -53,6 +89,24 @@
     }
    ],
    "profile": "security-profile"
+  },
+  "D1": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'D1 catches a discovery API whose items lack x402Version, lastUpdated and maxTimeoutSeconds' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:D1 catches a discovery API whose items lack x402Version, lastUpdated and maxTimeoutSeconds"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'D1 catches a discovery API that ignores limit and the network filter' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:D1 catches a discovery API that ignores limit and the network filter"
+    }
+   ],
+   "profile": "normative"
   },
   "F1": {
    "caught": 2,
@@ -240,6 +294,24 @@
    ],
    "profile": "resilience"
   },
+  "G1": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'G1 catches an A2A agent whose requirements carry a different price from the HTTP 402' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:G1 catches an A2A agent whose requirements carry a different price from the HTTP 402"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'G1 catches an A2A agent that answers a failed task with the requirements only in text' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:G1 catches an A2A agent that answers a failed task with the requirements only in text"
+    }
+   ],
+   "profile": "security-profile"
+  },
   "P1": {
    "caught": 1,
    "faults": [
@@ -251,6 +323,24 @@
     }
    ],
    "profile": "normative"
+  },
+  "P10": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_discovery_pacing.Discovery.test_p10_unlisted_offsite_and_stale_terms: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_discovery_pacing.Discovery.test_p10_unlisted_offsite_and_stale_terms"
+    },
+    {
+     "caught": true,
+     "how": "tests.test_discovery_pacing.Discovery.test_p10_atomic_amount_mismatch: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_discovery_pacing.Discovery.test_p10_atomic_amount_mismatch"
+    }
+   ],
+   "profile": "resilience"
   },
   "P2": {
    "caught": 1,
@@ -326,6 +416,24 @@
      "how": "tests.test_live.Live.test_p7_payment_flow_declared: passed (1 run)",
      "kind": "py",
      "ref": "py:tests.test_live.Live.test_p7_payment_flow_declared"
+    }
+   ],
+   "profile": "normative"
+  },
+  "P9": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_discovery_pacing.Discovery.test_p9_example_type_mismatch: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_discovery_pacing.Discovery.test_p9_example_type_mismatch"
+    },
+    {
+     "caught": true,
+     "how": "tests.test_discovery_pacing.Discovery.test_p9_external_ref_and_missing_required: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_discovery_pacing.Discovery.test_p9_external_ref_and_missing_required"
     }
    ],
    "profile": "normative"
@@ -660,6 +768,24 @@
    ],
    "profile": "security-profile"
   },
+  "R21": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R21 catches a server that reads a spent Permit2 nonce as paid' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R21 catches a server that reads a spent Permit2 nonce as paid"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R21 catches a server that serves a Permit2 payment before its settle' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R21 catches a server that serves a Permit2 payment before its settle"
+    }
+   ],
+   "profile": "security-profile"
+  },
   "R22": {
    "caught": 2,
    "faults": [
@@ -935,8 +1061,116 @@
     }
    ],
    "profile": "normative"
+  },
+  "U1": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'U1 catches a server that charges metered usage above the authorised maximum (no_cap)' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:U1 catches a server that charges metered usage above the authorised maximum (no_cap)"
+    }
+   ],
+   "profile": "normative"
+  },
+  "U2": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'U2 catches a server that reports the authorised maximum instead of the settled amount (report_max)' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:U2 catches a server that reports the authorised maximum instead of the settled amount (report_max)"
+    }
+   ],
+   "profile": "normative"
+  },
+  "U3": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'U3 catches a server whose upto offer declares the upfront flow (upfront_flow)' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:U3 catches a server whose upto offer declares the upfront flow (upfront_flow)"
+    }
+   ],
+   "profile": "normative"
+  },
+  "W1": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'W1 catches a server that takes its sign-in-with-x origin from Host or X-Forwarded-Host' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:W1 catches a server that takes its sign-in-with-x origin from Host or X-Forwarded-Host"
+    }
+   ],
+   "profile": "normative"
+  },
+  "W2": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'W2 catches a server whose sign-in-with-x storage does not track nonces' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:W2 catches a server whose sign-in-with-x storage does not track nonces"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "W3": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'W3 catches a server that does not check issuedAt or expirationTime' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:W3 catches a server that does not check issuedAt or expirationTime"
+    }
+   ],
+   "profile": "normative"
+  },
+  "X1": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'X1 catches a paid tool whose payment-required result has no structuredContent' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:X1 catches a paid tool whose payment-required result has no structuredContent"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'X1 catches a paid tool that answers a JSON-RPC error instead of a tool result' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:X1 catches a paid tool that answers a JSON-RPC error instead of a tool result"
+    }
+   ],
+   "profile": "normative"
+  },
+  "X2": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'X2 catches a paid tool that returns its result when the settle failed' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:X2 catches a paid tool that returns its result when the settle failed"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'X2 catches a paid tool that returns its result before the settle' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:X2 catches a paid tool that returns its result before the settle"
+    }
+   ],
+   "profile": "resilience"
   }
  },
- "generated_from": "e271cbbf856f30147105aa274ffbc9995c4505f52e9dafa4f08ad982c7225771",
+ "generated_from": "7ff1f497fc0a5f2af32b436e404577b5857755ed435c1531edf088b94acf0ea3",
  "schema": "x402-conformance.mutation-matrix/1"
 }

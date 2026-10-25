@@ -6,18 +6,22 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { startDouble } from "../src/double.js";
 import { checkClientOfferPolicy, type OfferPolicy } from "../src/client-offers.js";
+import { explain, makeReport, passed } from "../src/report.js";
 import { BASE_SEPOLIA, DEVNET, startRetryServer } from "../example/retry-server.js";
 import { offerClient, type OfferFault } from "../example/client-offers-clients.js";
 
 const NETS = [["Solana devnet", DEVNET], ["Base Sepolia", BASE_SEPOLIA]] as const;
 const MAX = "50000";   // the route asks 10000 ($0.01 in USDC)
 
-async function run(fault: OfferFault, network: string) {
+async function run(fault: OfferFault | "no_signing", network: string, signsPayments?: boolean) {
   const double = await startDouble(0);
   const s = await startRetryServer(double.url, "", network);
   const policy: OfferPolicy = { networks: [network], maxAmount: MAX };
+  // no_signing: a client with no payment path, which hands the 402 back to its caller.
+  const client = fault === "no_signing" ? (u: string) => fetch(u) : offerClient(policy, fault);
   try {
-    return await checkClientOfferPolicy(offerClient(policy, fault), s.url, double, policy);
+    return await checkClientOfferPolicy(client, s.url, double, policy,
+      signsPayments === undefined ? {} : { signsPayments });
   } finally { await s.close(); await double.close(); }
 }
 
@@ -50,5 +54,29 @@ for (const [name, net] of NETS) {
     assert.ok(BigInt(d.chosen.amount) > BigInt(MAX), JSON.stringify(d));
     assert.match(d.error, /over its maximum/);
     assert.equal(d.successful_settles, 0, JSON.stringify(d));
+  });
+}
+
+for (const [name, net] of NETS) {
+  test(`C2 not applicable: a client declared not to sign that hands the 402 back is graded not_applicable, ${name}`, async () => {
+    const r = await run("no_signing", net, false);
+    assert.equal(r.status, "not_applicable", JSON.stringify(r));
+    assert.equal(r.pass, false);
+    assert.equal((r.detail as any).final_status, 402);
+    const rep = makeReport("self-test", "fixture", [r]);
+    assert.equal(rep.summary.failed, 0);
+    assert.deepEqual(rep.summary.not_applicable, ["C2"]);
+    assert.equal(passed(rep), true);
+    assert.match(explain(rep), /N\/A C2/);
+  });
+  test(`C2 a client that never pays without the declaration still fails, ${name}`, async () => {
+    const r = await run("no_signing", net);
+    assert.equal(r.status, "fail", JSON.stringify(r));
+    assert.match((r.detail as any).error, /payable offer within policy was ignored/);
+  });
+  test(`C2 a client declared not to sign that signs anyway is graded as usual (first_offer), ${name}`, async () => {
+    const r = await run("first_offer", net, false);
+    assert.equal(r.status, "fail", JSON.stringify(r));
+    assert.match((r.detail as any).error, /outside its configured networks/);
   });
 }

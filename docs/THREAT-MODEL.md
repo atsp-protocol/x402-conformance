@@ -23,8 +23,8 @@ on Solana. Everything here is experimental.
 ## Out of scope
 The facilitator's own key custody, fee-payer drain attacks (SVM exact §2.1, already specified and tested by
 facilitators), facilitator checks for EVM schemes (P5 reads EVM `exact` offers, and the resource-server and client checks run on Base
-Sepolia as well as Solana devnet), and the `upto` and `batch-settlement` schemes. They may come later and will be
-listed in the roadmap if they do.
+Sepolia as well as Solana devnet), and `upto` and `batch-settlement` settlement on a chain (U1 to U3 and B1 to B3 grade
+the resource server against a double). They may come later and will be listed in the roadmap if they do.
 
 ## Disclosure
 A failing check against a named facilitator goes to that facilitator privately first (see `SECURITY.md`). It is

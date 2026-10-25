@@ -10,10 +10,13 @@ import { payingClient, type VersionFault } from "../example/client-version-clien
 
 const NETS = [["Solana devnet", DEVNET], ["Base Sepolia", BASE_SEPOLIA]] as const;
 
-async function run(fault: VersionFault, network: string) {
+async function run(fault: VersionFault | "no_signing", network: string, signsPayments?: boolean) {
   const double = await startDouble(0);
   const s = await startRetryServer(double.url, "", network);
-  try { return await checkClientKeepsV2(payingClient(network, fault), s.url, double); } finally {
+  const client = fault === "no_signing" ? (u: string) => fetch(u) : payingClient(network, fault);
+  try {
+    return await checkClientKeepsV2(client, s.url, double, signsPayments === undefined ? {} : { signsPayments });
+  } finally {
     await s.close();
     await double.close();
   }
@@ -41,5 +44,23 @@ for (const [name, net] of NETS) {
     assert.equal(d.forwarded, 0, JSON.stringify(d));
     assert.equal(d.successful_settles, 0, JSON.stringify(d));
     assert.match(d.error, /X-PAYMENT at x402Version 1/);
+  });
+}
+
+for (const [name, net] of NETS) {
+  test(`C3 not applicable: a client declared not to sign that hands the 402 back is graded not_applicable, ${name}`, async () => {
+    const r = await run("no_signing", net, false);
+    assert.equal(r.status, "not_applicable", JSON.stringify(r));
+    assert.equal((r.detail as any).final_status, 402);
+  });
+  test(`C3 a client that never pays without the declaration still fails, ${name}`, async () => {
+    const r = await run("no_signing", net);
+    assert.equal(r.status, "fail", JSON.stringify(r));
+    assert.match((r.detail as any).error, /never paid/);
+  });
+  test(`C3 a client declared not to sign that pays V1 anyway is caught (v1_fallback), ${name}`, async () => {
+    const r = await run("v1_fallback", net, false);
+    assert.equal(r.status, "fail", JSON.stringify(r));
+    assert.match((r.detail as any).error, /X-PAYMENT at x402Version 1/);
   });
 }

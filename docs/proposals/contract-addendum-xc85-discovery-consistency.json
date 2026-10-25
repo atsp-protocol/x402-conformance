@@ -1,0 +1,135 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-85: P9 (the bazaar discovery info in a 402 validates against the schema the endpoint ships with it) and P10 (the host's /.well-known/x402 manifest lists the paid URL on its own host and declares terms a live offer matches). Both come from a live run on 2026-10-25 where a seller's bazaar example sent `limit` as the string \"3\" while its own schema typed it integer, which no check caught. XC-36 (D1, signed) grades a facilitator's discovery API; it does not read a resource server's own bazaar extension or well-known manifest, so this does not duplicate it. P9 adds no request; P10 adds one GET per origin and only with --well-known. Owner's go, 2026-10-25T12:48Z, in chat: 'fix mcp and endpoints and then test'. Under D-AUTO-4 sys may batch-sign contracts covered by an owner go; nothing here binds until the owner key signs it into proofline.json.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "applies_after": [
+    "XC-16"
+  ],
+  "tasks": [
+    {
+      "id": "XC-85",
+      "title": "P9 and P10: a seller's discovery metadata is consistent with its own schema and its live 402",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-16",
+        "XC-23"
+      ],
+      "requirements": [
+        "R-DISCOVERY"
+      ],
+      "description": "src/x402conf/discovery.py: a dependency-free JSON Schema Draft 2020-12 subset validator (type, enum, const, properties, required, additionalProperties, patternProperties, items, prefixItems, length, pattern, numeric bounds, allOf/anyOf/oneOf/not, same-document $ref; other keywords listed as not graded). check_402 emits P9 when the PaymentRequired carries extensions.bazaar: info and schema present, $schema Draft 2020-12 when declared, no external $ref/$id, info validates against schema, info.input.type http or mcp. `x402conf resource --well-known` fetches each origin's /.well-known/x402 once (a 404 is not graded) and emits P10 (warning): resources listed are HTTPS on the host or a subdomain, the paid URL is listed, and every declared term (scheme, network, asset, payTo, atomic amount) matches a live offer. Catalogue entries with controls and faulty builds, SPEC, FIXES, COVERAGE and README rows.",
+      "scope": {
+        "allow": [
+          "src/x402conf/discovery.py",
+          "src/x402conf/harness.py",
+          "src/x402conf/cli.py",
+          "src/x402conf/spec.py",
+          "tests/test_discovery_pacing.py",
+          "tests/test_offline.py",
+          "ts/src/catalog.ts",
+          "tools/build_coverage.py",
+          "docs/**",
+          "README.md",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-85-AC01",
+          "mandatory": true,
+          "statement": "P9 passes an example that matches its schema and catches a type mismatch, an external $ref and a missing required field",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_discovery_pacing.Discovery.test_p9_example_matches_schema tests.test_discovery_pacing.Discovery.test_p9_example_type_mismatch tests.test_discovery_pacing.Discovery.test_p9_external_ref_and_missing_required tests.test_discovery_pacing.Discovery.test_p9_absent_without_bazaar tests.test_discovery_pacing.Discovery.test_p9_validator_keywords",
+            "expect_exit": 0,
+            "timeout_s": 120,
+            "min_tests": 5,
+            "max_skipped": 0
+          }
+        },
+        {
+          "id": "XC-85-AC02",
+          "mandatory": true,
+          "statement": "P10 passes a manifest that matches the live offer, catches an unlisted URL, an off-host entry, stale terms and a different atomic amount, does not grade a 404, and fetches each origin once",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_discovery_pacing.Discovery.test_p10_manifest_matches_live_offer tests.test_discovery_pacing.Discovery.test_p10_unlisted_offsite_and_stale_terms tests.test_discovery_pacing.Discovery.test_p10_atomic_amount_mismatch tests.test_discovery_pacing.Discovery.test_p10_no_manifest_is_not_graded tests.test_discovery_pacing.Discovery.test_resource_well_known_fetches_each_origin_once",
+            "expect_exit": 0,
+            "timeout_s": 120,
+            "min_tests": 5,
+            "max_skipped": 0
+          }
+        },
+        {
+          "id": "XC-85-AC03",
+          "mandatory": true,
+          "statement": "P9 and P10 are in the catalogue with controls, faulty builds and fix sections, and the TypeScript catalogue matches",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -c 'import sys; from x402conf.spec import CATALOG; m={\"P9\", \"P10\"}-set(CATALOG); print(\"missing:\", sorted(m)); sys.exit(1 if m else 0)' && PYTHONPATH=src python3 -m unittest tests.test_offline.Offline.test_credibility_matrix_complete tests.test_offline.Report.test_every_catalog_check_has_a_fix_section tests.test_offline.Report.test_ts_catalog_matches_spec_catalog",
+            "expect_exit": 0,
+            "timeout_s": 300
+          }
+        },
+        {
+          "id": "XC-85-AC04",
+          "mandatory": true,
+          "statement": "docs/SPEC.md has the P9 row",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/SPEC.md",
+            "pattern": "^\\| P9 \\|",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-85-AC05",
+          "mandatory": true,
+          "statement": "docs/SPEC.md has the P10 row",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/SPEC.md",
+            "pattern": "^\\| P10 \\|",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-85-AC06",
+          "mandatory": true,
+          "statement": "resource mode stays read-only: every request it sends, the manifest included, is a GET",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_live.Live.test_resource_mode_is_get_only tests.test_discovery_pacing.Discovery.test_resource_well_known_fetches_each_origin_once",
+            "expect_exit": 0,
+            "timeout_s": 120,
+            "min_tests": 2,
+            "max_skipped": 0
+          }
+        },
+        {
+          "id": "XC-85-AC07",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-85-AC08",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Never send anything but GET in resource mode, and never fetch a $ref or a listed resource while validating."
+      ]
+    }
+  ]
+}
