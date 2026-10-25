@@ -269,7 +269,9 @@ compatibility matrix, the Lean models and every result I publish. All of it runs
 **Not on the roadmap:**
 - **Certification.** A pass is evidence about one property on one day. The badge says "tested with", and I won't
   offer a certification scheme without agreed criteria and independent governance.
-- **Hosted services or dashboards.** The suite is code you run; results stay in your repo and your CI.
+- **Hosted services or live dashboards.** The suite is code you run; results stay in your repo and your CI. The one
+  exception is the static scoreboard on the Pages site (proposed XC-52), generated only from committed, hashed evidence,
+  with no overall score and no certification wording.
 - **Shallow checks** added to raise the count. Each check has to meet the bar above.
 - **Mainnet probes** or anything else that submits a real payment or creates financial risk.
 - **Every chain, SDK and extension at once.** Depth on payment-to-resource safety comes first.

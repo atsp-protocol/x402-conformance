@@ -1,0 +1,139 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-52: a static, generated per-implementation scoreboard on the existing GitHub Pages site (docs/site/scoreboard.html and scoreboard.json), built only from committed, hashed evidence (evidence/impl-matrix, evidence/self-hosted from XC-51, evidence/devnet). It is a page of per-check results, not a hosted service and not a score or certification: no composite number, every cell links the run and hash it came from, and a row under disclosure shows no per-check detail. docs/ROADMAP.md currently lists 'Hosted services or dashboards' as not on the roadmap; this task includes the owner's wording change that distinguishes a static page generated in CI from committed evidence from a hosted service. If the owner does not accept that change, do not sign this task. Nothing here is binding and vv does not read this file; it becomes part of the contract only when the owner merges it into proofline.json and re-signs it. Every criterion except scope and pushed fails on the v1.6.0 tree.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "applies_after": [
+    "XC-51"
+  ],
+  "tasks": [
+    {
+      "id": "XC-52",
+      "title": "A static per-implementation scoreboard on the Pages site, generated from committed evidence, never a certification",
+      "phase": "integrate",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-28",
+        "XC-29",
+        "XC-51"
+      ],
+      "requirements": [
+        "R-MATRIX",
+        "R-ADOPT"
+      ],
+      "description": "tools/scoreboard.py reads evidence/impl-matrix/*/run.json, evidence/self-hosted/*/run.json and evidence/devnet/run.json, verifies each SHA256SUMS, and writes docs/site/scoreboard.json and docs/site/scoreboard.html: one row per implementation at its pin (stack or facilitator, version or commit, network, date), one column per check id, each cell pass, fail, not applicable, not run or under disclosure, linking the run and hash. No composite score, rank or badge of approval; the page says each result is evidence about one property on one day. --check fails when either file is stale against the evidence, a row has no hash or a hash mismatches, or an under-disclosure row exposes a per-check result. CI runs --check; the Pages workflow already deploys docs/site. The site index links the page, and each row offers the existing add-facilitator issue form as the way in.",
+      "scope": {
+        "allow": [
+          "tools/scoreboard.py",
+          "tests/test_scoreboard.py",
+          "docs/site/**",
+          ".github/workflows/ci.yml",
+          ".github/workflows/compat-matrix.yml",
+          "docs/**",
+          "README.md",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-52-AC01",
+          "mandatory": true,
+          "statement": "The scoreboard JSON and page match the committed evidence, and every row links its run and a verifying hash",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/scoreboard.py --check",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-52-AC02",
+          "mandatory": true,
+          "statement": "A hand-edited cell, a row without hashes and an under-disclosure row that exposes a per-check result are each detected",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_scoreboard",
+            "expect_exit": 0,
+            "timeout_s": 300
+          }
+        },
+        {
+          "id": "XC-52-AC03",
+          "mandatory": true,
+          "statement": "The scoreboard has rows for every implementation-matrix run, the self-hosted reference and every self-hosted column with evidence",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import glob,json,sys;s=json.load(open('docs/site/scoreboard.json'));n=len(glob.glob('evidence/impl-matrix/*/run.json'))+len(glob.glob('evidence/self-hosted/*/run.json'))+1;r=len(s['rows']);print(r,n);sys.exit(0 if r>=n and r>=15 else 1)\"",
+            "expect_exit": 0,
+            "timeout_s": 30
+          }
+        },
+        {
+          "id": "XC-52-AC04",
+          "mandatory": true,
+          "statement": "The page carries no composite score and never says certified",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/site/scoreboard.html",
+            "pattern": "(?i)\\bcertified\\b|\\boverall score\\b|\\b[0-9]{1,3}\\s*/\\s*100\\b",
+            "must": "absent"
+          }
+        },
+        {
+          "id": "XC-52-AC05",
+          "mandatory": true,
+          "statement": "The site index links the scoreboard",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/site/index.html",
+            "pattern": "href=\"scoreboard\\.html\"",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-52-AC06",
+          "mandatory": true,
+          "statement": "CI checks the scoreboard on every push, and the scheduled matrix workflow regenerates it",
+          "verifier": {
+            "type": "command",
+            "cmd": "grep -q 'tools/scoreboard.py --check' .github/workflows/ci.yml && grep -q 'tools/scoreboard.py --write' .github/workflows/compat-matrix.yml",
+            "expect_exit": 0,
+            "timeout_s": 30
+          }
+        },
+        {
+          "id": "XC-52-AC07",
+          "mandatory": true,
+          "statement": "The roadmap distinguishes a static scoreboard generated from committed evidence from a hosted service, which stays off the roadmap",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/ROADMAP.md",
+            "pattern": "static scoreboard",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-52-AC08",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-52-AC09",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Never add a row from a run that is not committed with hashes, never call any facilitator or paid URL to build the page, and never show per-check detail for a row under disclosure."
+      ]
+    }
+  ]
+}
