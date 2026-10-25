@@ -66,11 +66,12 @@ graph LR
   XC_87["XC-87<br/>C2 and C3 not applicable to a client declared no..."]
   XC_88["XC-88<br/>Polite pacing for live targets: --min-interval a..."]
   XC_89["XC-89<br/>x402conf-svm mcp: X1 and the offer checks on one..."]
-  XC_91("XC-91<br/>.NET / C#: x402-dotnet (michielpost) as implemen...")
-  XC_92("XC-92<br/>Merchant rows: a passive, unpaid 402-challenge c...")
-  XC_93("XC-93<br/>Matrix rows: an Environment column, passed/run c...")
+  XC_91("XC-91<br/>.NET / C#: a harness that builds a .NET x402 SDK...")
+  XC_92("XC-92<br/>Merchant and paid-API rows on opt-in: a passive,...")
+  XC_93("XC-93<br/>Matrix rows: Environment, passed/run counts, ver...")
   XC_94("XC-94<br/>Run it yourself: the Action's evidence mode, an...")
   XC_95("XC-95<br/>Attribution and credit: the 'Tested with x402-co...")
+  XC_96("XC-96<br/>Opt-in matrix: projects add their own details (f...")
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -201,10 +202,12 @@ graph LR
   XC_28 --> XC_91
   XC_54 --> XC_91
   XC_93 --> XC_91
+  XC_96 --> XC_91
   XC_54 --> XC_92
   XC_85 --> XC_92
   XC_88 --> XC_92
   XC_93 --> XC_92
+  XC_96 --> XC_92
   XC_28 --> XC_93
   XC_53 --> XC_93
   XC_54 --> XC_93
@@ -216,6 +219,11 @@ graph LR
   XC_52 --> XC_95
   XC_93 --> XC_95
   XC_94 --> XC_95
+  XC_12 --> XC_96
+  XC_25 --> XC_96
+  XC_93 --> XC_96
+  XC_94 --> XC_96
+  XC_95 --> XC_96
   XC_05 --> XC_M1
   XC_05 --> XC_M2
   XC_05 --> XC_M3
@@ -225,7 +233,7 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_08,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_20,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_48,XC_49,XC_50,XC_M1,XC_M3,XC_M4 done
-  class XC_91,XC_92,XC_93,XC_94,XC_95 proposed
+  class XC_91,XC_92,XC_93,XC_94,XC_95,XC_96 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -248,7 +256,7 @@ Dependencies on tasks that are in no contract or addendum here: XC-54.
 | XC-09 Oracle hardening: strict atomic-unit parsing, fail closed | implement | done | XC-02, XC-08 | XC-16, XC-30 | R-ORACLE | 5 (command 3, pushed 1, scope 1) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `ts/src/**`; `ts/test/**` |
 | XC-10 R11 payment-to-request binding on a real resource server | implement | done | XC-M4, XC-08 | XC-16, XC-17, XC-18, XC-19, XC-20, XC-30, XC-37, XC-42 | R-R11 | 9 (command 6, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/harness.py`; `docs/SPEC.md`; `docs/FIXES.md`; `README.md` |
 | XC-11 One report, test-framework entry points and opt-in corpus sharing | implement | done | XC-M4 | XC-12, XC-13, XC-14, XC-30, XC-87, XC-88 | R-ADOPT | 7 (command 3, grep 2, pushed 1, scope 1) | `ts/**`; `docs/USING.md`; `corpus/**`; `.github/ISSUE_TEMPLATE/corpus-case.yml` |
-| XC-12 MCP server and agent-framework tools (Vercel AI SDK, LangChain) | implement | done | XC-11 | XC-13, XC-30, XC-33, XC-94 | R-ADOPT | 5 (command 1, grep 2, pushed 1, scope 1) | `ts/mcp/**`; `docs/USING.md`; `.github/workflows/ci.yml` |
+| XC-12 MCP server and agent-framework tools (Vercel AI SDK, LangChain) | implement | done | XC-11 | XC-13, XC-30, XC-33, XC-94, XC-96 | R-ADOPT | 5 (command 1, grep 2, pushed 1, scope 1) | `ts/mcp/**`; `docs/USING.md`; `.github/workflows/ci.yml` |
 | XC-13 Python entry-point tag and corpus case, Docker image and GitLab CI template | implement | done | XC-11, XC-12 | XC-14, XC-30 | R-ADOPT | 5 (command 1, grep 2, pushed 1, scope 1) | `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_live.py`; `corpus/fixtures/**`; `ts/docker/**`; `ts/ci/**`; `.github/workflows/ci.yml`; `docs/USING.md` |
 | XC-14 pytest plugin and the Python server examples | implement | done | XC-11, XC-13 | XC-26, XC-30 | R-ADOPT | 5 (command 1, grep 2, pushed 1, scope 1) | `src/x402conf/pytest_plugin.py`; `tests/check_pytest_plugin.py`; `examples/**`; `pyproject.toml`; `.github/workflows/ci.yml`; `docs/USING.md` |
 | XC-15 Normative additions: F5 extended, F11, P6, P7 | implement | done | XC-02, XC-01 | XC-16, XC-30, XC-46 | R-F5X, R-F11, R-P6, R-P7 | 6 (command 4, pushed 1, scope 1) | `src/x402conf/**`; `tests/**`; `ts/**`; `docs/SPEC.md`; `docs/FIXES.md`; `README.md` |
@@ -261,7 +269,7 @@ Dependencies on tasks that are in no contract or addendum here: XC-54.
 | XC-22 R20: a client retry never pays twice for one request | implement | done | XC-17, XC-21 | XC-41, XC-48 | R-CONC | 8 (command 4, grep 2, pushed 1, scope 1) | `ts/**`; `src/x402conf/spec.py`; `tests/test_offline.py`; `tests/test_live.py`; `action.yml`; `.github/workflows/ci.yml`; `docs/**`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
 | XC-23 Docs in sync with the build, and a generated interdependency map | integrate | done | XC-04, XC-05 | XC-27, XC-30, XC-31, XC-53, XC-85 | R-DOCS | 7 (command 3, grep 2, pushed 1, scope 1) | `README.md`; `CHANGELOG.md`; `CONTRIBUTING.md`; `docs/**`; `ts/README.md`; `ts/mcp/README.md`; `tools/interdeps.py`; `tests/test_interdeps.py`; `.github/workflows/ci.yml` |
 | XC-24 Lean: n replicas, shared atomic check-and-set versus partitioned caches | verify | done | XC-03, XC-M3 | XC-48 | R-LEAN | 4 (command 2, pushed 1, scope 1) | `lean/X402Conformance/Replicas.lean`; `lean/X402Conformance.lean`; `lean/Axioms.lean`; `docs/SPEC.md` |
-| XC-25 A2 and A5: the PR summary comment and the results badge | integrate | done | XC-M4, XC-16 | XC-30, XC-31, XC-94, XC-95 | R-ADOPT | 6 (command 3, grep 1, pushed 1, scope 1) | `action.yml`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `README.md`; `docs/**` |
+| XC-25 A2 and A5: the PR summary comment and the results badge | integrate | done | XC-M4, XC-16 | XC-30, XC-31, XC-94, XC-95, XC-96 | R-ADOPT | 6 (command 3, grep 1, pushed 1, scope 1) | `action.yml`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `README.md`; `docs/**` |
 | XC-26 A4: framework quickstarts, clone to first result, run in CI | integrate | done | XC-20, XC-14 | XC-48 | R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `examples/**`; `tools/quickstart.sh`; `.github/workflows/ci.yml`; `docs/USING.md`; `README.md` |
 | XC-27 A8: every docs example is run by CI | integrate | done | XC-23 | XC-48 | R-ADOPT | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/doc_examples.py`; `tests/test_doc_examples.py`; `.github/workflows/ci.yml`; `README.md`; `docs/**`; `examples/**`; `Makefile.example` |
 | XC-28 A7: the compatibility matrix is generated from runs, on a schedule | verify | done | XC-19 | XC-48, XC-52, XC-91, XC-93 | R-MATRIX | 5 (command 2, grep 1, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `.github/workflows/compat-matrix.yml`; `evidence/impl-matrix/**` |
@@ -294,11 +302,12 @@ Dependencies on tasks that are in no contract or addendum here: XC-54.
 | XC-87 C2 and C3 not applicable to a client declared not to sign, shown as N/A in every report | implement | signed | XC-44, XC-45, XC-11 | - | R-C2, R-C3 | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/src/client-offers.ts`; `ts/src/client-version.ts`; `ts/src/probe.ts`; `ts/src/report.ts`; `ts/src/index.ts`; `ts/test/client-offers.test.ts`; `ts/test/client-version.test.ts`; `src/x402conf/cli.py`; `tests/test_discovery_pacing.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-88 Polite pacing for live targets: --min-interval and --max-requests on every live request, logged | implement | signed | XC-01, XC-11, XC-42, XC-39 | XC-89, XC-92 | R-SAFE-GET, R-R24 | 7 (command 4, grep 1, pushed 1, scope 1) | `src/x402conf/pacing.py`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `ts/src/pace.ts`; `ts/src/cli.ts`; `ts/src/header.ts`; `ts/src/resource.ts`; `ts/src/index.ts`; `ts/test/pace.test.ts`; `tests/test_discovery_pacing.py`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-89 x402conf-svm mcp: X1 and the offer checks on one unpaid call of a paid MCP tool, paced | implement | signed | XC-33, XC-88 | - | R-MCP, R-SAFE-GET | 8 (command 5, grep 1, pushed 1, scope 1) | `ts/src/mcp-transport.ts`; `ts/src/mcp-seller.ts`; `ts/src/cli.ts`; `ts/src/index.ts`; `ts/example/mcp-server.ts`; `ts/test/mcp-seller.test.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `ts/README.md`; `CHANGELOG.md` |
-| XC-91 .NET / C#: x402-dotnet (michielpost) as implementation-matrix rows, server R0-R10 and client C1-C3, local against testnet fixtures | verify | proposed | XC-28, XC-54, XC-93 | - | R-MATRIX, R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `examples/dotnet/**`; `evidence/impl-matrix/dotnet-*/**`; `.github/workflows/impl-matrix.yml`; `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `docs/compat-matrix.json`; `docs/matrix-rows.json`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `README.md`; `CHANGELOG.md` |
-| XC-92 Merchant rows: a passive, unpaid 402-challenge check (P1-P7) on 13 public x402 merchant and vendor endpoints, testnet where offered | verify | proposed | XC-54, XC-85, XC-88, XC-93 | - | R-MATRIX, R-SAFE-GET, R-ADOPT | 10 (command 7, grep 1, pushed 1, scope 1) | `tools/merchant_rows.py`; `tests/test_merchant_rows.py`; `docs/merchants.json`; `evidence/merchants/**`; `tools/evidence_guard.py`; `tests/test_evidence_guard.py`; `tools/compat_matrix.py`; `docs/matrix-rows.json`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `README.md`; `CHANGELOG.md` |
-| XC-93 Matrix rows: an Environment column, passed/run counts, date, evidence and pin on every row, plus rerun and missing-check links | integrate | proposed | XC-28, XC-53, XC-54 | XC-91, XC-92, XC-94, XC-95 | R-MATRIX, R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `docs/matrix-rows.json`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/COVERAGE.md`; `docs/INTERDEPENDENCY.md`; `GOVERNANCE.md`; `README.md`; `CHANGELOG.md` |
-| XC-94 Run it yourself: the Action's evidence mode, an 'Add or update my row' issue form, and the path from a run to a matrix-row PR | integrate | proposed | XC-12, XC-25, XC-54, XC-93 | XC-95 | R-ADOPT, R-MATRIX, R-SAFE-GET | 10 (command 8, pushed 1, scope 1) | `action.yml`; `src/x402conf/cli.py`; `tests/test_offline.py`; `tools/row_from_evidence.py`; `tests/test_row_from_evidence.py`; `tools/evidence_guard.py`; `tests/test_evidence_guard.py`; `.github/ISSUE_TEMPLATE/add-or-update-row.yml`; `.github/ISSUE_TEMPLATE/config.yml`; `.github/workflows/ci.yml`; `docs/RUN-IT-YOURSELF.md`; `docs/MATRIX.md`; `docs/USING.md`; `docs/**`; `README.md`; `CONTRIBUTING.md`; `CHANGELOG.md` |
-| XC-95 Attribution and credit: the 'Tested with x402-conformance' badge, CC BY 4.0 for public results, provenance in every run, NOTICE and CITATION.cff | integrate | proposed | XC-25, XC-52, XC-93, XC-94 | - | R-ADOPT, R-OPEN | 13 (command 11, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `tools/interdeps.py`; `ts/src/report.ts`; `.github/workflows/ci.yml`; `tools/badge.py`; `tests/test_badge.py`; `docs/site/badge/**`; `docs/site/**`; `docs/BADGE.md`; `DATA-LICENSE`; `NOTICE`; `CITATION.cff`; `src/x402conf/provenance.py`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `ts/src/provenance.ts`; `ts/src/cli.ts`; `ts/test/provenance.test.ts`; `action.yml`; `.github/ISSUE_TEMPLATE/add-or-update-row.yml`; `docs/MATRIX.md`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-91 .NET / C#: a harness that builds a .NET x402 SDK from source and runs server R0-R10 and client C1-C3 locally against testnet fixtures, rows on opt-in | verify | proposed | XC-28, XC-54, XC-93, XC-96 | - | R-MATRIX, R-ADOPT | 9 (command 7, pushed 1, scope 1) | `examples/dotnet/**`; `tests/test_dotnet_harness.py`; `.github/workflows/impl-matrix.yml`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `README.md`; `CHANGELOG.md` |
+| XC-92 Merchant and paid-API rows on opt-in: a passive, unpaid 402-challenge check (P1-P7), testnet where offered, run only for a merchant that accepted | verify | proposed | XC-54, XC-85, XC-88, XC-93, XC-96 | - | R-MATRIX, R-SAFE-GET, R-ADOPT | 9 (command 6, grep 1, pushed 1, scope 1) | `tools/merchant_rows.py`; `tests/test_merchant_rows.py`; `tools/evidence_guard.py`; `tests/test_evidence_guard.py`; `docs/MATRIX.md`; `docs/coverage-ledger.json`; `docs/COVERAGE.md`; `README.md`; `CHANGELOG.md` |
+| XC-93 Matrix rows: Environment, passed/run counts, version, release alignment, date and evidence on every listed row, a compact MATRIX.md, rerun and missing-check links | integrate | proposed | XC-28, XC-53, XC-54 | XC-91, XC-92, XC-94, XC-95, XC-96 | R-MATRIX, R-ADOPT | 9 (command 7, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `tools/matrix_rows.py`; `tests/test_matrix_rows.py`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/COVERAGE.md`; `docs/INTERDEPENDENCY.md`; `GOVERNANCE.md`; `README.md`; `CHANGELOG.md` |
+| XC-94 Run it yourself: the Action's evidence mode, an 'Add or update my row' issue form, and the path from a run to a matrix-row PR | integrate | proposed | XC-12, XC-25, XC-54, XC-93 | XC-95, XC-96 | R-ADOPT, R-MATRIX, R-SAFE-GET | 10 (command 8, pushed 1, scope 1) | `action.yml`; `src/x402conf/cli.py`; `tests/test_offline.py`; `tools/row_from_evidence.py`; `tests/test_row_from_evidence.py`; `tools/evidence_guard.py`; `tests/test_evidence_guard.py`; `.github/ISSUE_TEMPLATE/matrix-row.yml`; `.github/ISSUE_TEMPLATE/config.yml`; `.github/workflows/ci.yml`; `docs/RUN-IT-YOURSELF.md`; `docs/MATRIX.md`; `docs/USING.md`; `docs/**`; `README.md`; `CONTRIBUTING.md`; `CHANGELOG.md` |
+| XC-95 Attribution and credit: the 'Tested with x402-conformance' badge, CC BY 4.0 for public results, provenance in every run, NOTICE and CITATION.cff | integrate | proposed | XC-25, XC-52, XC-93, XC-94 | XC-96 | R-ADOPT, R-OPEN | 13 (command 11, pushed 1, scope 1) | `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `tools/interdeps.py`; `ts/src/report.ts`; `.github/workflows/ci.yml`; `tools/matrix_rows.py`; `tests/test_matrix_rows.py`; `tests/test_row_from_evidence.py`; `docs/site/badge/**`; `docs/site/**`; `docs/BADGE.md`; `DATA-LICENSE`; `NOTICE`; `CITATION.cff`; `src/x402conf/provenance.py`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `ts/src/provenance.ts`; `ts/src/cli.ts`; `ts/test/provenance.test.ts`; `action.yml`; `.github/ISSUE_TEMPLATE/matrix-row.yml`; `docs/MATRIX.md`; `docs/**`; `README.md`; `CHANGELOG.md` |
+| XC-96 Opt-in matrix: projects add their own details (form, schema, validating workflow to a PR), a compact MATRIX.md and a searchable Pages table, an example row, badges, and weekly freshness with release alignment | integrate | proposed | XC-12, XC-25, XC-93, XC-94, XC-95 | XC-91, XC-92 | R-ADOPT, R-MATRIX, R-OPEN | 14 (command 12, pushed 1, scope 1) | `.github/ISSUE_TEMPLATE/matrix-row.yml`; `.github/workflows/matrix-row.yml`; `.github/workflows/matrix-freshness.yml`; `.github/workflows/ci.yml`; `matrix/**`; `tools/matrix_rows.py`; `tools/matrix_freshness.py`; `tests/test_matrix_rows.py`; `tools/row_from_evidence.py`; `tests/test_row_from_evidence.py`; `tools/compat_matrix.py`; `tests/test_compat_matrix.py`; `tools/interdeps.py`; `src/x402conf/cli.py`; `docs/templates/**`; `docs/site/matrix/**`; `docs/site/badge/**`; `docs/compat-matrix.json`; `docs/MATRIX.md`; `docs/RUN-IT-YOURSELF.md`; `docs/BADGE.md`; `docs/INTERDEPENDENCY.md`; `docs/**`; `CONTRIBUTING.md`; `README.md`; `CHANGELOG.md` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | done | XC-05 | XC-51 | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |
