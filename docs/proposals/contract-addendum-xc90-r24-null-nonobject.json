@@ -1,0 +1,87 @@
+{
+ "about": "PROPOSED, UNSIGNED. One Proofline task, XC-90: R24 (XC-42) also sends the JSON literal null, true and false, an empty object, an object whose required members are null, an empty value and a whitespace value, and sends every value in the V1 X-PAYMENT header when a route advertises x402Version 1. A malformed value fails if it gets a 5xx, a 2xx, a dropped connection or any /verify or /settle on the facilitator double, or if the server stops answering the absent-header control with 402 after the batch. Requests stay paced at least 5 s apart against live servers. Owner's go, 2026-10-25T16:49Z. Nothing here is binding and CI does not read this file; the task becomes part of the contract only when the owner key signs it into proofline.json.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[]",
+ "applies_after": [
+  "XC-42"
+ ],
+ "tasks": [
+  {
+   "id": "XC-90",
+   "title": "R24: null, empty and non-object payment headers, and the V1 X-PAYMENT header",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-42"
+   ],
+   "requirements": [
+    "R24"
+   ],
+   "description": "R24 today sends five PAYMENT-SIGNATURE values (not base64, base64 that is not JSON, and a JSON array, string and number). This extends the same check to the shapes it does not yet cover: the JSON literal null, the booleans true and false, an empty JSON object {}, a JSON object whose required members are null ({\"x402Version\":2,\"accepted\":null,\"payload\":null}), an empty header value, and a header value of only whitespace. It also sends every value in the V1 X-PAYMENT header when the route advertises x402Version 1, because V1 servers decode that header with separate code. The absent header is graded as the control: it must get 402 with a PAYMENT-REQUIRED (V2) or a V1 JSON body with accepts. Each malformed value passes only if the answer is 402 or 400 with a structured error (a PAYMENT-REQUIRED that decodes to a PaymentRequired object, or a JSON body with an error field), the facilitator double records no /verify and no /settle for it, the protected content is not returned, the connection is not dropped, and the server still answers the absent-header control with 402 after the batch (it is still up). A 5xx, a dropped connection, a 2xx, a facilitator call or a dead server after the batch fails the check. Requests are paced at least 5 s apart against live servers, as in R24.",
+   "scope": {
+    "allow": [
+     "ts/src/header.ts",
+     "ts/test/malformed-header.test.ts",
+     "ts/example/**",
+     "docs/SPEC.md",
+     "docs/COVERAGE.md",
+     "README.md",
+     "CHANGELOG.md",
+     "corpus/cases/**"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-90-AC01",
+     "mandatory": true,
+     "statement": "MALFORMED_HEADERS in ts/src/header.ts also contains json_null (b64 \"null\"), json_true, json_false, json_empty_object (b64 \"{}\"), json_null_members, empty (\"\") and whitespace (\" \"), and the five existing values are unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "cd ts && grep -E \"json_null|json_true|json_false|json_empty_object|json_null_members|empty|whitespace\" src/header.ts | wc -l | awk '$1>=7{exit 0}{exit 1}'"
+     }
+    },
+    {
+     "id": "XC-90-AC02",
+     "mandatory": true,
+     "statement": "The stock @x402/express 2.28.0 server passes the extended R24 on Solana devnet and Base Sepolia: every value gets 402 or 400 with a structured error, the facilitator double records no /verify and no /settle, and the absent-header control still gets 402 after the batch",
+     "verifier": {
+      "type": "command",
+      "cmd": "cd ts && npm ci --silent && npx tsc -p . && node --test --test-name-pattern='R24' dist/test/malformed-header.test.js"
+     }
+    },
+    {
+     "id": "XC-90-AC03",
+     "mandatory": true,
+     "statement": "Three new control builds fail the extended R24 and pass the old five-value R24: null_member_deref (decodes the header itself and reads a member of the decoded value without checking it is an object, so the framework answers 500 on json_null and json_empty_object), parse_error_is_500 (maps a JSON parse error to 500), and v1_header_unchecked (a V1 route that decodes X-PAYMENT without the shape check)",
+     "verifier": {
+      "type": "command",
+      "cmd": "cd ts && node --test --test-name-pattern='R24 (null_member_deref|parse_error_is_500|v1_header_unchecked)' dist/test/malformed-header.test.js"
+     }
+    },
+    {
+     "id": "XC-90-AC04",
+     "mandatory": true,
+     "statement": "When a route advertises only x402Version 1, the probe sends every malformed value in X-PAYMENT instead of PAYMENT-SIGNATURE and grades a V1 JSON body with accepts as structured; when it advertises both, it sends each value in both headers",
+     "verifier": {
+      "type": "command",
+      "cmd": "cd ts && node --test --test-name-pattern='R24 v1' dist/test/malformed-header.test.js"
+     }
+    },
+    {
+     "id": "XC-90-AC05",
+     "mandatory": true,
+     "statement": "docs/SPEC.md row R24 lists the added values and the V1 header, and the live probe keeps at least 5 s between requests",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -n 'R24' docs/SPEC.md | grep -q 'null' && grep -q 'X-PAYMENT' docs/SPEC.md"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  }
+ ]
+}
