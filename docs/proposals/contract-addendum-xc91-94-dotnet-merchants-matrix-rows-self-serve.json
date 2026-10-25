@@ -1,10 +1,12 @@
 {
- "about": "PROPOSED, UNSIGNED. Three Proofline tasks, XC-91 to XC-93: the .NET / C# SDK x402-dotnet as implementation-matrix rows run locally against testnet fixtures (XC-91), passive 402-challenge rows for 13 public x402 merchant and vendor endpoints (XC-92), and one row format for every matrix row with an Environment column, passed/run counts, run date, evidence and pin, plus rerun and missing-check links (XC-93). Owner's go, 2026-10-25T17:55Z. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner key signs it into proofline.json. Evidence is testnet-only, loopback-only or passive read-only; hosted facilitators are never called and nothing is paid. Estimated effort: 8-10 days.",
+ "about": "PROPOSED, UNSIGNED. Four Proofline tasks, XC-91 to XC-94: the .NET / C# SDK x402-dotnet as implementation-matrix rows run locally against testnet fixtures (XC-91), passive 402-challenge rows for 13 public x402 merchant and vendor endpoints (XC-92), and one row format for every matrix row with an Environment column, passed/run counts, run date, evidence and pin, plus rerun and missing-check links (XC-93), and self-serve tooling so any facilitator, SDK, merchant or vendor can run the suite on itself and update its own row (XC-94). Owner's go, 2026-10-25T17:55Z. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner key signs it into proofline.json. Evidence is testnet-only, loopback-only or passive read-only; hosted facilitators are never called and nothing is paid. Estimated effort: 11-13 days.",
  "schema": "proofline/1",
  "status": "proposed",
  "proposed_by": "mgillr",
  "target": "proofline.json tasks[]",
  "applies_after": [
+  "XC-12",
+  "XC-25",
   "XC-28",
   "XC-53",
   "XC-54",
@@ -474,6 +476,175 @@
    ],
    "stop_rules": [
     "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
+   ]
+  },
+  {
+   "id": "XC-94",
+   "title": "Run it yourself: the Action's evidence mode, an 'Add or update my row' issue form, and the path from a run to a matrix-row PR",
+   "phase": "integrate",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-12",
+    "XC-25",
+    "XC-54",
+    "XC-93"
+   ],
+   "requirements": [
+    "R-ADOPT",
+    "R-MATRIX",
+    "R-SAFE-GET"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 3
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "Any facilitator, SDK, merchant or vendor can run the suite on itself and send its details without waiting for me. (1) The existing Action (action.yml, used as `uses: atsp-protocol/x402-conformance@v<version>`) gains an evidence mode: inputs `evidence: true` and `row: <slug>` write the run as an evidence bundle (run.json as the probe wrote it, a README with the stack, version or commit, network and command, and SHA256SUMS), refuse a mainnet CAIP-2 id or a non-loopback facilitator URL through tools/evidence_guard.py, and upload the bundle with actions/upload-artifact. It runs against the vendor's own testnet or devnet endpoint or a local build started with `start`. (2) A GitHub issue form, 'Add or update my row' (.github/ISSUE_TEMPLATE/add-or-update-row.yml), collects entity name, type (facilitator, SDK, merchant, vendor), languages, chains and networks, environment (testnet, devnet, live), endpoint, version or commit, a contact, and consent to be listed, plus an optional link to an Action run. (3) tools/row_from_evidence.py turns that artifact (or a local run) into the files of one matrix row under evidence/, checks the hashes and the guard, and regenerates the row with tools/compat_matrix.py --write, so the vendor (or I) can open a PR that updates the row from committed evidence; the documented path is issue or Action run, then that PR, then CI regenerates and checks the row. A row is listed only with consent recorded in the issue or the PR. A 'live' environment is accepted as GET-only resource checks (x402conf resource) and is never a payment. (4) docs/RUN-IT-YOURSELF.md is a short quick start with the CLI (pip x402conf and npx x402conf-svm), the Action with evidence mode, and the MCP server, ending with how to get listed. Every command and workflow block in it is run by the docs-examples check (XC-27).",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     "action.yml",
+     "tools/row_from_evidence.py",
+     "tests/test_row_from_evidence.py",
+     "tools/evidence_guard.py",
+     "tests/test_evidence_guard.py",
+     ".github/ISSUE_TEMPLATE/add-or-update-row.yml",
+     ".github/ISSUE_TEMPLATE/config.yml",
+     ".github/workflows/ci.yml",
+     "docs/RUN-IT-YOURSELF.md",
+     "docs/MATRIX.md",
+     "docs/USING.md",
+     "docs/**",
+     "README.md",
+     "CONTRIBUTING.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-94-AC01",
+     "mandatory": true,
+     "statement": "action.yml has inputs evidence and row; in CI a job using the Action from this repository (uses: ./) with evidence: true against the bundled example server on loopback uploads an artifact whose SHA256SUMS verifies and whose run.json names the row",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -Eq '^  evidence:' action.yml && grep -Eq '^  row:' action.yml && grep -q 'actions/upload-artifact' action.yml && grep -Eq 'evidence: *true' .github/workflows/ci.yml",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-94-AC02",
+     "mandatory": true,
+     "statement": "In evidence mode the Action refuses a mainnet CAIP-2 id and a non-loopback facilitator URL before any request is sent, and exits non-zero",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_evidence_guard.ActionEvidenceMode",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 2,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-94-AC03",
+     "mandatory": true,
+     "statement": "The issue form 'Add or update my row' exists and has required fields for entity name, type, languages, chains and networks, environment (testnet, devnet, live), endpoint, version or commit, contact, and a consent-to-be-listed checkbox",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=.github/ISSUE_TEMPLATE/add-or-update-row.yml && grep -q 'name: Add or update my row' $f && for k in entity type languages networks environment endpoint version contact consent; do grep -Eq \"id: *$k\\b\" $f || { echo missing $k; exit 1; }; done && grep -A6 -E 'id: *environment' $f | grep -q testnet && grep -A6 -E 'id: *environment' $f | grep -q devnet && grep -A6 -E 'id: *environment' $f | grep -q live && grep -A8 -E 'id: *consent' $f | grep -q 'required: true'",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-94-AC04",
+     "mandatory": true,
+     "statement": "tools/row_from_evidence.py turns an Action artifact into one row's committed evidence and regenerated tables, and rejects a bundle with a bad hash, a mainnet id, a hosted facilitator URL, a payment against a live endpoint, or no recorded consent",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_row_from_evidence",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 6,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-94-AC05",
+     "mandatory": true,
+     "statement": "docs/MATRIX.md's self-serve section and CONTRIBUTING.md describe the path issue or Action run, then a PR with committed evidence, then CI regenerating the row, and link the issue form and docs/RUN-IT-YOURSELF.md",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'add-or-update-row' docs/MATRIX.md && grep -q 'RUN-IT-YOURSELF.md' docs/MATRIX.md && grep -q 'row_from_evidence.py' CONTRIBUTING.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-94-AC06",
+     "mandatory": true,
+     "statement": "docs/RUN-IT-YOURSELF.md has CLI, Action and MCP sections and a get-listed section, and stays short (at most 150 lines)",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=docs/RUN-IT-YOURSELF.md && grep -Eq '^#+ .*CLI' $f && grep -Eq '^#+ .*Action' $f && grep -Eq '^#+ .*MCP' $f && grep -Eiq '^#+ .*(get listed|add or update)' $f && test $(wc -l < $f) -le 150",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-94-AC07",
+     "mandatory": true,
+     "statement": "Every command and workflow block in docs/RUN-IT-YOURSELF.md runs in the docs-examples check",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/doc_examples.py --check docs/RUN-IT-YOURSELF.md",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-94-AC08",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-94-AC09",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-94-AC10",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Testnet only: never use a mainnet CAIP-2 id as a payment target, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the loopback double or my own instance on 127.0.0.1.",
+    "Self-serve never widens what the suite does to third parties: a vendor runs it on its own endpoint or build; a 'live' row is GET-only and never pays, and nothing is listed without recorded consent.",
     "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
    ]
   }
