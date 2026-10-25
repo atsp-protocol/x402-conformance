@@ -1,0 +1,197 @@
+{
+ "about": "PROPOSED, UNSIGNED. One Proofline task, XC-110: external modes for R16a and R24, so the tier-1 run queue (XC-98) exercises them against a project's public testnet endpoint with unpaid requests only: five GETs with a malformed PAYMENT-SIGNATURE (R24) and one HEAD (R16a) that is sent off loopback only with the operator's permission (--operator-permission, the devnet runner's convention; on the form, the optional consent.unpaid_head box). Tier 1 grows from 9 to 11 checks within eight requests a run, at least 5 s apart. Owner's go 2026-10-25T21:22Z; sys confirmed no overlap at 21:27Z. Nothing here is binding until the owner key signs it into proofline.json.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[]",
+ "applies_after": [
+  "XC-42",
+  "XC-86",
+  "XC-88",
+  "XC-98"
+ ],
+ "tasks": [
+  {
+   "id": "XC-110",
+   "title": "External modes for R16a and R24 in the tier-1 queue: one unpaid HEAD with the operator's permission and five malformed-header GETs against the public testnet endpoint",
+   "phase": "integrate",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-42",
+    "XC-86",
+    "XC-88",
+    "XC-98"
+   ],
+   "requirements": [
+    "R-SAFE-GET",
+    "R-R24",
+    "R-DELIV",
+    "R-MATRIX"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 2
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "Tier 1 (XC-98) grows from 9 to 11 checks. src/x402conf/external.py ports ts/src/head-unpaid.ts and ts/src/header.ts to Python, graded the same way, and `x402conf resource` gains --malformed-header (R24: one unpaid GET per malformed PAYMENT-SIGNATURE value, the same five values as MALFORMED_HEADERS in ts/src/header.ts, in the same order) and --unpaid-head (R16a: one unpaid HEAD; it passes on 402 with a PAYMENT-REQUIRED offer or on 405 without PAYMENT-RESPONSE). Both reuse the GET that P1-P7 already sent and go through the run's pacer: at least 5 s apart off loopback, and a request over --max-requests is not sent and the check is reported skipped. A HEAD is not a GET, so off loopback it is sent only with --operator-permission <ref>, the devnet runner's convention for the operator's written permission, which the results record; without it R16a is skipped and the rest still runs. `x402conf-svm live` follows the same rule (on loopback it still grades P1-P7, R16a and R24 in 7 requests, XC-88). The 'Add or update my row' form gains an optional box, 'also allow one unpaid HEAD request per tier-1 run', stored as consent.unpaid_head; that box is the operator's permission, and the queue's `run` job passes the row's consent issue as --operator-permission only when it is ticked. The run job sends at most eight requests (P1-P7 and P9 on one GET, P10 on one GET of /.well-known/x402, R24 on five GETs, R16a on one HEAD), all unpaid, no facilitator call, no mainnet, zero spend, and never checks out the project's code. An external check the run did not reach (R16a without permission) counts as needing the self-hosted run. The example row becomes 8/9, '9 exercised / 2 NA / 68 needs self-hosted'. XC-90's extra R24 values, once signed, land in both lists together; criterion AC03 keeps them equal.",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     "src/x402conf/external.py",
+     "src/x402conf/harness.py",
+     "src/x402conf/cli.py",
+     "src/x402conf/tiers.py",
+     "ts/src/head-unpaid.ts",
+     "ts/src/cli.ts",
+     "ts/test/head-unpaid.test.ts",
+     "ts/README.md",
+     "tests/test_external.py",
+     "tests/tier1_run.json",
+     "tests/test_attestation.py",
+     "tests/test_matrix_rows.py",
+     "tests/test_run_queue.py",
+     "tools/matrix_rows.py",
+     "tools/run_queue.py",
+     "tools/row_from_evidence.py",
+     "tools/compat_matrix.py",
+     ".github/workflows/run-queue.yml",
+     ".github/ISSUE_TEMPLATE/matrix-row.yml",
+     "matrix/schema/row.schema.json",
+     "docs/MATRIX.md",
+     "docs/RUN-IT-YOURSELF.md",
+     "docs/BADGE.md",
+     "docs/USING.md",
+     "docs/templates/**",
+     "docs/site/**",
+     "docs/INTERDEPENDENCY.md",
+     "README.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-110-AC01",
+     "mandatory": true,
+     "statement": "Against a paid route on loopback, R16a and R24 pass the control with one HEAD and five malformed GETs on the shared unpaid GET, R16a passes a 405 and catches a HEAD that reaches the handler or lacks an offer, R24 catches a 5xx, a dropped connection and an unstructured 400, off loopback the HEAD is sent only with --operator-permission, and the CLI stays inside --max-requests",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_external",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 7,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-110-AC02",
+     "mandatory": true,
+     "statement": "x402conf-svm live sends the unpaid HEAD off loopback only with --operator-permission",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^R16a off loopback' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^R16a off loopback' 1",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-110-AC03",
+     "mandatory": true,
+     "statement": "The Python R24 values are the TypeScript MALFORMED_HEADERS, same names, values and order",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && (cd ts && npm ci --silent && npx tsc -p .) && node -e \"import('./ts/dist/src/header.js').then(m=>process.stdout.write(JSON.stringify(Object.entries(m.MALFORMED_HEADERS))))\" > \"$o\" && PYTHONPATH=src python3 -c \"import json,sys;from x402conf.external import MALFORMED_HEADERS as M;t=json.load(open(sys.argv[1]));print(len(t));sys.exit(0 if [tuple(x) for x in t]==list(M.items()) else 1)\" \"$o\"",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-110-AC04",
+     "mandatory": true,
+     "statement": "The form's HEAD box is optional and stored as consent.unpaid_head; the queue outputs head=true only for a row that ticked it, and the run job passes --unpaid-head with the row's consent issue as --operator-permission only then, with --malformed-header, at most eight requests, read-only permissions and no secrets",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import json,sys;c=json.load(open('matrix/schema/row.schema.json'))['properties']['consent'];ok=c['properties']['unpaid_head']['type']=='boolean' and 'unpaid_head' not in c['required'];sys.exit(0 if ok else 1)\" && PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.MatrixRows.test_the_unpaid_head_is_a_separate_optional_permission tests.test_run_queue.RunQueue.test_next_runs_the_rows_own_repo_within_caps_and_never_reruns_a_ref tests.test_external.External.test_the_queue_runs_the_external_modes_and_the_head_only_with_permission",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-110-AC05",
+     "mandatory": true,
+     "statement": "Tier 1 is 11 checks within eight requests; an external check not reached counts as needing the self-hosted run; the queue's external run publishes 8/9 with '9 exercised / 2 NA / 68 needs self-hosted', and so does the example row",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/matrix_rows.py --check && PYTHONPATH=src python3 -m unittest -v tests.test_external.External.test_tier_1_has_eleven_external_checks_within_eight_requests tests.test_attestation.Attestation.test_tier_1_counts_only_the_external_checks tests.test_run_queue.RunQueue.test_publish_turns_the_external_run_into_a_tier_1_row && grep 'id=\\\"project-example\\\"' docs/MATRIX.md | grep -q '| 8/9 | 1 | 9 exercised / 2 NA / 68 needs self-hosted |'",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-110-AC06",
+     "mandatory": true,
+     "statement": "docs/MATRIX.md's tier table names R16a and R24 and the queue's at most eight requests; docs/USING.md and README.md name --operator-permission for the HEAD; docs/RUN-IT-YOURSELF.md names R16a in tier 1",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep '^| \\*\\*External-verified\\*\\*' docs/MATRIX.md | grep -q 'R16a' && grep '^| \\*\\*External-verified\\*\\*' docs/MATRIX.md | grep -q 'R24' && grep -q 'at most eight per run' docs/MATRIX.md && grep -q -- '--operator-permission' docs/USING.md && grep -q -- '--operator-permission' README.md && grep -q 'R16a' docs/RUN-IT-YOURSELF.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-110-AC07",
+     "mandatory": true,
+     "statement": "On loopback x402conf-svm live still grades P1-P7, R16a and R24 in 7 logged requests and honours --max-requests (XC-88 unchanged)",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^pace: ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^pace: ' 5",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-110-AC08",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-110-AC09",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-110-AC10",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Testnet only: never use a mainnet CAIP-2 id as a payment target, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the loopback double or my own instance on 127.0.0.1.",
+    "Zero spend and unpaid only: if a check would need a payment, a signature, a facilitator call or a request other than GET or the one permitted HEAD off loopback, STOP and report. Never send the HEAD off loopback without --operator-permission, and never more than eight requests a run.",
+    "Opt-in only: nothing about a project is committed (no row, no name in a table, no evidence, no badge) until it accepts through the 'Add or update my row' form or a pull request, with the consent recorded there. The outreach list is private and never committed. If a criterion seems to need a row for a project that has not accepted, STOP and report."
+   ]
+  }
+ ]
+}
