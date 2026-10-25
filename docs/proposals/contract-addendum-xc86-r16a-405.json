@@ -1,0 +1,102 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-86: an amendment to R16a (XC-39, signed and done). R16a protects one property, that an unpaid HEAD never reaches the protected handler, but its pass condition accepted only a 402 with PAYMENT-REQUIRED, so a live server that refuses HEAD with 405 and `Allow: GET` (reproduced twice on 2026-10-25) was graded a failure although the handler is never reached. This widens the pass condition to that property: 402 with an offer, or 405 with no PAYMENT-RESPONSE. A 2xx still fails. The check id keeps its property; its name text changes to say so. The XC-39 criteria keep passing (six R16a tests remain, two are added). Owner's go, 2026-10-25T12:48Z, in chat: 'fix mcp and endpoints and then test'. Under D-AUTO-4 sys may batch-sign contracts covered by an owner go; nothing here binds until the owner key signs it into proofline.json.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "applies_after": [
+    "XC-39"
+  ],
+  "tasks": [
+    {
+      "id": "XC-86",
+      "title": "R16a amendment: an unpaid HEAD refused with 405 never reaches the handler and passes",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-39"
+      ],
+      "requirements": [
+        "R-DELIV"
+      ],
+      "description": "probeUnpaidHead passes when the unpaid HEAD is answered 402 with a decodable PAYMENT-REQUIRED offer, or 405 without PAYMENT-RESPONSE (the Allow header is recorded); 2xx, 3xx and any other answer fail as before. ts/example/head-unpaid-server.ts gains a head_refused variant (405, Allow: GET, handler never runs) as a second control on Solana devnet and Base Sepolia. probeUnpaidHead also takes { fetch, unpaidGetStatus } so a paced fetch and a shared unpaid GET can drive it against a live server. SPEC, FIXES and README text follow.",
+      "scope": {
+        "allow": [
+          "ts/src/head-unpaid.ts",
+          "ts/example/head-unpaid-server.ts",
+          "ts/test/head-unpaid.test.ts",
+          "ts/src/index.ts",
+          "docs/**",
+          "README.md",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-86-AC01",
+          "mandatory": true,
+          "statement": "R16a passes a router that refuses HEAD with 405 and Allow: GET, with the handler never run, on Solana devnet and Base Sepolia",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^R16a control: a router that refuses HEAD with 405' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^R16a control: a router that refuses HEAD with 405' 2",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-86-AC02",
+          "mandatory": true,
+          "statement": "R16a still catches head_bypass and still passes the 402 control (8 passing R16a tests: two networks, two controls each plus head_bypass and the not-paid control)",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^R16a ' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^R16a ' 8",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-86-AC03",
+          "mandatory": true,
+          "statement": "docs/SPEC.md's R16a row names the 405 refusal",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/SPEC.md",
+            "pattern": "^\\| R16a \\|.*405",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-86-AC04",
+          "mandatory": true,
+          "statement": "docs/FIXES.md's R16a section names the 405 refusal",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/FIXES.md",
+            "pattern": "A 405 with `Allow: GET` passes",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-86-AC05",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-86-AC06",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Never pass a 2xx or 3xx answer to an unpaid HEAD."
+      ]
+    }
+  ]
+}

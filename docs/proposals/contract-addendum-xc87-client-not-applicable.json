@@ -1,0 +1,124 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-87: a not_applicable grade for C2 (XC-44) and C3 (XC-45) when the caller declares the client does not sign payments (signsPayments: false) and it signs nothing, and that grade carried through every report format. On 2026-10-25 an SDK that surfaces a 402 as a typed error and has no payment path by design was graded fail on C2 ('payable offer ignored') and C3 ('never pays'). Without the declaration nothing changes: a client that never pays still fails. A client declared not to sign that signs anyway is graded as usual. Owner's go, 2026-10-25T12:48Z, in chat: 'fix mcp and endpoints and then test'. Under D-AUTO-4 sys may batch-sign contracts covered by an owner go; nothing here binds until the owner key signs it into proofline.json.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "applies_after": [
+    "XC-44",
+    "XC-45"
+  ],
+  "tasks": [
+    {
+      "id": "XC-87",
+      "title": "C2 and C3 not applicable to a client declared not to sign, shown as N/A in every report",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-44",
+        "XC-45",
+        "XC-11"
+      ],
+      "requirements": [
+        "R-C2",
+        "R-C3"
+      ],
+      "description": "Status gains not_applicable (ts/src/probe.ts, ts/src/report.ts). checkClientOfferPolicy and checkClientKeepsV2 take { signsPayments } and return status not_applicable, pass false, with a reason, when it is false and the client signed nothing. makeReport (TS and Python) excludes not_applicable from failed and lists the ids in summary.not_applicable; passed() ignores them; explain prints them as N/A. The Python report command, SARIF, JUnit (skipped, 'not applicable') and the badge treat them as not failed. The XC-44 and XC-45 criteria keep passing.",
+      "scope": {
+        "allow": [
+          "ts/src/client-offers.ts",
+          "ts/src/client-version.ts",
+          "ts/src/probe.ts",
+          "ts/src/report.ts",
+          "ts/src/index.ts",
+          "ts/test/client-offers.test.ts",
+          "ts/test/client-version.test.ts",
+          "src/x402conf/cli.py",
+          "tests/test_discovery_pacing.py",
+          "docs/**",
+          "README.md",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-87-AC01",
+          "mandatory": true,
+          "statement": "C2 grades a client declared not to sign that signs nothing not_applicable, and still fails it without the declaration or when it signs a decoy anyway, on Solana devnet and Base Sepolia",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^C2 (not applicable|a client)' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^C2 (not applicable|a client)' 6",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-87-AC02",
+          "mandatory": true,
+          "statement": "C3 does the same, and still catches v1_fallback from a client declared not to sign",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^C3 (not applicable|a client)' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^C3 (not applicable|a client)' 6",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-87-AC03",
+          "mandatory": true,
+          "statement": "The XC-44 and XC-45 tests still pass unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='^C[23] (control|first_offer|ignore_max|v1_fallback)' dist/test/*.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^C[23] (control|first_offer|ignore_max|v1_fallback)' 10",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-87-AC04",
+          "mandatory": true,
+          "statement": "The Python report, SARIF, JUnit and badge treat not_applicable as not failed and list it",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_discovery_pacing.NotApplicable",
+            "expect_exit": 0,
+            "timeout_s": 120,
+            "min_tests": 1,
+            "max_skipped": 0
+          }
+        },
+        {
+          "id": "XC-87-AC05",
+          "mandatory": true,
+          "statement": "docs/SPEC.md's C2 row names the not applicable grade",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/SPEC.md",
+            "pattern": "^\\| C2 \\|.*not applicable",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-87-AC06",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-87-AC07",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Never grade a client not_applicable unless the caller declared signsPayments: false and the client signed nothing."
+      ]
+    }
+  ]
+}

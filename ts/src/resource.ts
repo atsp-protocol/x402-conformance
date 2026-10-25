@@ -152,8 +152,9 @@ export function check402(resp: Answer): CheckResult[] {
 }
 
 /** One unpaid GET. Redirects are followed, as the Python CLI does. */
-export async function fetch402(url: string, opts: { timeoutMs?: number; via?: Via } = {}): Promise<Answer> {
-  const res = await fetch(url, { method: "GET", headers: { accept: "application/json", "user-agent": userAgent(opts.via) },
+export async function fetch402(url: string, opts: { timeoutMs?: number; via?: Via; fetch?: typeof fetch } = {}):
+    Promise<Answer> {
+  const res = await (opts.fetch ?? fetch)(url, { method: "GET", headers: { accept: "application/json", "user-agent": userAgent(opts.via) },
     signal: AbortSignal.timeout(opts.timeoutMs ?? 15_000) });
   const headers: Record<string, string> = {};
   res.headers.forEach((v, k) => { headers[k.toLowerCase()] = v; });
@@ -162,7 +163,8 @@ export async function fetch402(url: string, opts: { timeoutMs?: number; via?: Vi
 }
 
 /** P1-P7 against a URL: one unpaid GET, never a payment. */
-export async function checkPaymentRequired(url: string, opts: { timeoutMs?: number; via?: Via } = {}): Promise<Report> {
+export async function checkPaymentRequired(url: string, opts: { timeoutMs?: number; via?: Via; fetch?: typeof fetch } = {}):
+    Promise<Report> {
   const via = opts.via ?? "library";
   try {
     return makeReport("resource-402", url, check402(await fetch402(url, opts)), via);

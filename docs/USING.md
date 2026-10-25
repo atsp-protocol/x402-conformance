@@ -50,7 +50,9 @@ npx -y x402-conformance-svm demo --fault serve_on_any_settle         # a faulty 
 Then your own endpoints:
 
 ```
-x402conf resource https://your.api/paid                              # P1-P7, one unpaid GET (Python)
+x402conf resource https://your.api/paid                              # P1-P7 (and P9), one unpaid GET (Python)
+x402conf resource https://your.api/paid --well-known                 # + P10: the origin's /.well-known/x402, one GET
+npx -y x402-conformance-svm live --url https://your.api/paid --max-requests 7   # P1-P7, R16a, R24: 7 unpaid requests
 npx -y x402-conformance-svm resource --url https://your.api/paid      # the same P1-P7, in Node
 npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start "node server.js" --share
 npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start "node server.js" --retry  # + R20
@@ -59,6 +61,23 @@ npx -y x402-conformance-svm probe --resource http://127.0.0.1:4020/paid --start 
 `x402conf resource --share` does the same in Python: one anonymised case file per URL, and the link for each failing
 one. Both CLIs produce identical cases from the same report; CI checks both against
 [one fixture](../corpus/fixtures).
+
+### Live targets: pacing
+
+Every request `x402conf live`, `x402conf resource`, `x402conf-svm resource`, `x402conf-svm live` and `x402conf-svm mcp` send to a live
+host goes through one pacer: at least `--min-interval` seconds between the start of one request and the next (default
+5), at most `--max-requests` requests in the run when you set a cap, and one line per request on stderr (time, method,
+URL, and how long it waited). A request over the cap is not sent and the check that needed it is reported as skipped.
+Loopback targets are counted and logged but not spaced, so local servers and CI runs are not slowed down. The JSON
+output records the same log under `pacing`. `x402conf-svm live` sends one unpaid `GET` (P1-P7), one unpaid `HEAD`
+(R16a) and one `GET` per malformed `PAYMENT-SIGNATURE` (R24, five values), and never pays or signs; run it only against
+servers you are allowed to test.
+
+`x402conf-svm mcp --url https://host/mcp --tool <name> [--arguments '<json>'] [--no-initialize]` is the same for a paid
+MCP tool over Streamable HTTP: one unpaid `tools/call` (after `initialize` and `notifications/initialized` unless
+`--no-initialize`, so 1 or 3 requests), graded X1 on the tool result and P3, P4, P5 and P7 on the `PaymentRequired`
+in it. MCP is JSON-RPC over `POST`, so this is not a read-only `GET`: nothing is paid or signed, but run it only
+against a server whose operator agreed.
 
 The Node `resource` command is a port of the Python one with the same check IDs; CI runs both on 37 answers and
 fails if they ever disagree. `--share` writes the case next to `--out`, with `.json` replaced by `.case.json` (or `./x402-conformance-case.json`
@@ -145,7 +164,11 @@ route on two replicas), `probeDelivery({ error, redirect, throws }, double)` (R1
 throw), `probeStatus(routes, double)` (R22, routes by name, each `{ url, status, headers? }`) and `probeAbort(url,
 double)` (R23). A client check takes your client as a function that fetches a URL, pays and returns the final
 `Response`, and returns one result: `checkClientHandles402(client, url, double)` (C1), `checkClientOfferPolicy(client,
-url, double, { networks, maxAmount })` (C2) and `checkClientKeepsV2(client, url, double)` (C3). The
+url, double, { networks, maxAmount })` (C2) and `checkClientKeepsV2(client, url, double)` (C3). Both take a last
+argument `{ signsPayments: false }` for a client with no payment path by design: if it signs nothing, the result is
+`not_applicable` (the report lists it in `summary.not_applicable` and `passed()` ignores it); if it signs anyway, it is
+graded as usual. `probeUnpaidHead` and `probeMalformedHeader` take `{ fetch, unpaidGetStatus }`, so a paced fetch from
+`createPacedFetch({ minIntervalMs, maxRequests })` and one shared unpaid `GET` can drive them against a live server. The
 [README](../README.md#what-it-catches) says what each one checks.
 
 ## Hono, Express and other servers

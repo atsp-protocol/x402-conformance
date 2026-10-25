@@ -55,6 +55,14 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "normative",
   "basis": "V2 6.1: extra.paymentFlow MUST be present when the resolved flow is not authorization (a warning: the upto SVM scheme spec allows omitting it)"
  },
+ "P9": {
+  "profile": "normative",
+  "basis": "bazaar extension, Schema Validation: schema is JSON Schema Draft 2020-12 with same-document $ref only, and facilitators MUST validate info against schema before cataloging"
+ },
+ "P10": {
+  "profile": "resilience",
+  "basis": "draft-hawkins-x402-dns-discovery 3.2: resources are HTTPS on the manifest's own host, and a manifest that diverges from the live endpoint is a misconfiguration (a warning; the runtime 402 is authoritative)"
+ },
  "F1": {
   "profile": "normative",
   "basis": "V2 9 invalid_payload; V2 5.1.2 atomic units; SVM exact: fail closed"
@@ -183,6 +191,18 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "security-profile",
   "basis": "sign-in-with-x: access is for the requested resource the server priced and settled"
  },
+ "W1": {
+  "profile": "normative",
+  "basis": "sign-in-with-x: domain MUST match the server's configured public origin host and the uri origin MUST match that origin, derived from the server's configuration, not from request headers such as Host"
+ },
+ "W2": {
+  "profile": "security-profile",
+  "basis": "sign-in-with-x: the nonce MUST be unique and the server SHOULD track used nonces, so one signed message signs in once"
+ },
+ "W3": {
+  "profile": "normative",
+  "basis": "sign-in-with-x: issuedAt MUST be recent (under five minutes) and MUST NOT be in the future, and a present expirationTime MUST be in the future"
+ },
  "R12": {
   "profile": "security-profile",
   "basis": "payment-identifier: the id is an idempotency key that deduplicates requests, so parallel requests with one id are charged once"
@@ -206,6 +226,14 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "R16a": {
   "profile": "security-profile",
   "basis": "the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402"
+ },
+ "D1": {
+  "profile": "normative",
+  "basis": "V2 8 and the bazaar extension: GET /discovery/resources returns x402Version, items and pagination (limit, offset, total), GET /discovery/search returns resources; every item has resource, type, x402Version, accepts and lastUpdated (8.3), and limit and the network filter are honoured"
+ },
+ "G1": {
+  "profile": "security-profile",
+  "basis": "A2A transport: payment required is a task in input-required with x402.payment.status payment-required and the PaymentRequired in x402.payment.required; an agent that mirrors an HTTP route asks for the same requirements as its 402"
  },
  "R17": {
   "profile": "security-profile",
@@ -231,6 +259,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "security-profile",
   "basis": "a retry resending the same signed payment is settled once and gets the original result"
  },
+ "R21": {
+  "profile": "security-profile",
+  "basis": "EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again"
+ },
  "C3": {
   "profile": "security-profile",
   "basis": "V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none"
@@ -254,6 +286,38 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "R22": {
   "profile": "normative",
   "basis": "after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15)"
+ },
+ "U1": {
+  "profile": "normative",
+  "basis": "upto, Core Property 4: the settled amount MUST be less than or equal to the authorized maximum; the settle-time requirements.amount is the actual charge (Core Property 5)"
+ },
+ "U2": {
+  "profile": "normative",
+  "basis": "upto SettlementResponse: amount, the actual amount charged in atomic units (may be 0), is required on EVM and on Solana"
+ },
+ "U3": {
+  "profile": "normative",
+  "basis": "upto, Payment Flow: upto cannot use upfront, because the amount is known only after the handler runs; Permit2 on EVM supports authorization, the Solana channel escrow (V2 6.1 extra.paymentFlow, as P7)"
+ },
+ "B1": {
+  "profile": "normative",
+  "basis": "batch-settlement: the settlement result MUST include a non-empty commitment identifier on success, the charge is at most the per-request amount, and the same authorization MUST NOT execute the handler twice"
+ },
+ "B2": {
+  "profile": "security-profile",
+  "basis": "batch-settlement redemption: the server claims each channel's latest cumulative voucher, which supersedes the older ones, and a claim cannot advance accounting twice"
+ },
+ "B3": {
+  "profile": "resilience",
+  "basis": "batch-settlement redemption in batches: a channel is not silently dropped from a batch, and a voucher whose claim failed stays claimable, so a partly failed run is reported and retried per item"
+ },
+ "X1": {
+  "profile": "normative",
+  "basis": "MCP transport: a paid tool called without a payment MUST answer a tool result with isError true, the PaymentRequired object in structuredContent and the same object JSON-encoded in content[0].text"
+ },
+ "X2": {
+  "profile": "resilience",
+  "basis": "MCP transport: the server verifies, runs the tool and settles, and when the settle fails it returns only the payment error, never the tool's content; the R0-R10 faults on a paid tool call"
  }
 };
 

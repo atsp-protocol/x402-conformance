@@ -114,15 +114,22 @@ x402conf report --dir DIR --sarif out.sarif --junit junit.xml --badge badge.json
 <tr><td>R14</td><td>your server, killed between a successful <code>/settle</code> and its response and restarted, settles the same payment again, asks for payment again, or refuses without naming the transaction or payment id. With <code>--crash</code></td></tr>
 <tr><td>R20</td><td>a client that times out before <code>/settle</code> answers and retries pays twice for one request: a fresh payment under the same payment-identifier id is settled again (R20a), or a resent payment loses the result it paid for (R20b). With <code>--retry</code></td></tr>
 <tr><td colspan="2"><em>From code, since 1.5.0 (R17 to R19 since 1.6.0): functions exported by <code>x402-conformance-svm</code>, not run by the CLI or the Action</em></td></tr>
+<tr><td>W1-W3</td><td>a sign-in-with-x message signed for another site is accepted because <code>Host</code> or <code>X-Forwarded-Host</code> names it (W1), the same signed message signs in twice (W2), or a stale, future or expired message is accepted (W3)</td></tr>
 <tr><td>R12, R13</td><td>one payment-identifier id is settled more than once: by eight parallel requests (R12), or across two replicas (R13)</td></tr>
 <tr><td>R15</td><td>a paid request whose handler answers 5xx, redirects or throws is settled or gets a <code>PAYMENT-RESPONSE</code></td></tr>
 <tr><td>R16, R16a</td><td>a paid <code>HEAD</code> gets a 2xx, a <code>/settle</code> call or a <code>PAYMENT-RESPONSE</code> (R16), or an unpaid <code>HEAD</code> doesn't get the 402 that <code>GET</code> gets (R16a)</td></tr>
+<tr><td>D1</td><td>a facilitator's <code>/discovery/resources</code> or <code>/discovery/search</code> answer misses V2 section 8 fields, or ignores <code>limit</code> or the <code>network</code> filter</td></tr>
+<tr><td>G1</td><td>an A2A agent's payment-required task isn't <code>input-required</code> with <code>x402.payment.required</code>, or asks for different requirements from the HTTP 402 it mirrors</td></tr>
 <tr><td>R17</td><td>a shared cache in front of the paid route serves the paid content to an unpaid request, because the paid response was not marked <code>private</code> or <code>no-store</code> and does not vary on the payment header</td></tr>
 <tr><td>R18</td><td>content is served while a settlement is pending, late or unanswered, or served twice after it is final, or a refusal hides the transaction</td></tr>
 <tr><td>R19</td><td>on an <code>upfront</code> or <code>escrow</code> offer the resource executes before the settle, or an unsupported flow is accepted</td></tr>
+<tr><td>R21</td><td>a Permit2 payment a third party settled first is granted although the server's own settle failed, or a spent Permit2 payment is granted again</td></tr>
 <tr><td>R22</td><td>the paid response loses the handler's 2xx status or headers: a 201 or a 202 is rewritten to 200</td></tr>
 <tr><td>R23</td><td>a client that disconnects while <code>/settle</code> is in flight is charged, and a resend of the same payment doesn't get the settled result or is charged again</td></tr>
 <tr><td>R24</td><td>a malformed <code>PAYMENT-SIGNATURE</code> (not base64, not JSON or not an object) gets a 5xx, a dropped connection or the content instead of 402 or 400</td></tr>
+<tr><td>U1-U3</td><td>an <code>upto</code> route settles more than the maximum the client signed (U1), reports another amount than it settled (U2), or offers the <code>upfront</code> flow (U3)</td></tr>
+<tr><td>B1-B3</td><td>a <code>batch-settlement</code> route serves a voucher it has already been paid with or no commitment identifier (B1), claims a channel more than once in a run (B2), or records a failed claim as claimed (B3)</td></tr>
+<tr><td>X1, X2</td><td>a paid MCP tool's unpaid call doesn't answer <code>isError</code> with the offer in <code>structuredContent</code> and <code>content[0].text</code> (X1), or a paid call gets the tool's result when <code>/settle</code> times out, answers broken, is pending, fails or is a duplicate (X2)</td></tr>
 <tr><td>C1-C3</td><td>your client hands a 402 to its caller as a success (C1), signs an offer outside its networks or above its maximum (C2), or pays the V1 offer when the 402 also carries V2 (C3)</td></tr>
 </table>
 
