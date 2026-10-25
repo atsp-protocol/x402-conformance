@@ -13,6 +13,7 @@ SHA256SUMS and regenerates the matrix and badges with tools/compat_matrix.py --w
   - a facilitator that is not on loopback
   - a payment against a live (non-loopback) endpoint: any R check, which pays through the facilitator double
   - no consent URL, or one that is not an issue or pull request on github.com
+  - a run.json that is not a probe run (results, each with a check and a status)
   - a row name that is not lower case letters, digits, '.', '_' or '-', or a row that exists without --update
 """
 from __future__ import annotations
@@ -77,6 +78,11 @@ def problems(bundle: str, row: str, consent: str) -> list[str]:
         doc = json.load(open(run, encoding="utf-8"))
     except ValueError:
         return out + ["run.json is not JSON"]
+    results = doc.get("results") if isinstance(doc, dict) else None
+    if not isinstance(results, list) or not results or not all(
+            isinstance(r, dict) and isinstance(r.get("check"), str) and ("status" in r or "pass" in r) for r in results):
+        out.append("run.json is not a probe run: it needs results, each with a check and a status (the Action's "
+                   "resource-server.json or x402conf-svm probe --out)")
     main = sorted(networks(doc) & MAINNET)
     if main:
         out.append(f"the run was graded on a mainnet network ({', '.join(main)})")

@@ -1,0 +1,36 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://github.com/atsp-protocol/x402-conformance/blob/main/matrix/schema/row.schema.json",
+ "title": "x402-conformance matrix row",
+ "description": "One project's row in docs/MATRIX.md, from the 'Add or update my row' issue form. Public details only: no emails, no keys, no private data. A row exists only with all three consents.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": ["schema", "slug", "project", "type", "repo", "languages", "chains", "networks", "environments", "version", "contact", "consent", "source_issue"],
+ "properties": {
+  "schema": {"const": "x402-conformance.matrix-row/1"},
+  "slug": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"},
+  "project": {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[^<>|`\\n\\r]+$"},
+  "type": {"enum": ["facilitator-self-hosted", "facilitator-hosted", "sdk", "merchant-paid-api", "client-wallet", "mcp-tool"]},
+  "repo": {"type": ["string", "null"], "maxLength": 200, "pattern": "^https://[A-Za-z0-9.-]+/[^\\s<>|`]*$"},
+  "site": {"type": ["string", "null"], "maxLength": 200, "pattern": "^https://[A-Za-z0-9.-]+(/[^\\s<>|`]*)?$"},
+  "languages": {"type": "array", "maxItems": 12, "items": {"type": "string", "pattern": "^[A-Za-z0-9#+. -]{1,24}$"}},
+  "chains": {"type": "array", "maxItems": 24, "items": {"type": "string", "pattern": "^[A-Za-z0-9 .-]{1,32}$"}},
+  "networks": {"type": "array", "maxItems": 48, "items": {"type": "string", "pattern": "^[a-z0-9-]{3,8}:[-_a-zA-Z0-9]{1,48}$"}},
+  "environments": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"enum": ["testnet", "devnet", "mainnet-only"]}},
+  "testnet_endpoint": {"type": ["string", "null"], "maxLength": 300, "pattern": "^https://[A-Za-z0-9.-]+(/[^\\s<>|`]*)?$"},
+  "version": {"type": "string", "pattern": "^[A-Za-z0-9._+-]{1,40}$"},
+  "contact": {"type": "string", "pattern": "^@?[A-Za-z0-9_-]{1,39}$"},
+  "consent": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": ["listing", "data_license", "testnet_only"],
+   "properties": {
+    "listing": {"const": true},
+    "data_license": {"const": true},
+    "testnet_only": {"const": true}
+   }
+  },
+  "source_issue": {"type": "string", "pattern": "^https://github\\.com/[\\w.-]+/[\\w.-]+/issues/[0-9]+$"},
+  "evidence": {"type": ["string", "null"], "pattern": "^evidence/impl-matrix/[a-z0-9][a-z0-9._-]{0,79}$"}
+ }
+}

@@ -698,7 +698,7 @@ def action_evidence(env: dict[str, str] | None = None) -> int:
               f"- Checks: {summary.get('checks', '?')}, failed: {summary.get('failed', '?')}",
               f"- Made with x402-conformance v{__version__} by Optitransfer: {REPO}", "",
               "Check the files with `shasum -a 256 -c SHA256SUMS` from this directory. To list this row, open the",
-              f"'Add or update my row' form ({REPO}/issues/new?template=add-or-update-row.yml) or a PR that adds this",
+              f"'Add or update my row' form ({REPO}/issues/new?template=matrix-row.yml) or a PR that adds this",
               "directory as evidence/impl-matrix/<row>/ (docs/MATRIX.md, Rerun or get listed).", ""]
     with open(os.path.join(out, "README.md"), "w") as f:
         f.write("\n".join(readme))

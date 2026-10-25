@@ -183,7 +183,10 @@ class RowFormat(unittest.TestCase):
         self.assertEqual(run("--check", root=self.tmp)[0], 0)
 
     def test_the_matrix_has_no_score_rank_or_certified_wording(self) -> None:
-        md = open(os.path.join(ROOT, "docs", "MATRIX.md"), encoding="utf-8").read()
+        # Our own headers and prose only: a third-party project name (for example agent-score) is not wording.
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        from matrix_rows import own_text
+        md = own_text(open(os.path.join(ROOT, "docs", "MATRIX.md"), encoding="utf-8").read())
         self.assertNotRegex(md, r"(?i)\bcertified\b|\boverall score\b|\branking\b|\branked\b")
 
 

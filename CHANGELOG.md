@@ -1,5 +1,12 @@
 # Changelog
 ## Unreleased
+- Add your project to the matrix (proposed task XC-96): the "Add or update my row" issue form
+  (`.github/ISSUE_TEMPLATE/matrix-row.yml`) asks for public details only and three required consents (listing, CC BY
+  4.0 for public results, testnet-only probes). The `matrix-row` workflow checks it with `tools/matrix_rows.py` against
+  `matrix/schema/row.schema.json` and the public-safe rules (no emails, no secrets, https links, a public handle),
+  labels it, comments what to fix, and opens a pull request adding or updating `matrix/rows/<slug>.json` for review.
+  Pasted evidence goes through the same refusals as `tools/row_from_evidence.py`. Nothing merges automatically. The
+  "Listed projects" table in `docs/MATRIX.md` is generated from the rows and checked in CI.
 - Run it yourself (proposed task XC-94): the Action's `evidence: true` and `row:` inputs write one matrix row's
   evidence bundle (the run.json as written, a README and `SHA256SUMS`) and upload it as an artifact. A mainnet network
   is refused before any request, and so is a run graded on mainnet or with a facilitator off loopback. New

@@ -12,8 +12,11 @@ Thanks for helping. This project is experimental. Review happens in the open, th
   "Share a corpus case" issue form. [corpus/README.md](corpus/README.md) explains the format.
 
 - **Your own row in the matrix.** Run the suite on your own testnet or devnet endpoint or a local build
-  ([docs/RUN-IT-YOURSELF.md](docs/RUN-IT-YOURSELF.md)), open the "Add or update my row" issue, then a PR made with
-  `python3 tools/row_from_evidence.py <bundle> --row <row> --consent <issue URL>`. CI rebuilds the row and its badge.
+  ([docs/RUN-IT-YOURSELF.md](docs/RUN-IT-YOURSELF.md)) and open the "Add or update my row" issue
+  (`.github/ISSUE_TEMPLATE/matrix-row.yml`), pasting your run.json if you have one. The `matrix-row` workflow checks it
+  against `matrix/schema/row.schema.json` and opens a PR with `matrix/rows/<slug>.json` for review; or make the PR
+  yourself with `python3 tools/row_from_evidence.py <bundle> --row <row> --consent <issue URL>`. CI rebuilds the row
+  and its badge. Nothing is listed without the consents in the form.
 - **New checks.** Open an issue with the "check proposal" template. Quote the exact x402 spec text and its section. Every check needs a test that fails against a faulty build (a double, a server or a client) and passes against a stock control.
 - **[Proofline](https://github.com/Optitransfer/proofline).** Scope and acceptance criteria live in `proofline.json`. A pull request that adds work outside every task's scope fails the `vv` job. Contract changes are proposed in a PR, and the owner re-signs them.
 - **Downstream docs, contracts and tests.** On a pull request CI runs `python3 tools/interdeps.py --gate --base origin/<base>`. It fails when your change leaves a doc, contract or test component directly downstream neither touched nor acknowledged, and lists the rest for review. If you checked one and it needs no change, add a line `Interdeps-Ack: <component>[, <component>] - <reason>` to a commit message or the pull request body.
