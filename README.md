@@ -3,9 +3,9 @@
 **Prove your x402 payments can't double-credit, credit too early or credit on a broken answer, in one CI step.**
 
 [![ci](https://github.com/atsp-protocol/x402-conformance/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/atsp-protocol/x402-conformance/actions/workflows/ci.yml)
-[![release](https://img.shields.io/github/v/release/atsp-protocol/x402-conformance)](https://github.com/atsp-protocol/x402-conformance/releases/latest)
-[![PyPI](https://img.shields.io/pypi/v/x402-conformance?label=PyPI)](https://pypi.org/project/x402-conformance/)
-[![npm](https://img.shields.io/npm/v/x402-conformance-svm?label=npm)](https://www.npmjs.com/package/x402-conformance-svm)
+[![release](https://img.shields.io/github/v/release/atsp-protocol/x402-conformance?cacheSeconds=3600)](https://github.com/atsp-protocol/x402-conformance/releases/latest)
+[![PyPI](https://img.shields.io/pypi/v/x402-conformance?label=PyPI&cacheSeconds=3600)](https://pypi.org/project/x402-conformance/)
+[![npm](https://img.shields.io/npm/v/x402-conformance-svm?label=npm&cacheSeconds=3600)](https://www.npmjs.com/package/x402-conformance-svm)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-x402%20Conformance-blue?logo=github)](https://github.com/marketplace/actions/x402-conformance)
 [![licence](https://img.shields.io/github/license/atsp-protocol/x402-conformance)](LICENSE)
 [![Tested with x402-conformance](https://img.shields.io/badge/tested%20with-x402--conformance-2ea44f)](https://github.com/atsp-protocol/x402-conformance)
