@@ -1,0 +1,178 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-51, named in docs/ROADMAP.md and docs/MATRIX.md: the verify-only F checks (F1, F2, F12, F13, F14) over real /verify on Base Sepolia (eip155:84532) against each launchable self-hosted open-source facilitator column, run on 127.0.0.1 as the owner's own instance with throwaway testnet keys and no /settle. Nothing here is binding and vv does not read this file. The task becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except the regression guard (AC09: the offline suite and the Solana devnet tests pass unchanged), scope and pushed fails on the v1.6.0 tree and passes at the commit that lands the work (checked against a local clone of v1.6.0 on 2026-10-25). Evidence goes to evidence/self-hosted/, never evidence/matrix/, so it cannot be counted towards XC-M2 (operator-permission reports).",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway Base Sepolia keypairs and faucet testnet USDC are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing column is reported to that project privately first (SECURITY.md). Until the window clears its row and evidence summary say 'under disclosure' and carry no per-check detail; the raw run stays off the public tree."
+  },
+  "tasks": [
+    {
+      "id": "XC-51",
+      "title": "Self-hosted open-source facilitators as matrix columns: verify-only F checks over real /verify on Base Sepolia, loopback only",
+      "phase": "verify",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-M1",
+        "XC-46",
+        "XC-49",
+        "XC-50"
+      ],
+      "requirements": [
+        "R-MATRIX",
+        "R-SAFE-GET"
+      ],
+      "description": "x402conf devnet gains --network eip155:84532 and --verify-only. With --verify-only the runner drives only POST /verify on a facilitator bound to 127.0.0.1, with an EIP-3009 exact payer built from throwaway keys, and runs F1 (malformed input fails closed), F2 (dust and underpayment), F12 (unsupported network or non-token asset), F13 (asset substitution) and F14 (network substitution). It never calls /settle, refuses any non-loopback facilitator and refuses any mainnet CAIP-2 id. tools/self_hosted_matrix.py builds each launchable column in docs/MATRIX.md (Self-hosted open-source facilitators) at its pinned commit, records evidence/self-hosted/<column>/run.json and SHA256SUMS, and --check fails when a launchable Base Sepolia V2 row has no evidence, a hash does not match, a run calls anything off loopback, or a run with a failing check is not marked 'under disclosure'. A column that cannot start at its pin is a setup failure with the reason, never a pass.",
+      "scope": {
+        "allow": [
+          "src/x402conf/devnet/**",
+          "src/x402conf/cli.py",
+          "tests/test_devnet.py",
+          "tests/test_self_hosted_matrix.py",
+          "tools/self_hosted_matrix.py",
+          "tools/interdeps.py",
+          "evidence/self-hosted/**",
+          ".github/workflows/ci.yml",
+          "docs/**",
+          "README.md",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-51-AC01",
+          "mandatory": true,
+          "statement": "x402conf devnet accepts Base Sepolia and a verify-only mode",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m x402conf devnet --help | grep -q 'eip155:84532' && PYTHONPATH=src python3 -m x402conf devnet --help | grep -q -- '--verify-only'",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-51-AC02",
+          "mandatory": true,
+          "statement": "In verify-only mode a recording loopback facilitator sees zero /settle calls across every check",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_devnet.DevnetEvm.test_verify_only_never_calls_settle",
+            "expect_exit": 0,
+            "timeout_s": 300
+          }
+        },
+        {
+          "id": "XC-51-AC03",
+          "mandatory": true,
+          "statement": "A non-loopback facilitator URL and a mainnet CAIP-2 id (eip155:8453) are both refused before any request is sent",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_devnet.DevnetEvm.test_refuses_non_loopback tests.test_devnet.DevnetEvm.test_refuses_mainnet",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-51-AC04",
+          "mandatory": true,
+          "statement": "Each verify-only check (F1, F2, F12, F13, F14) catches its fault-injected loopback build on the EVM path, and the reference build passes all five",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_devnet.DevnetEvm.test_reference_passes_verify_only tests.test_devnet.DevnetEvm.test_f1_caught tests.test_devnet.DevnetEvm.test_f2_caught tests.test_devnet.DevnetEvm.test_f12_caught tests.test_devnet.DevnetEvm.test_f13_caught tests.test_devnet.DevnetEvm.test_f14_caught",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-51-AC05",
+          "mandatory": true,
+          "statement": "Every launchable Base Sepolia V2 column in docs/MATRIX.md has evidence whose hashes verify, no run calls anything off loopback, and every failing run is marked 'under disclosure'",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/self_hosted_matrix.py --check",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-51-AC06",
+          "mandatory": true,
+          "statement": "The checker detects a missing evidence folder, a hash mismatch, an off-loopback URL in a run and an unmarked failing row",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_self_hosted_matrix",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-51-AC07",
+          "mandatory": true,
+          "statement": "At least nine self-hosted columns carry hashed evidence, and every committed run is on eip155:84532 with zero /settle calls",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 -c \"import glob,json,os,re,sys;ds=[d for d in glob.glob('evidence/self-hosted/*/') if os.path.isfile(d+'SHA256SUMS') and os.path.isfile(d+'run.json')];bad=[d for d in ds if (lambda r:r.get('network')!='eip155:84532' or r.get('settle_calls',1)!=0 or re.search(r'eip155:8453(?!2)',json.dumps(r)))(json.load(open(d+'run.json')))];print(len(ds),bad);sys.exit(0 if len(ds)>=9 and not bad else 1)\"",
+            "expect_exit": 0,
+            "timeout_s": 60
+          }
+        },
+        {
+          "id": "XC-51-AC08",
+          "mandatory": true,
+          "statement": "docs/MATRIX.md no longer defers the self-hosted F checks to XC-51",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/MATRIX.md",
+            "pattern": "F checks with XC-51|once XC-51 lands",
+            "must": "absent"
+          }
+        },
+        {
+          "id": "XC-51-AC09",
+          "mandatory": true,
+          "statement": "The full offline suite and the existing Solana devnet tests pass unchanged",
+          "verifier": {
+            "type": "command",
+            "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline tests.test_devnet.Devnet",
+            "expect_exit": 0,
+            "timeout_s": 600
+          }
+        },
+        {
+          "id": "XC-51-AC10",
+          "mandatory": true,
+          "statement": "CI runs the self-hosted evidence check on every push",
+          "verifier": {
+            "type": "grep",
+            "file": ".github/workflows/ci.yml",
+            "pattern": "tools/self_hosted_matrix\\.py --check",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-51-AC11",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-51-AC12",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Never call a hosted facilitator, never call /settle, never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens.",
+        "A failing third-party column is not published with per-check detail until SECURITY.md's disclosure window clears; if the checker would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}
