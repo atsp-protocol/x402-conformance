@@ -66,7 +66,7 @@ graph LR
   XC_87["XC-87<br/>C2 and C3 not applicable to a client declared no..."]
   XC_88["XC-88<br/>Polite pacing for live targets: --min-interval a..."]
   XC_89["XC-89<br/>x402conf-svm mcp: X1 and the offer checks on one..."]
-  XC_90("XC-90<br/>R24: null, empty and non-object payment headers,...")
+  XC_90["XC-90<br/>R24: null, empty and non-object payment headers,..."]
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -204,7 +204,6 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_08,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_20,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_48,XC_49,XC_50,XC_M1,XC_M3,XC_M4 done
-  class XC_90 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -271,7 +270,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-87 C2 and C3 not applicable to a client declared not to sign, shown as N/A in every report | implement | signed | XC-44, XC-45, XC-11 | - | R-C2, R-C3 | 7 (command 4, grep 1, pushed 1, scope 1) | `ts/src/client-offers.ts`; `ts/src/client-version.ts`; `ts/src/probe.ts`; `ts/src/report.ts`; `ts/src/index.ts`; `ts/test/client-offers.test.ts`; `ts/test/client-version.test.ts`; `src/x402conf/cli.py`; `tests/test_discovery_pacing.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-88 Polite pacing for live targets: --min-interval and --max-requests on every live request, logged | implement | signed | XC-01, XC-11, XC-42, XC-39 | XC-89 | R-SAFE-GET, R-R24 | 7 (command 4, grep 1, pushed 1, scope 1) | `src/x402conf/pacing.py`; `src/x402conf/cli.py`; `src/x402conf/harness.py`; `ts/src/pace.ts`; `ts/src/cli.ts`; `ts/src/header.ts`; `ts/src/resource.ts`; `ts/src/index.ts`; `ts/test/pace.test.ts`; `tests/test_discovery_pacing.py`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-89 x402conf-svm mcp: X1 and the offer checks on one unpaid call of a paid MCP tool, paced | implement | signed | XC-33, XC-88 | - | R-MCP, R-SAFE-GET | 8 (command 5, grep 1, pushed 1, scope 1) | `ts/src/mcp-transport.ts`; `ts/src/mcp-seller.ts`; `ts/src/cli.ts`; `ts/src/index.ts`; `ts/example/mcp-server.ts`; `ts/test/mcp-seller.test.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `ts/README.md`; `CHANGELOG.md` |
-| XC-90 R24: null, empty and non-object payment headers, and the V1 X-PAYMENT header | implement | proposed | XC-42 | - | R24 | 5 (command 5) | `ts/src/header.ts`; `ts/test/malformed-header.test.ts`; `ts/example/**`; `docs/SPEC.md`; `docs/COVERAGE.md`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
+| XC-90 R24: null, empty and non-object payment headers, and the V1 X-PAYMENT header | implement | signed | XC-42 | - | R24 | 5 (command 5) | `ts/src/header.ts`; `ts/test/malformed-header.test.ts`; `ts/example/**`; `docs/SPEC.md`; `docs/COVERAGE.md`; `README.md`; `CHANGELOG.md`; `corpus/cases/**` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | done | XC-05 | XC-51 | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |
