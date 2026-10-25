@@ -10,6 +10,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
   actions: read
 concurrency:
   group: matrix-freshness
@@ -28,7 +29,25 @@ jobs:
         with:
           python-version: "3.12"
       - name: Check releases and pull vendor evidence
-        run: python3 tools/matrix_freshness.py --today "$(date -u +%F)"
+        run: python3 tools/matrix_freshness.py --today "$(date -u +%F)" --notices "$RUNNER_TEMP/notices.jsonl"
+      - name: Renewal heads-up for free run programs at five months
+        run: |
+          [ -s "$RUNNER_TEMP/notices.jsonl" ] || exit 0
+          while IFS= read -r line; do
+            printf '%s' "$line" > "$RUNNER_TEMP/n.json"
+            python3 - "$RUNNER_TEMP/n.json" "$RUNNER_TEMP/n.md" "$RUNNER_TEMP/n.title" <<'PY'
+          import json, sys
+          n = json.load(open(sys.argv[1]))
+          open(sys.argv[3], "w").write(f"Free run program: renewal heads-up for {n['slug']}")
+          open(sys.argv[2], "w").write(
+              f"{n['contact']}, the free run program for `{n['slug']}` ({n['issue']}) ends on {n['program_end']}. "
+              "Until then each new release is rerun from the queue. If you'd like another six months, reply here and "
+              "I'll renew it. After the end date your row stays listed with its last result, marked stale, and the "
+              "badge greys out; nothing is deleted. Running the suite yourself with the Action stays free and "
+              "unlimited.\n")
+          PY
+            gh issue create --title "$(cat "$RUNNER_TEMP/n.title")" --body-file "$RUNNER_TEMP/n.md" --label matrix-row
+          done < "$RUNNER_TEMP/notices.jsonl"
       - name: Open a pull request for review
         run: |
           git add matrix/rows docs/MATRIX.md docs/compat-matrix.json docs/site/badge docs/site/matrix evidence/impl-matrix

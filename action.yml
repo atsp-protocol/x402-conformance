@@ -134,6 +134,13 @@ inputs:
     description: The matrix row name for evidence mode, e.g. myserver-1.2.0 (lower case letters, digits, '.', '_', '-').
     required: false
     default: ""
+  evidence-upload:
+    description: >-
+      With evidence mode, "false" keeps the bundle in the evidence-dir output without uploading it, for a caller that
+      seals it first (the x402-conformance run queue sends full results to the project privately before anything is
+      public).
+    required: false
+    default: "true"
 outputs:
   result:
     description: '"pass" when every requested check passed, "unsupported" when the probe found nothing it could grade, otherwise "fail".'
@@ -302,7 +309,7 @@ runs:
         X402C_NETWORK: ${{ inputs.network }}
       run: python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_evidence())'
     - name: Upload the evidence bundle
-      if: always() && inputs.evidence == 'true' && steps.evidence.outputs.evidence-dir != ''
+      if: always() && inputs.evidence == 'true' && inputs.evidence-upload != 'false' && steps.evidence.outputs.evidence-dir != ''
       uses: actions/upload-artifact@v4
       with:
         name: x402-conformance-evidence-${{ inputs.row }}

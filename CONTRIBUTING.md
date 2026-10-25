@@ -16,7 +16,8 @@ Thanks for helping. This project is experimental. Review happens in the open, th
   (`.github/ISSUE_TEMPLATE/matrix-row.yml`), pasting your run.json if you have one. The `matrix-row` workflow checks it
   against `matrix/schema/row.schema.json` and opens a PR with `matrix/rows/<slug>.json` for review; or make the PR
   yourself with `python3 tools/row_from_evidence.py <bundle> --row <row> --consent <issue URL>`. CI rebuilds the row
-  and its badge. Nothing is listed without the consents in the form.
+  and its badge. Nothing is listed without the consents in the form. Or join the free run program
+  (docs/MATRIX.md, Free run program): I run it for you, and your notify hook queues reruns.
 - **New checks.** Open an issue with the "check proposal" template. Quote the exact x402 spec text and its section. Every check needs a test that fails against a faulty build (a double, a server or a client) and passes against a stock control.
 - **[Proofline](https://github.com/Optitransfer/proofline).** Scope and acceptance criteria live in `proofline.json`. A pull request that adds work outside every task's scope fails the `vv` job. Contract changes are proposed in a PR, and the owner re-signs them.
 - **Downstream docs, contracts and tests.** On a pull request CI runs `python3 tools/interdeps.py --gate --base origin/<base>`. It fails when your change leaves a doc, contract or test component directly downstream neither touched nor acknowledged, and lists the rest for review. If you checked one and it needs no change, add a line `Interdeps-Ack: <component>[, <component>] - <reason>` to a commit message or the pull request body.

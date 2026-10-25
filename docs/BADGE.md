@@ -11,15 +11,19 @@ the row is stale (no run within 30 days of the weekly release check, or behind t
 the badge turns grey and reads "stale". `python3 tools/matrix_rows.py --write` builds it from `matrix/rows/<slug>.json`
 and the evidence, and CI fails if a badge is missing, stale or has no listed row.
 
-Copy-paste, with your slug (each row on the Pages matrix shows its own):
+Listed projects display the badge in their README with attribution to Optitransfer/x402-conformance. Copy-paste
+README snippet, with your slug (each row in MATRIX.md and on the Pages matrix shows its own):
 
 ```
-[![Tested with x402-conformance · Optitransfer](https://atsp-protocol.github.io/x402-conformance/badge/<slug>.svg)](https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>)
+[![Tested with x402-conformance · Optitransfer](https://atsp-protocol.github.io/x402-conformance/badge/<slug>.svg)](https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>) Conformance tested by [Optitransfer/x402-conformance](https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>)
 ```
 
 ```
-<a href="https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>"><img src="https://atsp-protocol.github.io/x402-conformance/badge/<slug>.svg" alt="Tested with x402-conformance · Optitransfer"></a>
+<a href="https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>"><img src="https://atsp-protocol.github.io/x402-conformance/badge/<slug>.svg" alt="Tested with x402-conformance · Optitransfer"></a> Conformance tested by <a href="https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>">Optitransfer/x402-conformance</a>
 ```
+
+The weekly freshness check reads your public README through the GitHub API, a plain read with no referrer and nothing
+embedded. If the README no longer links your row or badge, your row is flagged "badge in README: missing (flagged)".
 
 ## Terms
 
@@ -32,7 +36,7 @@ Copy-paste, with your slug (each row on the Pages matrix shows its own):
   approval, and don't use the x402 logo with it.
 - A row, and so its badge, exists only with the project's consent, recorded in the "Add or update my row" issue or the
   PR.
-- The badge and the matrix data are CC BY 4.0 ([DATA-LICENSE](../DATA-LICENSE)): "x402-conformance by Optitransfer".
+- The badge and the matrix data are CC BY 4.0 ([DATA-LICENSE](../DATA-LICENSE)): "Optitransfer/x402-conformance".
 
 ## Privacy
 

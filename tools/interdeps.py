@@ -301,7 +301,8 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
      "the implementation matrix workflow: the probe against stock servers at pinned versions, one job per evidence row"),
     ("compat-matrix", "code", ("tools/compat_matrix.py", "tools/row_from_evidence.py", ".github/workflows/compat-matrix.yml",
                        "tools/matrix_rows.py", "matrix/**", ".github/workflows/matrix-row.yml",
-                       "tools/matrix_freshness.py", ".github/workflows/matrix-freshness.yml"),
+                       "tools/matrix_freshness.py", ".github/workflows/matrix-freshness.yml",
+                       "tools/run_queue.py", ".github/workflows/run-queue.yml"),
      "the compatibility matrix: docs/compat-matrix.json and the table in docs/MATRIX.md, generated from the "
      "implementation-matrix runs and rebuilt on a schedule"),
     ("readme", "doc", ("README.md", "RELEASES.md"), "the project README and the release map"),

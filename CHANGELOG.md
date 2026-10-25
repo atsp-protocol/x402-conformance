@@ -1,5 +1,21 @@
 # Changelog
 ## Unreleased
+- Free run program (proposed task XC-97). I run the suite for a project, free: one initial run, then queued reruns
+  on new releases only, for six months from consent (`program_start`, `program_end` in the row).
+  - In return the project is listed with its results, displays the badge in its README with "Conformance tested by
+    Optitransfer/x402-conformance", and installs the notify hook (`docs/templates/x402-conformance-notify.yml`, on
+    release published).
+  - The `run-queue` workflow and `tools/run_queue.py` keep one queue entry per slug on the `run-queue` branch and run
+    within `matrix/queue/caps.json`: at least 5 s between probes, testnet ids, the loopback double, zero spend.
+  - The project's code runs in a read-only job with no secrets. Full results are sealed to the maintainer's key and
+    go to the project privately first. A maintainer's publish comment then opens the row PR.
+  - A renewal heads-up issue opens at five months. After the end date the row stays listed with its last result,
+    marked stale, and the badge greys out. Self-runs with the Action stay free and unlimited.
+  - The form adds the badge consent ("Display the badge in our README with attribution to
+    Optitransfer/x402-conformance"), the hook checkbox, the start command and the paid route.
+  - The weekly check flags a row whose public README no longer links it.
+  - The Action gains `evidence-upload`.
+  - The attribution line is now "Optitransfer/x402-conformance" throughout.
 - Opt-in matrix (proposed task XC-96): only projects that accept are listed. `docs/MATRIX.md` is compact: a coverage
   summary of accepted projects (by type, chain, language and environment), the accepted projects with evidence, a
   labelled example row, and the suite's reference baseline; the full searchable table is generated on Pages

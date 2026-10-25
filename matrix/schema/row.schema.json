@@ -118,7 +118,8 @@
    "required": [
     "listing",
     "data_license",
-    "testnet_only"
+    "testnet_only",
+    "badge"
    ],
    "properties": {
     "listing": {
@@ -129,6 +130,14 @@
     },
     "testnet_only": {
      "const": true
+    },
+    "badge": {
+     "description": "Display the badge in our README with attribution to Optitransfer/x402-conformance",
+     "const": true
+    },
+    "hook": {
+     "description": "Free run program: the project installs the notify hook so new releases and commits join the run queue",
+     "type": "boolean"
     }
    }
   },
@@ -181,8 +190,69 @@
       "null"
      ],
      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "readme_badge": {
+     "description": "Whether the project's public README links its row or badge, as of checked_at; null when not checked",
+     "type": [
+      "boolean",
+      "null"
+     ]
     }
    }
+  },
+  "run": {
+   "description": "Free run program: how the queue runner starts the project's server from its own repository, on loopback behind the facilitator double",
+   "type": [
+    "object",
+    "null"
+   ],
+   "additionalProperties": false,
+   "required": [
+    "start",
+    "path"
+   ],
+   "properties": {
+    "start": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 200,
+     "pattern": "^[A-Za-z0-9 ._/:=+@,&-]+$"
+    },
+    "path": {
+     "type": "string",
+     "maxLength": 200,
+     "pattern": "^/[A-Za-z0-9._~/-]*$"
+    },
+    "port": {
+     "type": "integer",
+     "minimum": 1024,
+     "maximum": 65535
+    }
+   }
+  },
+  "program_start": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+   "description": "Free run program: the day the project consented (the hook ticked); queued reruns on new releases run until program_end"
+  },
+  "program_end": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+   "description": "Free run program: six months after program_start. After it the row stays listed with its last result, marked stale, and the badge greys out; nothing is deleted"
+  },
+  "program_notice": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+   "description": "The day the five-month renewal heads-up issue was opened (written by tools/matrix_freshness.py)"
   }
  }
 }

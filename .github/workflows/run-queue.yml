@@ -1,0 +1,220 @@
+# XC-97, the free run program: one free initial run for a listed project in the program, then a rerun for each new
+# release its notify hook reports, for six months from consent. This workflow queues requests, runs them within
+# matrix/queue/caps.json, seals the full results to the maintainer's key, and tells the project they will reach it
+# privately. Only after that does a maintainer's `/x402-conformance publish slug=<slug> run=<id>` comment open the
+# pull request updating matrix/rows/<slug>.json for review. The project's code runs only in the `run` job, with
+# read-only permissions and no secrets, on loopback behind the facilitator double with testnet ids: no hosted
+# facilitator, no mainnet, no spend. Queue state lives on the run-queue branch (matrix/queue/<slug>.json). Nothing
+# merges automatically. Setup: the repository variable X402C_QUEUE_AGE_RECIPIENT (an age public key) and the secret
+# X402C_QUEUE_AGE_KEY (its private key); without them nothing is sealed and nothing is published.
+name: run-queue
+on:
+  issue_comment:
+    types: [created]
+  repository_dispatch:
+    types: [x402-conformance-run]
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  enqueue:
+    if: >-
+      github.event_name == 'repository_dispatch' ||
+      (github.event_name == 'issue_comment' && !github.event.issue.pull_request &&
+       contains(github.event.issue.labels.*.name, 'matrix-row') &&
+       startsWith(github.event.comment.body, '/x402-conformance run'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      COMMENT_BODY: ${{ github.event.comment.body }}
+      ISSUE_URL: ${{ github.event.issue.html_url }}
+      AUTHOR: ${{ github.event.comment.user.login }}
+      ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+      PAYLOAD: ${{ toJSON(github.event.client_payload) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Queue the request
+        run: |
+          # Untrusted text reaches the tool only as files.
+          git config user.name "mgillr"
+          git config user.email "36207807+mgillr@users.noreply.github.com"
+          if git fetch -q origin run-queue; then git worktree add -q queue-state origin/run-queue && git -C queue-state checkout -q -B run-queue;
+          else git worktree add -q --detach queue-state && git -C queue-state checkout -q --orphan run-queue && git -C queue-state rm -rfq . ; fi
+          if [ "$GITHUB_EVENT_NAME" = repository_dispatch ]; then
+            printf '%s' "$PAYLOAD" > "$RUNNER_TEMP/req.json"; src=(--dispatch "$RUNNER_TEMP/req.json")
+          else
+            printf '%s' "$COMMENT_BODY" > "$RUNNER_TEMP/req.md"
+            src=(--comment "$RUNNER_TEMP/req.md" --issue-url "$ISSUE_URL" --author "$AUTHOR" --issue-author "$ISSUE_AUTHOR")
+          fi
+          python3 tools/run_queue.py enqueue --queue queue-state --now "$(date -u +%FT%TZ)" "${src[@]}"
+          cd queue-state && git add -A && { git diff --cached --quiet || git commit -qm "run-queue: request from $GITHUB_EVENT_NAME"; }
+          for i in 1 2 3; do git push -q origin HEAD:run-queue && break; git pull -q --rebase origin run-queue; done
+  pick:
+    needs: enqueue
+    if: >-
+      always() && needs.enqueue.result != 'failure' &&
+      (github.event_name != 'issue_comment' || needs.enqueue.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: run-queue-runner
+      cancel-in-progress: false
+    outputs:
+      slug: ${{ steps.next.outputs.slug }}
+      repo: ${{ steps.next.outputs.repo }}
+      ref: ${{ steps.next.outputs.ref }}
+      version: ${{ steps.next.outputs.version }}
+      start: ${{ steps.next.outputs.start }}
+      path: ${{ steps.next.outputs.path }}
+      port: ${{ steps.next.outputs.port }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - id: next
+        name: Pick the next run within the caps
+        run: |
+          git config user.name "mgillr"
+          git config user.email "36207807+mgillr@users.noreply.github.com"
+          git fetch -q origin run-queue || { echo "slug=" >> "$GITHUB_OUTPUT"; exit 0; }
+          git worktree add -q queue-state origin/run-queue && git -C queue-state checkout -q -B run-queue
+          python3 tools/run_queue.py next --queue queue-state --now "$(date -u +%FT%TZ)" --github-output "$GITHUB_OUTPUT"
+          cd queue-state && git add -A && { git diff --cached --quiet || { git commit -qm "run-queue: pick"; git push -q origin HEAD:run-queue; }; }
+  run:
+    needs: pick
+    if: needs.pick.outputs.slug != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Check out the project at the release (or its default branch for the initial run)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.pick.outputs.repo }}
+          ref: ${{ needs.pick.outputs.ref }}
+          path: vendor
+          persist-credentials: false
+      - id: x402
+        name: Run the suite on loopback, testnet ids, no spend
+        uses: ./
+        with:
+          resource-url: http://127.0.0.1:${{ needs.pick.outputs.port }}${{ needs.pick.outputs.path }}
+          start: cd vendor && PORT=${{ needs.pick.outputs.port }} ${{ needs.pick.outputs.start }}
+          network: auto
+          evidence: true
+          evidence-upload: false
+          row: ${{ needs.pick.outputs.slug }}
+          fail-on-error: false
+      - name: Seal the full results to the maintainer's key (they go to the project privately first)
+        env:
+          RECIPIENT: ${{ vars.X402C_QUEUE_AGE_RECIPIENT }}
+          EVIDENCE_DIR: ${{ steps.x402.outputs.evidence-dir }}
+        run: |
+          [ -n "$RECIPIENT" ] && [ -d "$EVIDENCE_DIR" ] || { echo "no recipient key or no evidence: nothing sealed"; exit 1; }
+          sudo apt-get install -y -qq age >/dev/null
+          tar -C "$EVIDENCE_DIR" -czf - . | age -r "$RECIPIENT" > "$RUNNER_TEMP/sealed.age"
+          rm -rf "$EVIDENCE_DIR" x402-conformance
+      - uses: actions/upload-artifact@v4
+        with:
+          name: x402-queue-sealed-${{ needs.pick.outputs.slug }}
+          path: ${{ runner.temp }}/sealed.age
+          retention-days: 30
+          if-no-files-found: error
+  finish:
+    needs: [pick, run]
+    if: always() && needs.pick.outputs.slug != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SLUG: ${{ needs.pick.outputs.slug }}
+      RUN_RESULT: ${{ needs.run.result }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Record the run and tell the project its results come privately
+        run: |
+          git config user.name "mgillr"
+          git config user.email "36207807+mgillr@users.noreply.github.com"
+          result=failed; [ "$RUN_RESULT" = success ] && result=ok
+          git fetch -q origin run-queue && git worktree add -q queue-state origin/run-queue && git -C queue-state checkout -q -B run-queue
+          python3 tools/run_queue.py finish --queue queue-state --slug "$SLUG" --now "$(date -u +%FT%TZ)" --result "$result" --run-id "$GITHUB_RUN_ID"
+          (cd queue-state && git add -A && git commit -qm "run-queue: $SLUG $result" && \
+            for i in 1 2 3; do git push -q origin HEAD:run-queue && break; git pull -q --rebase origin run-queue; done)
+          issue=$(python3 -c "import json,sys;print(json.load(open('matrix/rows/'+sys.argv[1]+'.json'))['source_issue'])" "$SLUG")
+          if [ "$result" = ok ]; then
+            gh issue comment "$issue" --body "A free run of your project finished (run $GITHUB_RUN_ID). I'll send you the full results privately first; your row is updated after that."
+          fi
+  publish:
+    if: >-
+      github.event_name == 'issue_comment' && !github.event.issue.pull_request &&
+      contains(github.event.issue.labels.*.name, 'matrix-row') &&
+      startsWith(github.event.comment.body, '/x402-conformance publish')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      COMMENT_BODY: ${{ github.event.comment.body }}
+      AUTHOR: ${{ github.event.comment.user.login }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - id: rel
+        name: A maintainer releases a sealed run
+        run: |
+          git config user.name "mgillr"
+          git config user.email "36207807+mgillr@users.noreply.github.com"
+          printf '%s' "$COMMENT_BODY" > "$RUNNER_TEMP/c.md"
+          git fetch -q origin run-queue && git worktree add -q queue-state origin/run-queue && git -C queue-state checkout -q -B run-queue
+          python3 tools/run_queue.py release --queue queue-state --comment "$RUNNER_TEMP/c.md" --author "$AUTHOR" --github-output "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v4
+        with:
+          name: x402-queue-sealed-${{ steps.rel.outputs.slug }}
+          run-id: ${{ steps.rel.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ runner.temp }}/sealed
+      - name: Unseal, turn the evidence into the row and open a pull request for review
+        env:
+          AGE_KEY: ${{ secrets.X402C_QUEUE_AGE_KEY }}
+          SLUG: ${{ steps.rel.outputs.slug }}
+          REF: ${{ steps.rel.outputs.ref }}
+          VERSION: ${{ steps.rel.outputs.version }}
+        run: |
+          [ -n "$AGE_KEY" ] || { echo "no X402C_QUEUE_AGE_KEY: nothing published"; exit 1; }
+          sudo apt-get install -y -qq age >/dev/null
+          umask 077; printf '%s\n' "$AGE_KEY" > "$RUNNER_TEMP/key.txt"
+          mkdir -p "$RUNNER_TEMP/bundle"
+          age -d -i "$RUNNER_TEMP/key.txt" "$RUNNER_TEMP/sealed/sealed.age" | tar -C "$RUNNER_TEMP/bundle" -xzf - --no-same-owner
+          rm -f "$RUNNER_TEMP/key.txt"
+          python3 tools/run_queue.py publish --bundle "$RUNNER_TEMP/bundle" --slug "$SLUG" --ref "$REF" --version "$VERSION"
+          branch="matrix-run/$SLUG-$VERSION"
+          git checkout -q -b "$branch"
+          git add matrix/rows docs/MATRIX.md docs/compat-matrix.json docs/site/badge docs/site/matrix evidence/impl-matrix
+          git diff --cached --quiet && { echo "no change to the row"; exit 0; }
+          git commit -qm "Free run: $SLUG $VERSION"
+          git push -q origin "$branch"
+          printf 'Free run of `%s` (%s) from the run queue (tools/run_queue.py): loopback, testnet ids, no spend; the full results went to the project privately first, and the evidence passed tools/row_from_evidence.py. For review; nothing merges automatically. Pull requests opened by this workflow do not start CI on their own, so a maintainer runs it before merging.\n' "$SLUG" "$VERSION" > "$RUNNER_TEMP/pr.md"
+          gh pr create --base main --head "$branch" --title "Free run: $SLUG $VERSION" --body-file "$RUNNER_TEMP/pr.md" --label matrix-row
+          (cd queue-state && git add -A && git commit -qm "run-queue: $SLUG published" && \
+            for i in 1 2 3; do git push -q origin HEAD:run-queue && break; git pull -q --rebase origin run-queue; done)

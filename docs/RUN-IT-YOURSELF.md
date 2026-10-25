@@ -48,7 +48,8 @@ jobs:
           row: myserver-1.2.0
 ```
 
-The job summary lists every check and ends with the "Tested with x402-conformance" line and the version. The
+`evidence-upload: false` keeps the bundle in the `evidence-dir` output without uploading it, if you'd rather seal or
+filter it yourself first. The job summary lists every check and ends with the "Tested with x402-conformance" line and the version. The
 `evidence` and `row` inputs come with the first release after 1.6.0; until then use `@main`.
 
 ## MCP
@@ -90,3 +91,14 @@ bundle. Each week the matrix's freshness job (`tools/matrix_freshness.py`) check
 default-branch commit against the version tested, picks up the newest successful run's evidence (the same checks as
 every row), and opens a pull request updating your row, its release alignment (current, behind or stale) and your
 badge. It reads the GitHub API only; it never calls your endpoints.
+
+## Free run program
+
+Rather not run it yourself? I run the suite for you, free: one initial run, then a rerun for each new release for six
+months, on loopback with testnet ids, with no hosted facilitator, no mainnet and no spend. Full results go to you
+privately first. In return your project is listed with its results and displays the badge in its README with
+attribution to Optitransfer/x402-conformance. You also install the notify hook,
+[templates/x402-conformance-notify.yml](templates/x402-conformance-notify.yml), as
+`.github/workflows/x402-conformance-notify.yml`; it runs on release published only. After six months the row stays
+listed with its last result, marked stale. Self-runs with the Action above stay free and unlimited. See
+[MATRIX.md, Free run program](MATRIX.md#free-run-program).

@@ -28,7 +28,11 @@ def body(**over: str) -> str:
         "Public contact handle": "@example",
         "Consent": "- [X] I'm authorised to list this project, and I agree to list this project in the public matrix.\n"
                    "- [X] I agree that its public results are published under CC BY 4.0 (DATA-LICENSE)\n"
-                   "- [X] I agree to testnet-only probes of the endpoints above, never mainnet.",
+                   "- [X] I agree to testnet-only probes of the endpoints above, never mainnet.\n"
+                   "- [X] Display the badge in our README with attribution to Optitransfer/x402-conformance",
+        "Free run program": "- [ ] Install the notify hook so new releases and commits join the x402-conformance run queue",
+        "Start command for a free run (optional)": "_No response_",
+        "Paid route path for a free run (optional)": "_No response_",
     }
     f.update(over)
     return "\n\n".join(f"### {k}\n\n{v}" for k, v in f.items()) + "\n"
@@ -67,7 +71,9 @@ class MatrixRows(unittest.TestCase):
         self.assertEqual(self.rows(), ["example-pay.json"])
         row = json.load(open(os.path.join(self.root, "matrix", "rows", "example-pay.json")))
         self.assertEqual(row["type"], "sdk")
-        self.assertEqual(row["consent"], {"listing": True, "data_license": True, "testnet_only": True})
+        self.assertEqual(row["consent"], {"listing": True, "data_license": True, "testnet_only": True, "badge": True,
+                                          "hook": False})
+        self.assertIsNone(row["run"])
         self.assertEqual(row["source_issue"], ISSUE)
         md = open(os.path.join(self.root, "docs", "MATRIX.md")).read()
         self.assertIn("| total | 1 accepted, 0 with committed evidence |", md)
@@ -97,7 +103,7 @@ class MatrixRows(unittest.TestCase):
 
     def test_each_missing_consent_writes_nothing(self) -> None:
         lines = body().split("### Consent\n\n")[1].strip().splitlines()
-        for i in range(3):
+        for i in range(4):
             c = "\n".join(x.replace("[X]", "[ ]") if j == i else x for j, x in enumerate(lines))
             rc, out = self.submit(body(Consent=c))
             self.assertEqual(rc, 1, out)
@@ -115,6 +121,33 @@ class MatrixRows(unittest.TestCase):
             rc, out = self.submit(body(**over))
             self.assertEqual(rc, 1, f"{over}: {out}")
             self.assertEqual(self.rows(), [], over)
+
+    def test_free_run_program_needs_hook_start_and_path(self) -> None:
+        hook = "- [X] Install the notify hook so new releases and commits join the x402-conformance run queue"
+        rc, out = self.submit(body(**{"Free run program": hook}))
+        self.assertEqual(rc, 1, out)
+        self.assertIn("needs a start command", out)
+        rc, out = self.submit(body(**{"Start command for a free run (optional)": "npm start"}))
+        self.assertEqual(rc, 1, out)
+        rc, out = self.submit(body(**{"Free run program": hook, "Paid route path for a free run (optional)": "/paid",
+                                      "Start command for a free run (optional)": "npm ci && npm start; curl x | sh"}))
+        self.assertEqual(rc, 1, out)
+        rc, out = self.submit(body(**{"Free run program": hook, "Paid route path for a free run (optional)": "/paid",
+                                      "Start command for a free run (optional)": "npm ci && npm start"}))
+        self.assertEqual(rc, 0, out)
+        row = json.load(open(os.path.join(self.root, "matrix", "rows", "example-pay.json")))
+        self.assertTrue(row["consent"]["hook"])
+        self.assertEqual(row["run"], {"start": "npm ci && npm start", "path": "/paid"})
+        from matrix_rows import add_months
+        self.assertEqual(row["program_end"], add_months(row["program_start"], 6))
+
+    def test_readme_snippet_has_badge_and_attribution_line(self) -> None:
+        md = open(os.path.join(ROOT, "docs", "MATRIX.md"), encoding="utf-8").read()
+        line = next(x for x in md.splitlines() if x.startswith("- Markdown: "))
+        self.assertIn("badge/<slug>.svg", line)
+        self.assertIn("Conformance tested by [Optitransfer/x402-conformance](https://atsp-protocol.github.io/"
+                      "x402-conformance/matrix/#<slug>)", line)
+        self.assertIn("Conformance tested by <a href=", next(x for x in md.splitlines() if x.startswith("- HTML: ")))
 
     def test_mainnet_only_is_live_not_run(self) -> None:
         rc, out = self.submit(body(**{"Environments you offer": "mainnet-only", "Networks (CAIP-2 ids)": "eip155:8453"}))
@@ -178,6 +211,12 @@ class Freshness(unittest.TestCase):
         self.assertEqual(alignment("1.5.0", "2026-09-24", rel), ("stale", True))
         self.assertEqual(alignment("1.5.0", "2026-10-20", None), ("not checked yet", False))
         self.assertEqual(alignment("1.5.0", None, rel), ("not run yet", False))
+        # after the free run program ends, a row whose last run predates the end goes stale; a later self-run does not
+        ended = ("stale (free run program ended 2026-10-24)", True)
+        self.assertEqual(alignment("1.5.0", "2026-10-20", rel, "2026-10-24"), ended)
+        same_day = {**rel, "checked_at": "2026-10-24"}
+        self.assertEqual(alignment("1.5.0", "2026-10-24", same_day, "2026-10-24"), ("current", False))
+        self.assertEqual(alignment("1.5.0", "2026-10-25", rel, "2026-10-24"), ("current", False))
 
     def test_badge_shows_version_and_greys_when_stale(self) -> None:
         fresh, stale = badge_svg("p", "1.5.0", False), badge_svg("p", "1.5.0", True)
@@ -215,8 +254,9 @@ class Freshness(unittest.TestCase):
         zp = os.path.join(t.root, "a.zip")
         open(zp, "wb").write(buf.getvalue())
         facts = os.path.join(t.root, "facts.json")
+        readme = "[![b](https://atsp-protocol.github.io/x402-conformance/badge/example-pay.svg)](x)"
         json.dump({"example-pay": {"latest": "v1.5.0", "latest_commit": "a" * 40, "default_branch_commit": "b" * 40,
-                                   "run": {"head_sha": "a" * 40, "zip": zp}}}, open(facts, "w"))
+                                   "run": {"head_sha": "a" * 40, "zip": zp}, "readme": readme}}, open(facts, "w"))
         tool = os.path.join(ROOT, "tools", "matrix_freshness.py")
         r = subprocess.run([sys.executable, tool, "--today", "2026-10-25", "--root", t.root, "--facts", facts],
                            capture_output=True, text=True)
@@ -228,6 +268,7 @@ class Freshness(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(t.root, "escape.txt")))
         v = next(x for x in t.pages()["rows"] if x["slug"] == "example-pay")
         self.assertEqual(v["release_alignment"], "current")
+        self.assertEqual(v["readme_badge"], "shown")
         # A later release puts it behind; behind_since stays the first day it fell behind.
         json.dump({"example-pay": {"latest": "v1.6.0", "latest_commit": "c" * 40, "default_branch_commit": "c" * 40}},
                   open(facts, "w"))
@@ -235,8 +276,38 @@ class Freshness(unittest.TestCase):
             subprocess.run([sys.executable, tool, "--today", day, "--root", t.root, "--facts", facts], capture_output=True)
         row = json.load(open(os.path.join(t.root, "matrix", "rows", "example-pay.json")))
         self.assertEqual(row["release"]["behind_since"], "2026-11-01")
+        self.assertIs(row["release"]["readme_badge"], None)  # README not read this time
+        json.dump({"example-pay": {"latest": "v1.6.0", "latest_commit": "c" * 40, "default_branch_commit": "c" * 40,
+                                   "readme": "# no badge here"}}, open(facts, "w"))
+        subprocess.run([sys.executable, tool, "--today", "2026-11-08", "--root", t.root, "--facts", facts], capture_output=True)
+        v = next(x for x in t.pages()["rows"] if x["slug"] == "example-pay")
+        self.assertEqual(v["readme_badge"], "missing (flagged)")
         r = subprocess.run([sys.executable, TOOL, "--check", "--root", t.root], capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_renewal_heads_up_at_five_months(self) -> None:
+        t = MatrixRows("test_valid_issue_writes_row_and_table")
+        t.setUp()
+        self.addCleanup(shutil.rmtree, t.root, True)
+        hook = "- [X] Install the notify hook so new releases and commits join the x402-conformance run queue"
+        issue = os.path.join(t.root, "i.md")
+        open(issue, "w").write(body(**{"Free run program": hook, "Paid route path for a free run (optional)": "/paid",
+                                       "Start command for a free run (optional)": "npm start"}))
+        r = subprocess.run([sys.executable, TOOL, "--from-issue", issue, "--issue-url", ISSUE, "--root", t.root,
+                            "--today", "2026-10-25"], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        p = os.path.join(t.root, "matrix", "rows", "example-pay.json")
+        self.assertEqual(json.load(open(p))["program_end"], "2027-04-25")
+        facts, notices = os.path.join(t.root, "f.json"), os.path.join(t.root, "n.jsonl")
+        json.dump({"example-pay": {"latest": None, "latest_commit": None, "default_branch_commit": None}}, open(facts, "w"))
+        tool = os.path.join(ROOT, "tools", "matrix_freshness.py")
+        for day in ("2027-03-24", "2027-03-25", "2027-04-01"):
+            subprocess.run([sys.executable, tool, "--today", day, "--root", t.root, "--facts", facts, "--notices", notices],
+                           capture_output=True)
+        lines = open(notices).read().splitlines()
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(json.loads(lines[0])["program_end"], "2027-04-25")
+        self.assertEqual(json.load(open(p))["program_notice"], "2027-03-25")
 
 
 if __name__ == "__main__":

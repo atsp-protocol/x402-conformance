@@ -545,7 +545,7 @@ graph LR
 | corpus | data | `corpus/**` | the corpus of anonymised cases and its fixtures |
 | evidence | data | `evidence/**` | hashed evidence from live and devnet runs |
 | impl-matrix | code | `.github/workflows/impl-matrix.yml` | the implementation matrix workflow: the probe against stock servers at pinned versions, one job per evidence row |
-| compat-matrix | code | `tools/compat_matrix.py`; `tools/row_from_evidence.py`; `.github/workflows/compat-matrix.yml`; `tools/matrix_rows.py`; `matrix/**`; `.github/workflows/matrix-row.yml`; `tools/matrix_freshness.py`; `.github/workflows/matrix-freshness.yml` | the compatibility matrix: docs/compat-matrix.json and the table in docs/MATRIX.md, generated from the implementation-matrix runs and rebuilt on a schedule |
+| compat-matrix | code | `tools/compat_matrix.py`; `tools/row_from_evidence.py`; `.github/workflows/compat-matrix.yml`; `tools/matrix_rows.py`; `matrix/**`; `.github/workflows/matrix-row.yml`; `tools/matrix_freshness.py`; `.github/workflows/matrix-freshness.yml`; `tools/run_queue.py`; `.github/workflows/run-queue.yml` | the compatibility matrix: docs/compat-matrix.json and the table in docs/MATRIX.md, generated from the implementation-matrix runs and rebuilt on a schedule |
 | readme | doc | `README.md`; `RELEASES.md` | the project README and the release map |
 | changelog | doc | `CHANGELOG.md` | the changelog |
 | docs | doc | `docs/**` | architecture, spec mapping, threat model, usage, adoption, matrix and roadmap |
@@ -675,7 +675,7 @@ Every entry point is a thin wrapper over the same suite and corpus.
 | pytest | `--x402-report-dir`, `--x402-share` |
 | x402conf | `--badge`, `--dir`, `--evidence`, `--facilitator`, `--fail-on-error`, `--fault`, `--faults`, `--help`, `--junit`, `--keys`, `--max-requests`, `--min-interval`, `--operator-permission`, `--rpc`, `--sarif`, `--share`, `--version`, `--well-known` |
 | x402conf-svm | `--arguments`, `--by-method`, `--by-query`, `--cheap`, `--crash`, `--crash-kill`, `--crash-restart`, `--expensive`, `--fault`, `--help`, `--max-requests`, `--min-interval`, `--network`, `--no-initialize`, `--out`, `--param`, `--port`, `--resource`, `--retry`, `--share`, `--siwx-cheap`, `--siwx-expensive`, `--start`, `--tool`, `--url`, `--version` |
-| action.yml inputs | `binding-cheap-url`, `binding-expensive-url`, `binding-method-url`, `binding-param-url`, `binding-query-urls`, `binding-siwx-urls`, `crash`, `crash-kill`, `crash-restart`, `evidence`, `facilitator-auth-host`, `facilitators`, `fail-on-error`, `github-token`, `network`, `offline`, `port`, `pr-comment`, `resource-url`, `resources`, `results-dir`, `retry`, `row`, `start` |
+| action.yml inputs | `binding-cheap-url`, `binding-expensive-url`, `binding-method-url`, `binding-param-url`, `binding-query-urls`, `binding-siwx-urls`, `crash`, `crash-kill`, `crash-restart`, `evidence`, `evidence-upload`, `facilitator-auth-host`, `facilitators`, `fail-on-error`, `github-token`, `network`, `offline`, `port`, `pr-comment`, `resource-url`, `resources`, `results-dir`, `retry`, `row`, `start` |
 
 ## Versions
 

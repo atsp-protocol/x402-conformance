@@ -1,7 +1,7 @@
 {
  "schema": "x402-conformance.matrix-pages/1",
  "license": "CC BY 4.0",
- "attribution": "x402-conformance by Optitransfer, https://github.com/atsp-protocol/x402-conformance",
+ "attribution": "Optitransfer/x402-conformance, https://github.com/atsp-protocol/x402-conformance",
  "example": {
   "slug": "example",
   "project": "example-org/example-x402-server",
@@ -28,6 +28,8 @@
   "last_run": "2026-10-20",
   "release_alignment": "behind (v1.4.0 tested, v1.5.0 latest)",
   "stale": false,
+  "readme_badge": "shown",
+  "free_run": true,
   "evidence": "evidence/impl-matrix/<slug>/run.json",
   "example": true
  },

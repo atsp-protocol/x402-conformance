@@ -80,8 +80,39 @@ body:
         - label: I'm authorised to list this project, and I agree to list this project in the public matrix.
           required: true
         - label: >-
-            I agree that its public results are published under CC BY 4.0 (DATA-LICENSE, "x402-conformance by
-            Optitransfer") and to the badge terms in docs/BADGE.md; the badge is not an endorsement.
+            I agree that its public results are published under CC BY 4.0 (DATA-LICENSE, attribution
+            "Optitransfer/x402-conformance") and to the badge terms in docs/BADGE.md; the badge is not an endorsement.
           required: true
         - label: I agree to testnet-only probes of the endpoints above (unpaid GETs, paced at least 5 s apart), never mainnet.
           required: true
+        - label: Display the badge in our README with attribution to Optitransfer/x402-conformance
+          required: true
+  - type: markdown
+    attributes:
+      value: >-
+        **Free run program.** I run the suite for you, free: one initial run, then a rerun for each new release (not
+        every commit) for six months from today. Runs use loopback with testnet ids: never mainnet, never a hosted
+        facilitator, nothing paid. Full results go to you privately first. In return your project is listed with its
+        results and displays the badge in its README with attribution to Optitransfer/x402-conformance, and you
+        install the notify hook
+        ([docs/templates/x402-conformance-notify.yml](https://github.com/atsp-protocol/x402-conformance/blob/main/docs/templates/x402-conformance-notify.yml)),
+        which reports each published release. At five months I open a renewal heads-up issue. After six months your
+        row stays listed with its last result, marked stale, and the badge greys out; nothing is deleted. Running it
+        yourself with the Action stays free and unlimited (docs/RUN-IT-YOURSELF.md): leave this unticked for that.
+  - type: checkboxes
+    id: hook
+    attributes:
+      label: Free run program
+      options:
+        - label: Install the notify hook so each new release joins the x402-conformance run queue (free for six months)
+          required: false
+  - type: input
+    id: start
+    attributes:
+      label: Start command for a free run (optional)
+      description: "Run from your repository root; it must use X402_FACILITATOR_URL as its facilitator and listen on PORT. Example: npm ci && PORT=4020 npm start"
+  - type: input
+    id: path
+    attributes:
+      label: Paid route path for a free run (optional)
+      placeholder: "/paid"

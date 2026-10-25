@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Freshness for listed projects (XC-96): run weekly by .github/workflows/matrix-freshness.yml.
 
-    python3 tools/matrix_freshness.py --today YYYY-MM-DD [--root DIR] [--facts FILE]
+    python3 tools/matrix_freshness.py --today YYYY-MM-DD [--root DIR] [--facts FILE] [--notices FILE]
 
 For each matrix/rows/<slug>.json whose repo is on github.com it reads, through the GitHub API only (`gh api`, no
 request to any x402 endpoint): the latest release (or the newest tag when there is none), its commit, and the
@@ -9,13 +9,21 @@ default-branch commit. It records them in the row's `release` (checked_at, lates
 behind_since), which tools/matrix_rows.py turns into the release-alignment column and the badge (current, behind,
 stale after 30 days).
 
+It also reads the project's public README through the API (a plain read, no referrer, nothing embedded) and records
+readme_badge: true when it links the row or the badge, false when it does not, which flags the row.
+
 When the project runs the vendor workflow (docs/templates/x402-conformance.yml, saved in its repo as
 .github/workflows/x402-conformance.yml), the newest successful run's evidence artifact
 `x402-conformance-evidence-<slug>` is downloaded and goes through tools/row_from_evidence.py with the row's consent
 issue, so the same refusals apply (testnet or devnet only, facilitator on loopback, nothing paid live). The version
 tested becomes the release tag when the run's commit is that tag's commit, else the short commit.
 
---facts FILE replaces the API with a JSON object {slug: {latest, latest_commit, default_branch_commit, run}} (used by
+Free run program: a row whose program started five months ago or more and has no program_notice gets one (today),
+and its slug, contact, issue and program_end are written as a JSON line to --notices FILE; the workflow opens the
+renewal heads-up issue from it. After program_end the row stays listed with its last result and goes stale
+(tools/matrix_rows.py); nothing is deleted.
+
+--facts FILE replaces the API with a JSON object {slug: {latest, latest_commit, default_branch_commit, run, readme}} (used by
 the tests). The tool writes the rows and leaves the commit and the pull request to the workflow.
 """
 from __future__ import annotations
@@ -32,9 +40,13 @@ import tempfile
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+from matrix_rows import add_months  # noqa: E402
+
 ROWS = "matrix/rows"
 GH_REPO = re.compile(r"^https://github\.com/([A-Za-z0-9-]{1,39})/([A-Za-z0-9._-]{1,100})/?$")
 MAX_ZIP = 5 * 1024 * 1024
+PAGES = "https://atsp-protocol.github.io/x402-conformance"
 
 
 def gh(path: str, raw: bool = False) -> object:
@@ -59,6 +71,7 @@ def facts_from_api(row: dict[str, object]) -> dict[str, object] | None:
         latest = tags[0]["name"] if isinstance(tags, list) and tags else None
     tc = gh(f"{base}/commits/{latest}") if latest else None
     head = gh(f"{base}/commits/{repo.get('default_branch')}")
+    readme = subprocess.run(["gh", "api", "-H", "Accept: application/vnd.github.raw", f"{base}/readme"], capture_output=True)
     runs = gh(f"{base}/actions/workflows/x402-conformance.yml/runs?status=success&per_page=1")
     run = None
     if isinstance(runs, dict) and runs.get("workflow_runs"):
@@ -70,7 +83,8 @@ def facts_from_api(row: dict[str, object]) -> dict[str, object] | None:
             run = {"head_sha": r0.get("head_sha"), "created_at": r0.get("created_at"),
                    "zip": gh(f"{base}/actions/artifacts/{art['id']}/zip", raw=True)}
     return {"latest": latest, "latest_commit": tc.get("sha") if isinstance(tc, dict) else None,
-            "default_branch_commit": head.get("sha") if isinstance(head, dict) else None, "run": run}
+            "default_branch_commit": head.get("sha") if isinstance(head, dict) else None, "run": run,
+            "readme": readme.stdout.decode("utf-8", "replace") if readme.returncode == 0 else None}
 
 
 def release(prev: object, version: str, latest: str | None, head: str | None, today: str) -> dict[str, object]:
@@ -79,6 +93,13 @@ def release(prev: object, version: str, latest: str | None, head: str | None, to
     since = prev.get("behind_since") if isinstance(prev, dict) else None
     return {"checked_at": today, "latest": latest, "default_branch_commit": head[:40] if head else None,
             "behind_since": (since or today) if behind else None}
+
+
+def readme_badge(readme: object, slug: str) -> bool | None:
+    """Whether the public README links the project's row or badge (a plain read of the README; nothing is embedded)."""
+    if not isinstance(readme, str):
+        return None
+    return f"{PAGES}/matrix/#{slug}" in readme or f"{PAGES}/badge/{slug}.svg" in readme
 
 
 def unpack(blob: bytes, dest: str) -> bool:
@@ -126,7 +147,8 @@ def ingest(row: dict[str, object], facts: dict[str, object], root: str) -> str:
 
 
 def main(argv: list[str]) -> int:
-    opt = {k: argv[argv.index(k) + 1] for k in ("--root", "--today", "--facts") if k in argv and argv.index(k) + 1 < len(argv)}
+    keys = ("--root", "--today", "--facts", "--notices")
+    opt = {k: argv[argv.index(k) + 1] for k in keys if k in argv and argv.index(k) + 1 < len(argv)}
     root = os.path.abspath(opt.get("--root", ROOT))
     today = opt.get("--today") or datetime.date.today().isoformat()
     datetime.date.fromisoformat(today)
@@ -144,10 +166,20 @@ def main(argv: list[str]) -> int:
         note = ingest(row, facts, root)
         row["release"] = release(row.get("release"), str(row["version"]), facts.get("latest"),  # type: ignore[arg-type]
                                  facts.get("default_branch_commit"), today)  # type: ignore[arg-type]
+        row["release"]["readme_badge"] = readme_badge(facts.get("readme"), str(row["slug"]))
+        start = row.get("program_start")
+        if start and not row.get("program_notice") and today >= add_months(str(start), 5):
+            row["program_notice"] = today
+            if opt.get("--notices"):
+                with open(opt["--notices"], "a", encoding="utf-8") as f:
+                    f.write(json.dumps({"slug": row["slug"], "contact": row["contact"], "issue": row["source_issue"],
+                                        "program_end": row.get("program_end")}) + "\n")
         with open(p, "w", encoding="utf-8") as f:
             json.dump(row, f, indent=1, ensure_ascii=False)
             f.write("\n")
-        print(f"{row['slug']}: latest {row['release']['latest']}, tested {row['version']}; {note}")
+        flag = {True: "README shows the badge", False: "README badge missing (flagged)", None: "README not read"}
+        print(f"{row['slug']}: latest {row['release']['latest']}, tested {row['version']}; {note}; "
+              f"{flag[row['release']['readme_badge']]}")
     return subprocess.run([sys.executable, os.path.join(ROOT, "tools", "matrix_rows.py"), "--write", "--root", root]).returncode
 
 

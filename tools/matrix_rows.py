@@ -40,6 +40,8 @@ COMPAT = "docs/compat-matrix.json"
 PAGE_DIR = "docs/site/matrix"
 BADGES = "docs/site/badge"
 STALE_DAYS = 30
+PROGRAM_MONTHS = 6
+NOTICE_MONTHS = 5
 START, END = "<!-- matrix-rows:start -->", "<!-- matrix-rows:end -->"
 REPO = "https://github.com/atsp-protocol/x402-conformance"
 FORM = f"{REPO}/issues/new?template=matrix-row.yml"
@@ -52,8 +54,11 @@ LABELS = {
     "environments": "Environments you offer", "testnet_endpoint": "Testnet endpoint URL (if any)",
     "version": "Version or commit", "evidence": "Evidence JSON from your own run (optional)",
     "contact": "Public contact handle", "consent": "Consent",
+    "start": "Start command for a free run (optional)", "path": "Paid route path for a free run (optional)",
 }
-CONSENTS = {"listing": "list this project", "data_license": "CC BY 4.0", "testnet_only": "testnet-only probes"}
+CONSENTS = {"listing": "list this project", "data_license": "CC BY 4.0", "testnet_only": "testnet-only probes",
+            "badge": "Display the badge in our README with attribution to Optitransfer/x402-conformance"}
+HOOK = ("Free run program", "Install the notify hook")
 WORDING = re.compile(r"(?i)\bcertified\b|\boverall score\b|\brank(ed|ing)?\b|\b[0-9]{1,3}\s*/\s*100\b|\bscore\s*:")
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 SECRET = re.compile(r"(?i)\b[0-9a-f]{64}\b|-----BEGIN|\bmnemonic\b|\bseed phrase\b|\bprivate key\b|\bsk_live_")
@@ -97,18 +102,32 @@ def wording(md: str) -> list[str]:
             for m in WORDING.finditer(own_text(md))]
 
 
-def from_issue(body: str, issue_url: str) -> tuple[dict[str, object], str, list[str]]:
+def add_months(day: str, n: int) -> str:
+    d = datetime.date.fromisoformat(day)
+    y, m = divmod(d.month - 1 + n, 12)
+    y, m = d.year + y, m + 1
+    last = (datetime.date(y + (m == 12), m % 12 + 1, 1) - datetime.timedelta(days=1)).day
+    return datetime.date(y, m, min(d.day, last)).isoformat()
+
+
+def from_issue(body: str, issue_url: str, today: str = "") -> tuple[dict[str, object], str, list[str]]:
     """The row, any evidence JSON text, and the problems found reading the form."""
     s = sections(body)
     bad: list[str] = []
     for key, label in LABELS.items():
-        if label not in s and key not in ("evidence", "testnet_endpoint", "site"):
+        if label not in s and key not in ("evidence", "testnet_endpoint", "site", "start", "path"):
             bad.append(f"the form has no '{label}' section")
     ticked = {k: bool(re.search(r"^- \[[xX]\] .*" + re.escape(w), s.get(LABELS["consent"], ""), re.M | re.I))
               for k, w in CONSENTS.items()}
     for k, ok in ticked.items():
         if not ok:
             bad.append(f"consent not given: '{CONSENTS[k]}' must be ticked; nothing is listed without it")
+    ticked["hook"] = bool(re.search(r"^- \[[xX]\] .*" + re.escape(HOOK[1]), s.get(HOOK[0], ""), re.M | re.I))
+    start, path = s.get(LABELS["start"], "").strip(), s.get(LABELS["path"], "").strip()
+    if ticked["hook"] and not (start and path):
+        bad.append("the free run program needs a start command and a paid route path")
+    if (start or path) and not ticked["hook"]:
+        bad.append("a start command is used only by the free run program: tick the notify hook, or leave them empty")
     t = s.get(LABELS["type"], "").strip().lower()
     evidence = s.get(LABELS["evidence"], "").strip()
     evidence = re.sub(r"^```(json)?\s*|\s*```$", "", evidence).strip()
@@ -129,7 +148,12 @@ def from_issue(body: str, issue_url: str) -> tuple[dict[str, object], str, list[
         "consent": ticked,
         "source_issue": issue_url,
         "evidence": None,
+        "run": {"start": start, "path": path} if ticked["hook"] and start and path else None,
+        "program_start": None, "program_end": None,
     }
+    if row["run"]:
+        day = today or datetime.date.today().isoformat()
+        row["program_start"], row["program_end"] = day, add_months(day, PROGRAM_MONTHS)
     return row, evidence, bad
 
 
@@ -196,7 +220,7 @@ def days(a: str, b: str) -> int:
     return (datetime.date.fromisoformat(b[:10]) - datetime.date.fromisoformat(a[:10])).days
 
 
-def alignment(version: str, last_run: str | None, release: object) -> tuple[str, bool]:
+def alignment(version: str, last_run: str | None, release: object, program_end: object = None) -> tuple[str, bool]:
     """Release alignment, and whether the row is stale. It is computed only from what is committed (the run date and
     the release check tools/matrix_freshness.py records), never from today's date, so the output is reproducible.
     current: the version tested is the latest release. behind (vX tested, vY latest): it is not. stale: no run within
@@ -206,6 +230,8 @@ def alignment(version: str, last_run: str | None, release: object) -> tuple[str,
     if not isinstance(release, dict) or not release.get("checked_at"):
         return "not checked yet", False
     checked = str(release["checked_at"])
+    if program_end and checked > str(program_end) and last_run[:10] <= str(program_end):
+        return f"stale (free run program ended {program_end})", True
     latest = release.get("latest")
     behind = bool(latest) and norm(latest) != norm(version)
     since = str(release.get("behind_since") or checked)
@@ -235,10 +261,13 @@ def badge_svg(slug: str, version: str, stale: bool, example: bool = False) -> st
 
 
 def snippets(slug: str) -> tuple[str, str]:
-    """Copy-paste badge markdown and HTML for one row."""
+    """Copy-paste README snippets for one row: Markdown and HTML, each the badge plus the attribution line."""
     img, row = f"{PAGES}/badge/{slug}.svg", f"{PAGES}/matrix/#{slug}"
     alt = "Tested with x402-conformance \u00b7 Optitransfer"
-    return f"[![{alt}]({img})]({row})", f'<a href="{row}"><img src="{img}" alt="{alt}"></a>'
+    md = f"[![{alt}]({img})]({row}) Conformance tested by [Optitransfer/x402-conformance]({row})"
+    h = (f'<a href="{row}"><img src="{img}" alt="{alt}"></a> '
+         f'Conformance tested by <a href="{row}">Optitransfer/x402-conformance</a>')
+    return md, h
 
 
 EXAMPLE = {
@@ -247,6 +276,7 @@ EXAMPLE = {
     "networks": ["eip155:84532", "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"], "environment": "testnet",
     "version": "1.4.0", "contact": "@example-org", "checks_run": 48, "checks_passed": 42, "failed_count": 6,
     "last_run": "2026-10-20", "release_alignment": "behind (v1.4.0 tested, v1.5.0 latest)", "stale": False,
+    "readme_badge": "shown", "free_run": True,
     "evidence": "evidence/impl-matrix/<slug>/run.json", "example": True,
 }
 EXAMPLE_LABEL = "Example (illustrative, not a real result)"
@@ -259,19 +289,26 @@ def view(rows: list[dict[str, object]], root: str) -> list[dict[str, object]]:
     for r in rows:
         run = run_of(r, compat)
         last = str(run.get("run_at") or "")[:10] if run else None
-        align, stale = alignment(str(r["version"]), last or None, r.get("release"))
+        align, stale = alignment(str(r["version"]), last or None, r.get("release"), r.get("program_end"))
         out.append({
             "slug": r["slug"], "project": r["project"], "type": r["type"], "repo": r.get("repo"), "site": r.get("site"),
             "languages": r.get("languages") or [], "chains": r.get("chains") or [], "networks": r.get("networks") or [],
             "environment": environment(r, run), "version": r["version"], "contact": r["contact"],
             "checks_run": run["checks_run"] if run else None, "checks_passed": run["checks_passed"] if run else None,
             "failed_count": run["failed_count"] if run else None, "last_run": last,
-            "release_alignment": align, "stale": stale,
+            "release_alignment": align, "stale": stale, "readme_badge": readme_flag(r.get("release")),
+            "free_run": bool((r.get("consent") or {}).get("hook")),  # type: ignore[union-attr]
+            "program_end": r.get("program_end"),
             "evidence": f"{REPO}/blob/main/{run['run']}" if run else None,
             "badge": f"{PAGES}/badge/{r['slug']}.svg" if run else None,
             "source_issue": r["source_issue"],
         })
     return out
+
+
+def readme_flag(release: object) -> str:
+    v = release.get("readme_badge") if isinstance(release, dict) else None
+    return "shown" if v is True else "missing (flagged)" if v is False else "not checked yet"
 
 
 def counts(vs: list[dict[str, object]], key: str) -> str:
@@ -293,7 +330,7 @@ def md_row(v: dict[str, object]) -> str:
         last = f"[{v['last_run']}]({v['evidence']})"
     return (f"| <a id=\"project-{v['slug']}\"></a>{name} | {v['type']} | {v['environment']} | {v['version']} | "
             f"{v['release_alignment']} | {v['checks_passed']}/{v['checks_run']} | {v['failed_count']} | {last} | "
-            f"`{md}` | [add or update]({FORM}) |")
+            f"{v['readme_badge']} | `{md}` | [add or update]({FORM}) |")
 
 
 def table(rows: list[dict[str, object]], root: str) -> str:
@@ -305,10 +342,12 @@ def table(rows: list[dict[str, object]], root: str) -> str:
              f"[Add or update my row]({FORM}) form or a pull request. Generated by `python3 tools/matrix_rows.py "
              "--write` from `matrix/rows/*.json`; CI fails when it is stale. The full searchable table of accepted "
              f"projects is on the [Pages matrix]({PAGES}/matrix/).", "",
-             "Listed projects add the badge to their own README. It reads \"Tested with x402-conformance \u00b7 "
-             "Optitransfer\" and the version tested, links to the project's row, and turns grey with \"stale\" when "
-             "the row is stale. It is not a certification and not an endorsement, and carries no x402 logo. "
-             "Copy-paste, per row (each row below has its own):", "",
+             "Listed projects display the badge in their README with the line \"Conformance tested by "
+             "Optitransfer/x402-conformance\", both linking to their row. The badge reads \"Tested with "
+             "x402-conformance \u00b7 Optitransfer\" and the version tested, and turns grey with \"stale\" when the "
+             "row is stale. It is not a certification and not an endorsement, and carries no x402 logo. The weekly "
+             "check reads each project's public README and flags a row whose README no longer links it. "
+             "Copy-paste README snippet, per row (each row below has its own):", "",
              f"- Markdown: `{md}`", f"- HTML: `{h}`", "",
              "**Coverage of accepted projects**", "",
              "| by | accepted projects |", "|---|---|",
@@ -321,11 +360,11 @@ def table(rows: list[dict[str, object]], root: str) -> str:
              "or more). tools/matrix_freshness.py checks each project's latest release and default-branch commit "
              "every week.", "",
              "| project | type | environment | version tested | release alignment | passed/run | failed | last run "
-             "| badge markdown | add or update |",
-             "|---|---|---|---|---|---|---|---|---|---|",
+             "| badge in README | README snippet | add or update |",
+             "|---|---|---|---|---|---|---|---|---|---|---|",
              md_row(EXAMPLE)]
     if not tested:
-        lines.append(f"| no accepted project yet | | | | | | | | | [add your row]({FORM}) |")
+        lines.append(f"| no accepted project yet | | | | | | | | | | [add your row]({FORM}) |")
     lines += [md_row(v) for v in tested]
     lines += ["", END]
     return "\n".join(lines)
@@ -352,18 +391,19 @@ def html_row(v: dict[str, object]) -> str:
     return (f'<tr id="{esc(v["slug"])}"{cls}><td>{name}</td><td>{esc(v["type"])}</td><td>{esc(v["environment"])}</td>'
             f'<td>{esc(", ".join(v["languages"]))}</td><td>{esc(", ".join(v["networks"]))}</td>'  # type: ignore[arg-type]
             f'<td>{esc(v["version"])}</td><td>{esc(v["release_alignment"])}</td><td>{res}</td><td>{last}</td>'
-            f'<td>{badge}</td><td>{esc(v["contact"])}</td><td><a href="{FORM}">add or update</a></td></tr>')
+            f'<td>{badge}</td><td>{esc(v["readme_badge"])}</td><td>{esc(v["contact"])}</td>'
+            f'<td><a href="{FORM}">add or update</a></td></tr>')
 
 
 def page(rows: list[dict[str, object]], root: str) -> tuple[str, str]:
     """docs/site/matrix/index.html (searchable, one anchor per row for its badge) and docs/site/matrix/rows.json."""
     vs = view(rows, root)
     data = json.dumps({"schema": "x402-conformance.matrix-pages/1", "license": "CC BY 4.0",
-                       "attribution": f"x402-conformance by Optitransfer, {REPO}", "example": EXAMPLE, "rows": vs},
+                       "attribution": f"Optitransfer/x402-conformance, {REPO}", "example": EXAMPLE, "rows": vs},
                       indent=1, ensure_ascii=False) + "\n"
     body = [html_row(EXAMPLE)] + [html_row(v) for v in vs]
     if not vs:
-        body.append(f'<tr><td colspan="13">No accepted projects yet. <a href="{FORM}">Add your row</a>.</td></tr>')
+        body.append(f'<tr><td colspan="14">No accepted projects yet. <a href="{FORM}">Add your row</a>.</td></tr>')
     doc = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -380,14 +420,15 @@ input{{padding:.4rem;width:20rem;margin:.5rem 0}}</style>
 <p>Projects that accepted to be listed, opt-in only. Each row shows checks passed out of checks run and a failed count
 from its committed evidence, and how the version tested lines up with the project's latest release. There is no score
 and no ranking. Listed projects add the badge, "Tested with x402-conformance &middot; Optitransfer", to their own
-README; it links to their row, shows the version tested and turns grey when the row is stale. It is not a
+README with the line "Conformance tested by Optitransfer/x402-conformance"; both link to their row. The badge
+shows the version tested and turns grey when the row is stale. It is not a
 certification and not an endorsement. <a href="{FORM}">Add or update your row</a>. Data:
-<a href="rows.json">rows.json</a>, CC BY 4.0, "x402-conformance by Optitransfer", <a href="{REPO}">{REPO}</a>.</p>
+<a href="rows.json">rows.json</a>, CC BY 4.0, "Optitransfer/x402-conformance", <a href="{REPO}">{REPO}</a>.</p>
 <label>Search <input id="q" type="search" placeholder="project, type, chain, language"></label>
 <table id="rows">
 <thead><tr><th>project</th><th>type</th><th>environment</th><th>languages</th><th>networks</th><th>version tested</th>
-<th>release alignment</th><th>passed/run</th><th>failed</th><th>last run</th><th>badge</th><th>contact</th>
-<th>add or update</th></tr></thead>
+<th>release alignment</th><th>passed/run</th><th>failed</th><th>last run</th><th>badge and README snippet</th>
+<th>badge in README</th><th>contact</th><th>add or update</th></tr></thead>
 <tbody>
 {chr(10).join(body)}
 </tbody>
@@ -459,12 +500,12 @@ def write_md(root: str) -> list[str]:
 
 
 def main(argv: list[str]) -> int:  # noqa: C901
-    opt = {k: argv[argv.index(k) + 1] for k in ("--root", "--from-issue", "--issue-url", "--github-output")
+    opt = {k: argv[argv.index(k) + 1] for k in ("--root", "--from-issue", "--issue-url", "--github-output", "--today")
            if k in argv and argv.index(k) + 1 < len(argv)}
     root = os.path.abspath(opt.get("--root", ROOT))
     if "--from-issue" in opt:
         body = open(opt["--from-issue"], encoding="utf-8").read()
-        row, evidence, bad = from_issue(body, opt.get("--issue-url", ""))
+        row, evidence, bad = from_issue(body, opt.get("--issue-url", ""), opt.get("--today", ""))
         bad += problems(row, root)
         bundle = None
         if evidence and not bad:
@@ -489,6 +530,10 @@ def main(argv: list[str]) -> int:  # noqa: C901
             prev = json.load(open(existing, encoding="utf-8"))
             if prev.get("source_issue") == row["source_issue"]:
                 row["release"] = prev.get("release")
+                if row["run"] and prev.get("program_start"):
+                    for k in ("program_start", "program_end", "program_notice"):
+                        if prev.get(k):
+                            row[k] = prev[k]
                 if not bundle:
                     row["evidence"] = prev.get("evidence")
             if prev.get("source_issue") != row["source_issue"]:

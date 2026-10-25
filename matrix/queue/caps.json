@@ -1,0 +1,19 @@
+{
+ "schema": "x402-conformance.run-queue-caps/1",
+ "max_runs_per_invocation": 2,
+ "max_runs_per_day": 20,
+ "min_hours_between_runs_per_slug": 6,
+ "min_probe_interval_s": 5,
+ "networks": [
+  "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+  "eip155:84532"
+ ],
+ "max_testnet_spend_per_run": 0,
+ "max_testnet_spend_per_day": 0,
+ "facilitator": "loopback double only",
+ "maintainers": [
+  "mgillr"
+ ],
+ "reruns": "new releases only",
+ "program_months": 6
+}

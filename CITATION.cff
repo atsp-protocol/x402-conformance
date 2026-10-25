@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use x402-conformance or its public results, please cite it as below."
+message: "If you use x402-conformance or its public results, please cite it as below, with the attribution \"Optitransfer/x402-conformance\"."
 title: x402-conformance
 abstract: "Conformance and safety checks for x402 payment servers, clients and facilitators, with a public, evidence-backed matrix of results."
 type: software
