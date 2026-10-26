@@ -49,12 +49,28 @@ def catalogue() -> list[str]:
     return list(S.CATALOG)
 
 
+def pinned_checks() -> list[str]:
+    """The release pin's check list, when it is a non-empty subset of the live catalogue.
+
+    A tier-1 row is counted against that pin. An unreleased check is not in the denominator until the pin lists it.
+    """
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    path = os.path.join(root, "matrix", "queue", "suite.json")
+    try:
+        raw = json.load(open(path, encoding="utf-8")).get("checks")
+    except (OSError, json.JSONDecodeError):
+        return catalogue()
+    if isinstance(raw, list) and raw and set(raw) <= set(S.CATALOG):
+        return [str(c) for c in raw]
+    return catalogue()
+
+
 def denominator(results: dict[str, dict[str, Any]], tier: str) -> dict[str, int]:
     """Counts for one row: passed, failed, applicable (= exercised), not applicable, and the checks that need the
-    self-hosted run. In tier 1 every catalogue check outside EXTERNAL needs the self-hosted run (which of them apply is
-    settled by that run), and so does an external check the run did not reach (R16a without the operator's
+    self-hosted run. In tier 1 every pinned-suite check outside EXTERNAL needs the self-hosted run (which of them
+    apply is settled by that run), and so does an external check the run did not reach (R16a without the operator's
     permission); in tier 2 nothing does."""
-    ids = catalogue()
+    ids = pinned_checks()
     scope = [i for i in ids if i in EXTERNAL] if tier == TIER1 else ids
     st = {i: str((results.get(i) or {}).get("status") or "not_run") for i in scope}
     passed = sum(1 for s in st.values() if s in ("pass", "warn"))
