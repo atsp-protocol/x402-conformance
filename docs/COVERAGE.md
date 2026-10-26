@@ -5,6 +5,8 @@ what it does not cover. The block between the two marker comments is generated f
 `src/x402conf/spec.py` by `tools/build_coverage.py`, and `tests/test_coverage_doc.py` fails CI when it is stale; the
 other sections are reviewed against the code at each release. [RELEASES.md](RELEASES.md)
 says which release added what, and [SPEC.md](SPEC.md) quotes the spec text behind every check.
+[TRACEABILITY.md](TRACEABILITY.md) puts every check in one of two classes, normative (a spec clause, with its pinned
+anchor) or hardening (beyond the spec, with the reason), and gives the count of each.
 
 <!-- generated from src/x402conf/spec.py by tools/build_coverage.py; edit RUNS there, not this block -->
 

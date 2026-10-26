@@ -41,6 +41,8 @@ jobs:
         run: |
           python3 tools/spec_anchors.py --check --offline
           python3 tools/spec_anchors.py --crosswalk usenix-2026 --check
+      - name: Every check is classified normative or hardening, and the traceability table is fresh
+        run: python3 tools/traceability.py --check
       - name: Every check catches at least one faulty build, and the published matrix is current
         run: python3 tools/mutation_matrix.py --check
       - name: The compatibility matrix matches the committed implementation-matrix runs

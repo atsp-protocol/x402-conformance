@@ -1,0 +1,915 @@
+{
+ "schema": "x402conf.traceability/1",
+ "source": [
+  "src/x402conf/spec.py CATALOG",
+  "docs/check-ids.json"
+ ],
+ "counts": {
+  "normative": 41,
+  "hardening": 41
+ },
+ "rows": [
+  {
+   "id": "B1",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/batch-settlement/scheme_batch_settlement.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 21,
+    "line_end": 21,
+    "quoted_text_sha256": "9e22ac44c9c5a040cc1fffa26e8d8045b2ee814e468c56f411347d70603bb3f5"
+   },
+   "reason": null,
+   "property": "batch-settlement: the settlement result MUST include a non-empty commitment identifier on success, the charge is at most the per-request amount, and the same authorization MUST NOT execute the handler twice"
+  },
+  {
+   "id": "B2",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: batch-settlement redemption: the server claims each channel's latest cumulative voucher, which supersedes the older ones, and a claim cannot advance accounting twice",
+   "property": "batch-settlement redemption: the server claims each channel's latest cumulative voucher, which supersedes the older ones, and a claim cannot advance accounting twice"
+  },
+  {
+   "id": "B3",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: batch-settlement redemption in batches: a channel is not silently dropped from a batch, and a voucher whose claim failed stays claimable, so a partly failed run is reported and retried per item",
+   "property": "batch-settlement redemption in batches: a channel is not silently dropped from a batch, and a voucher whose claim failed stays claimable, so a partly failed run is reported and retried per item"
+  },
+  {
+   "id": "C1",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error",
+   "property": "V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error"
+  },
+  {
+   "id": "C2",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific",
+   "property": "given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific"
+  },
+  {
+   "id": "C3",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none",
+   "property": "V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none"
+  },
+  {
+   "id": "C4",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: a client that resumes after a crash between settle and its own record reuses the settled result and does not sign a second payment for the same job key",
+   "property": "a client that resumes after a crash between settle and its own record reuses the settled result and does not sign a second payment for the same job key"
+  },
+  {
+   "id": "D1",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 500,
+    "line_end": 514,
+    "quoted_text_sha256": "ed849b2e719e26f2383b96f01842b6e26adb9441f777aaaa9d946fae762d2c65"
+   },
+   "reason": null,
+   "property": "V2 8 and the bazaar extension: GET /discovery/resources returns x402Version, items and pagination (limit, offset, total), GET /discovery/search returns resources; every item has resource, type, x402Version, accepts and lastUpdated (8.3), and limit and the network filter are honoured"
+  },
+  {
+   "id": "F1",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 600,
+    "line_end": 600,
+    "quoted_text_sha256": "aa2adf08689fadbbae6fc047a9ad434dc9a8272ab6f808f6d1a50ccc8c821c8a"
+   },
+   "reason": null,
+   "property": "V2 9 invalid_payload; V2 5.1.2 atomic units; SVM exact: fail closed"
+  },
+  {
+   "id": "F2",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/exact/scheme_exact_svm.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 187,
+    "line_end": 187,
+    "quoted_text_sha256": "368697fc1892f0fd13db12810f9fcc9dc3606ae03a29e3c51d7241ecc48ff523"
+   },
+   "reason": null,
+   "property": "SVM exact 1.1 and V2 9: an amount below the requirement is rejected"
+  },
+  {
+   "id": "F3",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/exact/scheme_exact_svm.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 366,
+    "line_end": 366,
+    "quoted_text_sha256": "83fbd13d10fff83169366faf5bea174129e8344f941e5410816788e9898a1ce1"
+   },
+   "reason": null,
+   "property": "SVM exact, Duplicate Settlement Mitigation: duplicate_settlement"
+  },
+  {
+   "id": "F4",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: V2 10.1 replay prevention; one memo or nonce, one purchase",
+   "property": "V2 10.1 replay prevention; one memo or nonce, one purchase"
+  },
+  {
+   "id": "F5",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 608,
+    "line_end": 608,
+    "quoted_text_sha256": "0dd2e2dc1d1201083c1a51bc351f60265d3185717c612cc1621df877f0ef9fcf"
+   },
+   "reason": null,
+   "property": "V2 9: settlement_pending is non-terminal and MUST carry transaction and network"
+  },
+  {
+   "id": "F6",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/exact/scheme_exact_svm.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 214,
+    "line_end": 214,
+    "quoted_text_sha256": "2bfb1f23bac9fab3d71d7e1420c8aefd268cccd00b293bc746b7a14569d82b79"
+   },
+   "reason": null,
+   "property": "Solana guide: a retry cannot settle or fulfil the same purchase twice; SVM exact: fail closed"
+  },
+  {
+   "id": "F7",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 608,
+    "line_end": 608,
+    "quoted_text_sha256": "0dd2e2dc1d1201083c1a51bc351f60265d3185717c612cc1621df877f0ef9fcf"
+   },
+   "reason": null,
+   "property": "V2 9 settlement_pending: retry reaches the final outcome"
+  },
+  {
+   "id": "F8",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 605,
+    "line_end": 605,
+    "quoted_text_sha256": "c9dfee69c670e48b16f30f1de3e2ff6cb031ecedee93721d7a5675f6643c58a8"
+   },
+   "reason": null,
+   "property": "V2 9 invalid_transaction_state is terminal"
+  },
+  {
+   "id": "F9",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: SVM exact 2.1.2: a transient failure fails closed and stays retryable",
+   "property": "SVM exact 2.1.2: a transient failure fails closed and stays retryable"
+  },
+  {
+   "id": "F10",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: V2 5.1.2 and 5.2.2: a payment is verified against the requirements it was quoted under",
+   "property": "V2 5.1.2 and 5.2.2: a payment is verified against the requirements it was quoted under"
+  },
+  {
+   "id": "F11",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 307,
+    "line_end": 307,
+    "quoted_text_sha256": "f6460ee257129b38771447b56d3158ce60cd8569bfb0b95d192a5b9e55e01390"
+   },
+   "reason": null,
+   "property": "V2 7.1: /verify MUST NOT commit payment state"
+  },
+  {
+   "id": "F12",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network",
+   "property": "V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network"
+  },
+  {
+   "id": "F13",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment",
+   "property": "V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment"
+  },
+  {
+   "id": "F14",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution)",
+   "property": "V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution)"
+  },
+  {
+   "id": "F15",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or isValid false), never an HTTP 5xx and never an uncaught exception",
+   "property": "V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or isValid false), never an HTTP 5xx and never an uncaught exception"
+  },
+  {
+   "id": "F16",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: V2 7.3 and 11.1: a facilitator registered for one testnet does not accept a requirement for a different network in the same family; a family wildcard is not a registration",
+   "property": "V2 7.3 and 11.1: a facilitator registered for one testnet does not accept a requirement for a different network in the same family; a family wildcard is not a registration"
+  },
+  {
+   "id": "G1",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: A2A transport: payment required is a task in input-required with x402.payment.status payment-required and the PaymentRequired in x402.payment.required; an agent that mirrors an HTTP route asks for the same requirements as its 402",
+   "property": "A2A transport: payment required is a task in input-required with x402.payment.status payment-required and the PaymentRequired in x402.payment.required; an agent that mirrors an HTTP route asks for the same requirements as its 402"
+  },
+  {
+   "id": "P1",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/transports-v2/http.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 9,
+    "line_end": 11,
+    "quoted_text_sha256": "f18588517115ae8dc6dd1f6ab6995084ad10d494fe50ac965ef561accc97f4da"
+   },
+   "reason": null,
+   "property": "V2 HTTP transport: payment required is signalled with HTTP 402"
+  },
+  {
+   "id": "P2",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/transports-v2/http.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 168,
+    "line_end": 168,
+    "quoted_text_sha256": "d7177a0b6ce7dbaef715dcbd17b8dfad0528e254c4879c3118229ec8649f1065"
+   },
+   "reason": null,
+   "property": "V2 HTTP transport: PAYMENT-REQUIRED carries base64 JSON; V1 5.1 body"
+  },
+  {
+   "id": "P3",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 114,
+    "line_end": 118,
+    "quoted_text_sha256": "a447a956cf34125d9a864de888ebf54a497fcc5490fd4196081f1a759a628a74"
+   },
+   "reason": null,
+   "property": "V2 5.1.2: x402Version, resource and accepts are required"
+  },
+  {
+   "id": "P4",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 126,
+    "line_end": 126,
+    "quoted_text_sha256": "2f02c00345ba8183a209feecc3a06c6e66785238c34ec8fac18d1680b87a559d"
+   },
+   "reason": null,
+   "property": "V2 5.1.2: required accepts fields; amount in atomic token units"
+  },
+  {
+   "id": "P5",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/exact/scheme_exact_evm.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 72,
+    "line_end": 73,
+    "quoted_text_sha256": "913cc340171a474f306af12fa7c457ac15b4308e3d1ea406aabb5316e5df0243"
+   },
+   "reason": null,
+   "property": "EVM exact: extra.name and extra.version; SVM exact: extra.feePayer"
+  },
+  {
+   "id": "P6",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: The spec sets no header budget; Node fetch fails above 16 KB of headers and aiohttp near 8 KB",
+   "property": "The spec sets no header budget; Node fetch fails above 16 KB of headers and aiohttp near 8 KB"
+  },
+  {
+   "id": "P7",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 289,
+    "line_end": 289,
+    "quoted_text_sha256": "f82af1fe94ac7806ced0d7739cbd37346391b3d09deb19b03aea58f47f6b0247"
+   },
+   "reason": null,
+   "property": "V2 6.1: extra.paymentFlow MUST be present when the resolved flow is not authorization (a warning: the upto SVM scheme spec allows omitting it)"
+  },
+  {
+   "id": "P9",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/extensions/bazaar.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 312,
+    "line_end": 323,
+    "quoted_text_sha256": "d4754b12fd900c3895e1d3c7828e1364b4f45359efd83560dc2c95417b1a6aa7"
+   },
+   "reason": null,
+   "property": "bazaar extension, Schema Validation: schema is JSON Schema Draft 2020-12 with same-document $ref only, and facilitators MUST validate info against schema before cataloging"
+  },
+  {
+   "id": "P10",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: draft-hawkins-x402-dns-discovery 3.2: resources are HTTPS on the manifest's own host, and a manifest that diverges from the live endpoint is a misconfiguration (a warning; the runtime 402 is authoritative)",
+   "property": "draft-hawkins-x402-dns-discovery 3.2: resources are HTTPS on the manifest's own host, and a manifest that diverges from the live endpoint is a misconfiguration (a warning; the runtime 402 is authoritative)"
+  },
+  {
+   "id": "R0",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/transports-v2/http.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 9,
+    "line_end": 11,
+    "quoted_text_sha256": "f18588517115ae8dc6dd1f6ab6995084ad10d494fe50ac965ef561accc97f4da"
+   },
+   "reason": null,
+   "property": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED"
+  },
+  {
+   "id": "R1",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 303,
+    "line_end": 303,
+    "quoted_text_sha256": "e89d0eb023e9a14d9d5f60baba41bbc56d99af8f14776bbaf92264aec9d1ec7b"
+   },
+   "reason": null,
+   "property": "V2 7.2: the resource server settles through its facilitator"
+  },
+  {
+   "id": "R2",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 589,
+    "line_end": 608,
+    "quoted_text_sha256": "9fb85e19dbdfc258f083bcbb8094190c581983e972da9c9fbc04795772921d04"
+   },
+   "reason": null,
+   "property": "F3, F5, F6, F8 and F9 applied to a running resource server"
+  },
+  {
+   "id": "R3",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: F3, F5, F6, F8 and F9 applied to a running resource server",
+   "property": "F3, F5, F6, F8 and F9 applied to a running resource server"
+  },
+  {
+   "id": "R4",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: F3, F5, F6, F8 and F9 applied to a running resource server",
+   "property": "F3, F5, F6, F8 and F9 applied to a running resource server"
+  },
+  {
+   "id": "R5",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: F3, F5, F6, F8 and F9 applied to a running resource server",
+   "property": "F3, F5, F6, F8 and F9 applied to a running resource server"
+  },
+  {
+   "id": "R6",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: F3, F5, F6, F8 and F9 applied to a running resource server",
+   "property": "F3, F5, F6, F8 and F9 applied to a running resource server"
+  },
+  {
+   "id": "R7",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: F3, F5, F6, F8 and F9 applied to a running resource server",
+   "property": "F3, F5, F6, F8 and F9 applied to a running resource server"
+  },
+  {
+   "id": "R8",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 589,
+    "line_end": 608,
+    "quoted_text_sha256": "9fb85e19dbdfc258f083bcbb8094190c581983e972da9c9fbc04795772921d04"
+   },
+   "reason": null,
+   "property": "F3, F5, F6, F8 and F9 applied to a running resource server"
+  },
+  {
+   "id": "R9",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 589,
+    "line_end": 608,
+    "quoted_text_sha256": "9fb85e19dbdfc258f083bcbb8094190c581983e972da9c9fbc04795772921d04"
+   },
+   "reason": null,
+   "property": "F3, F5, F6, F8 and F9 applied to a running resource server"
+  },
+  {
+   "id": "R10",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/transports-v2/http.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 113,
+    "line_end": 113,
+    "quoted_text_sha256": "4d3a2af9db080042b8626b1f6195f5c7e05a48151839cb808a5693a0c7c79e70"
+   },
+   "reason": null,
+   "property": "V2 HTTP transport: settlement results go in PAYMENT-RESPONSE"
+  },
+  {
+   "id": "R11",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/exact/scheme_exact.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 52,
+    "line_end": 52,
+    "quoted_text_sha256": "1f5205f2354ae41c4a5ebacc5a9bce19b827b8c1a446177fb3a5eed873413485"
+   },
+   "reason": null,
+   "property": "control: each route is served and settled once with its own payment"
+  },
+  {
+   "id": "R11a",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 205,
+    "line_end": 205,
+    "quoted_text_sha256": "599309b8e6a21d54e1fb245a2213031e90c8ec050fe8fef5682de2ec5a49fc71"
+   },
+   "reason": null,
+   "property": "V2 5.2.2: accepted is matched against the route's own requirements"
+  },
+  {
+   "id": "R11b",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 124,
+    "line_end": 128,
+    "quoted_text_sha256": "7839bab519a0bad0149c85951b69ed66086cfadbeb1e77d6979e1d9c60fae417"
+   },
+   "reason": null,
+   "property": "V2 5.1.2 and 9: recipient, asset and network must match"
+  },
+  {
+   "id": "R11c",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: a route priced by method is priced for the method used",
+   "property": "a route priced by method is priced for the method used"
+  },
+  {
+   "id": "R11d",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: a route priced by query is priced for the query sent",
+   "property": "a route priced by query is priced for the query sent"
+  },
+  {
+   "id": "R11e",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: payment middleware and framework must agree on the path",
+   "property": "payment middleware and framework must agree on the path"
+  },
+  {
+   "id": "R11f",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: sign-in-with-x: access is for the requested resource the server priced and settled",
+   "property": "sign-in-with-x: access is for the requested resource the server priced and settled"
+  },
+  {
+   "id": "R12",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: payment-identifier: the id is an idempotency key that deduplicates requests, so parallel requests with one id are charged once",
+   "property": "payment-identifier: the id is an idempotency key that deduplicates requests, so parallel requests with one id are charged once"
+  },
+  {
+   "id": "R13",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: payment-identifier: the id deduplicates requests for the service, not per process, so its replicas charge one id once",
+   "property": "payment-identifier: the id deduplicates requests for the service, not per process, so its replicas charge one id once"
+  },
+  {
+   "id": "R14",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile",
+   "property": "payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile"
+  },
+  {
+   "id": "R15",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 295,
+    "line_end": 295,
+    "quoted_text_sha256": "bb08dd44322bd4caf02562163e88b424ccabc7940e99dfa006a2fd1168dc3587"
+   },
+   "reason": null,
+   "property": "V2 6.1: in the authorization flow funds move only after the resource completes successfully; a failed, redirected or thrown request is not settled"
+  },
+  {
+   "id": "R16",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to deliver and is not settled",
+   "property": "RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to deliver and is not settled"
+  },
+  {
+   "id": "R16a",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402",
+   "property": "the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402"
+  },
+  {
+   "id": "R17",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: RFC 9111: a shared cache may store a 200 that is not private or no-store and does not vary on the request header that decided it, so a paid response must say so or the next caller gets it for free",
+   "property": "RFC 9111: a shared cache may store a 200 that is not private or no-store and does not vary on the request header that decided it, so a paid response must say so or the next caller gets it for free"
+  },
+  {
+   "id": "R18",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: V2 9: settlement_pending carries the transaction so the caller can reconcile; a pending, late or unanswered settlement ends served once after it is final, or refused with the payment surfaced",
+   "property": "V2 9: settlement_pending carries the transaction so the caller can reconcile; a pending, late or unanswered settlement ends served once after it is final, or refused with the payment surfaced"
+  },
+  {
+   "id": "R19",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 289,
+    "line_end": 299,
+    "quoted_text_sha256": "a2a8ee69bcef821ec52d397cd0aabb6f89a15160b7a090c3e5e3e3a0632a7d21"
+   },
+   "reason": null,
+   "property": "V2 6.1: at least one check MUST run before the resource executes, and a server MUST reject an unsupported flow; on an upfront or escrow offer the check that gates execution is the settle"
+  },
+  {
+   "id": "R20",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: control: the route answers 402 with an exact offer the probe can pay",
+   "property": "control: the route answers 402 with an exact offer the probe can pay"
+  },
+  {
+   "id": "R20a",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: payment-identifier: a retry with the same id and a fresh payment is not charged again",
+   "property": "payment-identifier: a retry with the same id and a fresh payment is not charged again"
+  },
+  {
+   "id": "R20b",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: a retry resending the same signed payment is settled once and gets the original result",
+   "property": "a retry resending the same signed payment is settled once and gets the original result"
+  },
+  {
+   "id": "R21",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again",
+   "property": "EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again"
+  },
+  {
+   "id": "R22",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/transports-v2/http.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 172,
+    "line_end": 174,
+    "quoted_text_sha256": "78b9bee6b119406486098893756720539d7530a7eee2049f61f571004e036d51"
+   },
+   "reason": null,
+   "property": "after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15)"
+  },
+  {
+   "id": "R23",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again",
+   "property": "a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again"
+  },
+  {
+   "id": "R24",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures",
+   "property": "V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures"
+  },
+  {
+   "id": "S0",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 439,
+    "line_end": 441,
+    "quoted_text_sha256": "2808e0201d09b00a682a1bc3fbaf502c16734cdc2e2c225c727052f142a5c195"
+   },
+   "reason": null,
+   "property": "V2 7.3: GET /supported answers with a SupportedResponse"
+  },
+  {
+   "id": "S1",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 477,
+    "line_end": 483,
+    "quoted_text_sha256": "1ee6efae2d22a221279c4f826c4c05b1075c5b127f50943ec4abf69cabca0100"
+   },
+   "reason": null,
+   "property": "V2 7.3.1 SupportedResponse: kinds, extensions, signers; V1 7.3: kinds"
+  },
+  {
+   "id": "S2",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 627,
+    "line_end": 629,
+    "quoted_text_sha256": "fe5195759d22fb20581cbdf27bb9ff426c1d4cd90aa211d1d2fa1bc57de71f34"
+   },
+   "reason": null,
+   "property": "V2 11.1: networks are CAIP-2"
+  },
+  {
+   "id": "S3",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 635,
+    "line_end": 642,
+    "quoted_text_sha256": "3badbfe16463ce1cd5559f2f4457685f70aecc16607b7f67679a8d66e809e1e6"
+   },
+   "reason": null,
+   "property": "V2 11.1 and SVM exact: Solana networks use the published CAIP-2 IDs"
+  },
+  {
+   "id": "S4",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/exact/scheme_exact_svm.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 74,
+    "line_end": 74,
+    "quoted_text_sha256": "bb06d7ad650fff3f5c9018ab22e782f68e542744b12e2042fb635d9d475b979d"
+   },
+   "reason": null,
+   "property": "SVM exact: extra.feePayer is the sponsor's public key"
+  },
+  {
+   "id": "S5",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/x402-specification-v2.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 263,
+    "line_end": 264,
+    "quoted_text_sha256": "c6d2f45b6b7bee8da240f5f62f00d6fe2200bd05a4e7924f55f862ed49c1ef17"
+   },
+   "reason": null,
+   "property": "V2 7.3: /supported lists the payment kinds the facilitator supports; V2 7.1: /verify answers isValid, with invalidReason when it is false"
+  },
+  {
+   "id": "U1",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/upto/scheme_upto.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 49,
+    "line_end": 59,
+    "quoted_text_sha256": "48e85ef92342d64c964a9a8879c009d9317fb92c9d77b48d637f98952fd3a773"
+   },
+   "reason": null,
+   "property": "upto, Core Property 4: the settled amount MUST be less than or equal to the authorized maximum; the settle-time requirements.amount is the actual charge (Core Property 5)"
+  },
+  {
+   "id": "U2",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/upto/scheme_upto_evm.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 282,
+    "line_end": 289,
+    "quoted_text_sha256": "06cdb77c645738ed7a1e2894fe51701d58d942898b6b5a5a262e6a26bf909ad0"
+   },
+   "reason": null,
+   "property": "upto SettlementResponse: amount, the actual amount charged in atomic units (may be 0), is required on EVM and on Solana"
+  },
+  {
+   "id": "U3",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/schemes/upto/scheme_upto.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 17,
+    "line_end": 17,
+    "quoted_text_sha256": "c6b2c1386863a7928ac78368f29c73b85f591203ee7f91aac6d4de44967ed7a6"
+   },
+   "reason": null,
+   "property": "upto, Payment Flow: upto cannot use upfront, because the amount is known only after the handler runs; Permit2 on EVM supports authorization, the Solana channel escrow (V2 6.1 extra.paymentFlow, as P7)"
+  },
+  {
+   "id": "W1",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/extensions/sign-in-with-x.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 268,
+    "line_end": 269,
+    "quoted_text_sha256": "affcdb7eba836e19747bafcb332dd6583a46b70a5c312538bbf07e8191584215"
+   },
+   "reason": null,
+   "property": "sign-in-with-x: domain MUST match the server's configured public origin host and the uri origin MUST match that origin, derived from the server's configuration, not from request headers such as Host"
+  },
+  {
+   "id": "W2",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: sign-in-with-x: the nonce MUST be unique and the server SHOULD track used nonces, so one signed message signs in once",
+   "property": "sign-in-with-x: the nonce MUST be unique and the server SHOULD track used nonces, so one signed message signs in once"
+  },
+  {
+   "id": "W3",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/extensions/sign-in-with-x.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 270,
+    "line_end": 271,
+    "quoted_text_sha256": "1092612a8eeeab0ed2d5305127d9384cf77c2c571dece4ab57d1c525f30655a7"
+   },
+   "reason": null,
+   "property": "sign-in-with-x: issuedAt MUST be recent (under five minutes) and MUST NOT be in the future, and a present expirationTime MUST be in the future"
+  },
+  {
+   "id": "X1",
+   "class": "normative",
+   "profile": "normative",
+   "anchor": {
+    "spec_file": "specs/transports-v2/mcp.md",
+    "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+    "line_start": 18,
+    "line_end": 28,
+    "quoted_text_sha256": "acde9be5edae8170ff1785484202c99fb6f49c44b8d2f85f03e3251ec9ec025b"
+   },
+   "reason": null,
+   "property": "MCP transport: a paid tool called without a payment MUST answer a tool result with isError true, the PaymentRequired object in structuredContent and the same object JSON-encoded in content[0].text"
+  },
+  {
+   "id": "X2",
+   "class": "hardening",
+   "profile": "resilience",
+   "anchor": null,
+   "reason": "resilience: MCP transport: the server verifies, runs the tool and settles, and when the settle fails it returns only the payment error, never the tool's content; the R0-R10 faults on a paid tool call",
+   "property": "MCP transport: the server verifies, runs the tool and settles, and when the settle fails it returns only the payment error, never the tool's content; the R0-R10 faults on a paid tool call"
+  }
+ ]
+}

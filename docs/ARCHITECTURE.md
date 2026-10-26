@@ -65,6 +65,7 @@ flowchart LR
 | `tools/check_ids.py` | Writes `docs/check-ids.json` from the catalogue. `--check --since v1.6.0` fails when that registry is stale, when an id published at v1.6.0 is missing, or when that id's property changed without a deprecation entry in `CHANGELOG.md` |
 | `tools/spec_anchors.py` | Checks the normative anchors in `docs/check-ids.json` against `docs/spec-snapshots/` with `--check --offline`, and checks `docs/crosswalk/usenix-2026.json` with `--crosswalk usenix-2026 --check` |
 | `tools/build_coverage.py` | Generates the check table in `docs/COVERAGE.md` from `CATALOG` |
+| `tools/traceability.py` | Writes `docs/traceability.json` and `docs/TRACEABILITY.md`: every check classified as normative (with its spec anchor from `docs/check-ids.json`) or hardening (with the reason); `--check` fails on an incomplete, unsound or stale table |
 | `tools/mutation_matrix.py` | Builds `docs/site/mutation-matrix.json`: which faulty build each check is proven to catch |
 | `tools/compat_matrix.py`, `tools/row_from_evidence.py` | The compatibility matrix and the reference baseline in `docs/MATRIX.md`, generated from `evidence/impl-matrix/`; and one matrix row from a run's evidence bundle |
 | `tools/matrix_rows.py`, `tools/matrix_freshness.py` | The listed-projects rows (`matrix/rows/`), checked against `matrix/schema/row.schema.json` and rendered into `docs/MATRIX.md` and the Pages table; and the weekly freshness check |
