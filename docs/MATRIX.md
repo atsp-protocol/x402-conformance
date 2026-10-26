@@ -121,7 +121,7 @@ A row is listed only with consent recorded in the issue or the PR. A failing che
 project privately first (SECURITY.md); until then the row shows the failed count and "under disclosure".
 
 Missing a check? Propose one with the [check proposal](https://github.com/atsp-protocol/x402-conformance/issues/new?template=check-proposal.yml)
-form (see CONTRIBUTING.md). Proposals follow the project's governance: spec text first, a failing faulty build and a
+form (see [GOVERNANCE.md](../GOVERNANCE.md) and CONTRIBUTING.md). Proposals follow the project's governance: spec text first, a failing faulty build and a
 passing control.
 
 ## Free run program
