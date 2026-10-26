@@ -1,7 +1,8 @@
 """Stable check ids (XC-53).
 
-The catalogue in src/x402conf/spec.py is the source. This writes docs/check-ids.json,
-one object per id: profile, one-line property, spec basis, first release and status.
+The catalogue in src/x402conf/spec.py is the source. This writes the ids list in
+docs/check-ids.json, one object per id: profile, one-line property, spec basis, first
+release and status. Other top-level keys, including checks, are left in place.
 An id is never reused or removed. A change of meaning needs a new id. A deprecation
 keeps the original property and is listed in CHANGELOG.md.
 
@@ -142,8 +143,15 @@ def read_json(path: str) -> Any:
 
 
 def write_registry(path: str, ids: list[dict[str, str]]) -> None:
+    existing: dict[str, Any] = {}
+    if os.path.isfile(path):
+        loaded = read_json(path)
+        if not isinstance(loaded, dict):
+            raise SystemExit(f"{path} is not a JSON object; refusing to replace it")
+        existing = loaded
+    existing["ids"] = ids
     with open(path, "w", encoding="utf-8") as f:
-        json.dump({"ids": ids}, f, indent=2)
+        json.dump(existing, f, indent=2)
         f.write("\n")
 
 
