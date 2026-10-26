@@ -1,0 +1,41 @@
+{
+ "about": "PROPOSED, UNSIGNED. One amendment to the signed task XC-82 (spec traceability): tools/interdeps.py, docs/ARCHITECTURE.md and docs/INTERDEPENDENCY.md join its scope. XC-82 creates tools/traceability.py. Measured on main 922836b with placeholder files at every path XC-82 names: interdeps --check fails with 'coverage: tools/traceability.py: no component covers it', and the docs-aligned job fails because docs/ARCHITECTURE.md's components table does not name the new module and docs/INTERDEPENDENCY.md is stale. None of the three files is in XC-82's scope, so the task cannot pass those CI jobs as signed. The same gap for XC-56 is proposed in PR 110. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[XC-82].scope.allow",
+ "applies_after": [
+  "XC-55"
+ ],
+ "tasks": [],
+ "changes": [
+  {
+   "task": "XC-82",
+   "field": "scope.allow",
+   "from": [
+    "tools/traceability.py",
+    "tests/test_traceability.py",
+    "docs/traceability.json",
+    "docs/TRACEABILITY.md",
+    "docs/COVERAGE.md",
+    "README.md",
+    ".github/workflows/ci.yml",
+    "CHANGELOG.md"
+   ],
+   "to": [
+    "tools/traceability.py",
+    "tests/test_traceability.py",
+    "docs/traceability.json",
+    "docs/TRACEABILITY.md",
+    "docs/COVERAGE.md",
+    "README.md",
+    ".github/workflows/ci.yml",
+    "CHANGELOG.md",
+    "tools/interdeps.py",
+    "docs/ARCHITECTURE.md",
+    "docs/INTERDEPENDENCY.md"
+   ],
+   "why": "a new tools/ module needs an interdeps component, an architecture-page row and a regenerated map, or the interdeps and docs-aligned CI jobs fail"
+  }
+ ]
+}
