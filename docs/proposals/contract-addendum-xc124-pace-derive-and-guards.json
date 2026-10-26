@@ -1,5 +1,5 @@
 {
- "about": "PROPOSED, UNSIGNED. One new Proofline task, XC-124, and three amendments to signed tasks. XC-124: ts/test/pace.test.ts derives the number of requests x402conf-svm live sends instead of asserting 7, and reads the CLI's stdout on close, so it passes on main (7) and after XC-90 (16) with no edit. XC-90: AC03 and AC04 get the named-test guard XC-38 already uses, because as signed they pass on main, where no test matches their pattern (node counts the file itself as one passing test); XC-90 also depends on XC-124, so XC-124 lands first. XC-38: tools/build_coverage.py, tests/test_attestation.py and tests/test_run_queue.py join its scope, because a new catalog check needs a RUNS entry and the two tests assume the catalog equals the released suite. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
+ "about": "PROPOSED, UNSIGNED. One new Proofline task, XC-124, and three amendments to signed tasks. XC-124: ts/test/pace.test.ts derives the number of requests x402conf-svm live sends instead of asserting 7, and reads the report from --out (the CLI cuts a piped stdout at 8192 bytes on macOS), so it passes on main (7) and after XC-90 (16) with no edit. XC-90: AC03 and AC04 get the named-test guard XC-38 already uses, because as signed they pass on main, where no test matches their pattern (node counts the file itself as one passing test); XC-90 also depends on XC-124, so XC-124 lands first. XC-38: tools/build_coverage.py, tests/test_attestation.py and tests/test_run_queue.py join its scope, because a new catalog check needs a RUNS entry and the two tests assume the catalog equals the released suite. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
  "schema": "proofline/1",
  "status": "proposed",
  "proposed_by": "mgillr",
@@ -20,7 +20,7 @@
     "R-SAFE-GET",
     "R-R24"
    ],
-   "description": "ts/test/pace.test.ts asserts that x402conf-svm live sends exactly 7 requests and reads the CLI's stdout when the process exits. XC-90 changes how many requests R24 sends, by contract, so the literal breaks; and on macOS, where a piped stdout is written asynchronously, a larger report is cut at 8192 bytes because exit fires before the pipe drains. The test derives the expected count from the run: 2 (the shared unpaid GET and R16a's HEAD) plus R24's own requests, which are its cases plus detail.unpaid_requests when the result reports it. pacing.sent, the request log and the stderr request lines must all equal that count. It reads stdout on close. The --max-requests half of the test is unchanged.",
+   "description": "ts/test/pace.test.ts asserts that x402conf-svm live sends exactly 7 requests and parses the CLI's stdout, read when the process exits. XC-90 changes how many requests R24 sends, by contract, so the literal breaks. And on macOS, where a piped stdout is written asynchronously, the CLI's report is cut at 8192 bytes: finish() in ts/src/cli.ts prints the report and main() then calls process.exit, which drops what the pipe has not taken yet, however the test waits. The test reads the report from --out instead, a synchronous file write, and waits for the process to close. It derives the expected count from the run: 2 (the shared unpaid GET and R16a's HEAD) plus R24's own requests, which are its cases plus detail.unpaid_requests when the result reports it. pacing.sent, the request log and the stderr request lines must all equal that count. The --max-requests half of the test is unchanged. The CLI's exit on a piped stdout is outside this task: it needs its own task in ts/src/cli.ts.",
    "scope": {
     "allow": [
      "ts/test/pace.test.ts",
@@ -54,10 +54,10 @@
     {
      "id": "XC-124-AC03",
      "mandatory": true,
-     "statement": "The test reads the CLI's output when the process closes, not when it exits",
+     "statement": "The test reads the report from --out, a synchronous file write, and waits for the process to close, not to exit",
      "verifier": {
       "type": "command",
-      "cmd": "grep -q 'on(\"close\"' ts/test/pace.test.ts && ! grep -q 'on(\"exit\"' ts/test/pace.test.ts",
+      "cmd": "grep -q -- '\"--out\"' ts/test/pace.test.ts && grep -q 'on(\"close\"' ts/test/pace.test.ts && ! grep -q 'on(\"exit\"' ts/test/pace.test.ts",
       "expect_exit": 0,
       "timeout_s": 30
      }
