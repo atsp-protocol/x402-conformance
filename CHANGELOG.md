@@ -6,6 +6,7 @@
   successful `/settle` in all, and fails when the retry is settled. It runs with `--retry`, from the same requests as
   R20a. R20a stays strict: a server that answers the retry with 409 passes R20c and still fails R20a
   ([docs/FIXES.md](docs/FIXES.md#r20c)). R20c is registered in `docs/check-ids.json`.
+- Normative check ids name a pinned upstream spec line (task XC-55). `tools/spec_anchors.py --check --offline` fails when the quoted text in `docs/spec-snapshots/` no longer matches the anchor. `--drift COMMIT` lists the ids whose text changed at that snapshot. The USENIX Security 2026 rules SR1-SR8 and Server-SR1-SR2 are recorded as gaps for XC-59 in `docs/crosswalk/usenix-2026.json`, because this repo does not copy the paper. CI runs the offline check on every push and pull request.
 - Check ids are stable (task XC-53). [GOVERNANCE.md](GOVERNANCE.md) states how the project is run.
   `tools/check_ids.py` writes `docs/check-ids.json` from the catalogue (id, profile, one-line property,
   spec basis, first release, status). `python3 tools/check_ids.py --check --since v1.6.0` fails when

@@ -37,7 +37,8 @@ covers and on a component that covers nothing.
         current; CHANGELOG.md starts with ## Unreleased and no doc names a version older than the latest release;
         docs/SPEC.md and docs/FIXES.md cover every built check; docs/VV.md has one row per criterion; the architecture
         page names every module; the README Action tables name every input and output; offline ranges name F1-F14;
-        no doc calls a signed task proposed; relative links and anchors resolve; and --drift passes.
+        no doc calls a signed task proposed; relative links and anchors resolve, except under
+        docs/spec-snapshots/, which is the upstream's text; and --drift passes.
         --fix rewrites the generated blocks, the Unreleased task wording, docs/INTERDEPENDENCY.md and the generated
         COVERAGE, mutation, compatibility and matrix-row outputs, then checks again. It never writes proofline.json,
         a .sig file or guard/.
@@ -156,6 +157,8 @@ def planned(ts: list[dict[str, Any]]) -> dict[str, list[str]]:
 def doc_files(root: str) -> list[str]:
     docs = ["README.md", "CONTRIBUTING.md", "ts/README.md", "ts/mcp/README.md"]
     docs += [os.path.relpath(p, root) for p in glob.glob(os.path.join(root, "docs", "**", "*.md"), recursive=True)]
+    # Vendored upstream specs quote names such as "W5 wallet" that are not check ids.
+    docs = [d for d in docs if not d.startswith("docs/spec-snapshots/")]
     return sorted(d for d in set(docs) if d != MAP and os.path.isfile(os.path.join(root, d)))
 
 
@@ -266,6 +269,8 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
     ("interdeps", "code", ("tools/interdeps.py",), "this map's generator, drift check and PR gate"),
     ("governance", "doc", ("GOVERNANCE.md", "tools/check_ids.py"),
      "how the project is run, and the tool that writes and checks the stable check-id registry"),
+    ("spec-anchors", "code", ("tools/spec_anchors.py",),
+     "pins each normative check id to a line of the vendored upstream spec and checks the USENIX crosswalk"),
     ("interdeps-map", "doc", ("docs/INTERDEPENDENCY.md",), "this map"),
     ("interdeps-tests", "test", ("tests/test_interdeps.py",), "the generator's tests"),
     ("coverage", "code", ("tools/build_coverage.py",), "the generator of the check table in docs/COVERAGE.md"),
@@ -889,7 +894,9 @@ def anchors(text: str) -> set[str]:
 
 def broken_links(root: str, files: list[str]) -> list[str]:
     out = []
-    md = [f for f in files if f.endswith(".md") and not f.startswith(("corpus/cases/", "evidence/", "docs/proposals/"))]
+    # Vendored upstream specs link to files and headings this snapshot does not contain.
+    skip = ("corpus/cases/", "evidence/", "docs/proposals/", "docs/spec-snapshots/")
+    md = [f for f in files if f.endswith(".md") and not f.startswith(skip)]
     for f in md:
         text = re.sub(r"```.*?```", "", read(root, f), flags=re.S)
         for m in re.finditer(r"\]\(([^)\s]+)\)", text):
