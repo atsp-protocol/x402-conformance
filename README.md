@@ -19,6 +19,7 @@ complements x402 and its facilitators and doesn't replace them.
 
 Project page with the checks and the latest results: https://atsp-protocol.github.io/x402-conformance/
 Release map: [RELEASES.md](RELEASES.md). What the suite covers, check by check: [docs/COVERAGE.md](docs/COVERAGE.md).
+How the project is run: [GOVERNANCE.md](GOVERNANCE.md).
 
 <!-- docs-aligned:counts -->
 The catalogue has 79 checks in 11 families: 41 normative, 24 security profile and 14 resilience ([docs/COVERAGE.md](docs/COVERAGE.md)). The contract, `proofline.json`, has 106 tasks and 742 acceptance criteria; 46 tasks are claimed done, and CI holds each of them to every criterion ([docs/VV.md](docs/VV.md)).
