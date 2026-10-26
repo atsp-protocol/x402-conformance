@@ -110,15 +110,18 @@ export async function probeMalformedHeader(url: string, double: Pick<Double, "ca
       error: "the route did not answer an unpaid request with 402, so nothing was graded" })];
   }
   const unpaid = opts.unpaid ?? await getUnpaid(f, url);
+  // the unpaid GETs this probe sent itself: the one before the batch unless the caller passed its answer, and the control
+  let unpaidRequests = opts.unpaid ? 0 : 1;
   if (unpaid?.status !== 402) {
-    return [res(false, { status: unpaid?.status ?? null,
+    return [res(false, { status: unpaid?.status ?? null, unpaid_requests: unpaidRequests,
       error: "the route did not answer an unpaid request with 402, so nothing was graded" })];
   }
   const versions = advertised(unpaid.paymentRequired, unpaid.body);
   const headers: PaymentHeaderName[] = opts.headers
     ?? [...(versions.v2 ? ["PAYMENT-SIGNATURE" as const] : []), ...(versions.v1 ? ["X-PAYMENT" as const] : [])];
   if (!headers.length) {
-    return [res(false, { status: 402, advertised: versions, error: "the unpaid 402 advertises no version (no PAYMENT-REQUIRED "
+    return [res(false, { status: 402, advertised: versions, unpaid_requests: unpaidRequests,
+      error: "the unpaid 402 advertises no version (no PAYMENT-REQUIRED "
       + "that decodes, no V1 body with accepts), so the payment header to send is unknown and nothing was graded" })];
   }
   const facilitator = () => double.calls.filter((c) => c.path === "/verify" || c.path === "/settle").length;
@@ -142,6 +145,7 @@ export async function probeMalformedHeader(url: string, double: Pick<Double, "ca
     }
   }
   const after = await getUnpaid(f, url);
+  unpaidRequests += 1;
   const controlAfter = { status: after?.status ?? 0 };
   const failed = cases.filter((c) => !c.pass);
   const facilitatorCalls = cases.reduce((n, c) => n + (c.facilitator_calls as number), 0);
@@ -155,6 +159,7 @@ export async function probeMalformedHeader(url: string, double: Pick<Double, "ca
           : `${what(worst)} got ${worst.status} without a structured error`)
     : controlAfter.status !== 402 ? `after the batch the unpaid control got ${controlAfter.status || "no answer"}, not 402` : undefined;
   return [res(!failed.length && controlAfter.status === 402,
-    { advertised: versions, sent_in: headers, cases, facilitator_calls: facilitatorCalls, control_after: controlAfter,
+    { advertised: versions, sent_in: headers, cases, unpaid_requests: unpaidRequests, facilitator_calls: facilitatorCalls,
+      control_after: controlAfter,
       ...(error ? { error } : {}) })];
 }

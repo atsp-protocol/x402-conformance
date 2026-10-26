@@ -57,6 +57,7 @@ for (const [name, net] of NETS) {
       }
       assert.equal(d.facilitator_calls, 0, "nothing malformed reaches /verify or /settle");
       assert.deepEqual(d.control_after, { status: 402 });
+      assert.equal(d.unpaid_requests, 2, "its own unpaid GET and the control after the batch");
       // fetch trims the blank value, so both empty and whitespace reach the server as an empty value
       assert.equal(seen.filter((x) => x.header === "PAYMENT-SIGNATURE" && x.value === "").length, 2);
     });
@@ -178,6 +179,21 @@ test("R24 no version: an unpaid 402 that advertises no version fails and grades 
   assert.equal(result.pass, false, JSON.stringify(result));
   assert.equal((result.detail as any).cases, undefined);
   assert.match(String((result.detail as any).error), /advertises no version/);
+});
+
+test("R24 unpaid answer: given the caller's unpaid answer, the probe sends only the values and the control", async () => {
+  const double = await startDouble(0);
+  const s = await startHeaderServer(double.url, "", DEVNET);
+  let sent = 0;
+  const f: typeof fetch = async (input, init) => { sent += 1; return fetch(input, init); };
+  try {
+    const r = await fetch(s.url);
+    const unpaid = { status: r.status, paymentRequired: r.headers.get("payment-required"), body: await r.text() };
+    const result = r24(await probeMalformedHeader(s.url, double, { fetch: f, unpaid }));
+    assert.equal(result.pass, true, JSON.stringify(result));
+    assert.equal((result.detail as any).unpaid_requests, 1);
+    assert.equal(sent, N + 1, "twelve values and the control, no unpaid GET of its own");
+  } finally { await s.close(); await double.close(); }
 });
 
 test("R24 status only: given an unpaid 402 status, the probe sends its own unpaid GET to read the advertisement", async () => {
