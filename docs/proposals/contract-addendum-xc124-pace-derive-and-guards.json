@@ -1,5 +1,5 @@
 {
- "about": "PROPOSED, UNSIGNED. One new Proofline task, XC-124, and three amendments to signed tasks. XC-124: ts/test/pace.test.ts derives the number of requests x402conf-svm live sends instead of asserting 7, and reads the CLI's stdout on close, so it passes on main (7) and after XC-90 (16) with no edit. XC-90: AC03 and AC04 get the named-test guard XC-38 already uses, because as signed they pass on main, where no test matches their pattern (node counts the file itself as one passing test); XC-90 also depends on XC-124, so XC-124 lands first. XC-38: tools/build_coverage.py joins its scope, because every catalog check needs a RUNS entry there and R20c is a new catalog check. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
+ "about": "PROPOSED, UNSIGNED. One new Proofline task, XC-124, and three amendments to signed tasks. XC-124: ts/test/pace.test.ts derives the number of requests x402conf-svm live sends instead of asserting 7, and reads the CLI's stdout on close, so it passes on main (7) and after XC-90 (16) with no edit. XC-90: AC03 and AC04 get the named-test guard XC-38 already uses, because as signed they pass on main, where no test matches their pattern (node counts the file itself as one passing test); XC-90 also depends on XC-124, so XC-124 lands first. XC-38: tools/build_coverage.py, tests/test_attestation.py and tests/test_run_queue.py join its scope, because a new catalog check needs a RUNS entry and the two tests assume the catalog equals the released suite. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
  "schema": "proofline/1",
  "status": "proposed",
  "proposed_by": "mgillr",
@@ -159,9 +159,11 @@
     "README.md",
     "CHANGELOG.md",
     "corpus/cases/**",
-    "tools/build_coverage.py"
+    "tools/build_coverage.py",
+    "tests/test_attestation.py",
+    "tests/test_run_queue.py"
    ],
-   "why": "tools/build_coverage.py asserts a RUNS entry for every catalog check, so adding R20c to the catalog fails the coverage generator, the docs-aligned job and tests/test_coverage_doc.py until R20c joins the R20 line"
+   "why": "adding R20c to the catalog, which XC-38-AC02 requires, breaks three files outside the signed scope. tools/build_coverage.py asserts a RUNS entry for every catalog check, so the coverage generator, the docs-aligned job and tests/test_coverage_doc.py fail until R20c joins the R20 line. tests/test_attestation.py builds its attestation from spec.CATALOG while checking it against the pinned v1.6.0 suite (matrix/queue/suite.json), so any check added after a release is refused as one the pinned suite does not have; its make_attestation (also used by tests/test_matrix_rows.py) should take the pin's checks. tests/test_run_queue.py asserts '68 needs self-hosted', the catalog size minus the external checks, as a literal; it should derive it. Measured on the XC-38 branch: tests.test_coverage_doc, tests.test_interdeps, tests.test_attestation, tests.test_matrix_rows and tests.test_run_queue fail there and pass on main"
   }
  ]
 }
