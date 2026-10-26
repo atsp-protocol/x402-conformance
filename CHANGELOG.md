@@ -1,5 +1,11 @@
 # Changelog
 ## Unreleased
+- R20c, a same-id re-signed retry (task XC-38): the client times out before `/settle` answers and retries with a newly
+  signed payment under the same payment-identifier id. R20c grades that exchange for safety. It passes when the server
+  refuses the retry with 409 (or another 4xx whose error names the id) or returns the original result, with one
+  successful `/settle` in all, and fails when the retry is settled. It runs with `--retry`, from the same requests as
+  R20a. R20a stays strict: a server that answers the retry with 409 passes R20c and still fails R20a
+  ([docs/FIXES.md](docs/FIXES.md#r20c)).
 - Docs stay aligned with the code and the contract after every commit. `python3 tools/interdeps.py --docs` (the new
   `docs-aligned` CI job) fails when a derived number, table or generated block is stale: the check, task and criteria
   counts in README.md, the release pins, the latest release on the architecture page, the summary at the top of

@@ -9,6 +9,10 @@
 //                reference naming the first transaction
 //   R20b         (server) the retry resends the same signed payment (same nonce or transaction) with the same key: the
 //                double refuses a second settle of it as a duplicate, and the retry still gets the original result
+//   R20c         (server) the same exchange as R20a, graded for safety: the re-signed retry under the same
+//                payment-identifier id is never settled. It passes when the server refuses the retry with 409 (or
+//                another 4xx naming the id) or returns the original result, with one successful /settle in all. R20a
+//                stays strict: a 409 refusal loses the result the client paid for, so it fails R20a and passes R20c
 //   R20b client  checkClientRetry: a client's own timeout-and-retry is watched through a recording proxy. It passes when
 //                the retry reuses the signed payment or carries the same payment-identifier id, and is flagged when it
 //                re-signs a fresh payment with no key
@@ -58,10 +62,14 @@ async function send(url: string, headers: Record<string, string>, timeoutMs: num
     let ref: string | null = null;
     const pr = r.headers.get("payment-response");
     if (pr) { try { ref = String((decodePaymentResponseHeader(pr) as any)?.transaction ?? "") || null; } catch { ref = null; } }
-    return { status: r.status, timedOut: false, body: body.slice(0, 300), ref };
+    // the error a PAYMENT-REQUIRED carries, which is where a 402 refusal would name the id
+    let required = "";
+    const h = r.headers.get("payment-required");
+    if (h) { try { required = String((decodePaymentRequiredHeader(h) as any)?.error ?? ""); } catch { required = ""; } }
+    return { status: r.status, timedOut: false, body: body.slice(0, 300), ref, required };
   } catch (e) {
     const timedOut = (e as Error)?.name === "TimeoutError" || (e as Error)?.name === "AbortError";
-    return { status: 0, timedOut, body: timedOut ? "" : String(e), ref: null as string | null };
+    return { status: 0, timedOut, body: timedOut ? "" : String(e), ref: null as string | null, required: "" };
   }
 }
 
@@ -103,7 +111,8 @@ export async function probeRetry(url: string, double: Double, opts: RetryOptions
     return { before, first, firstTx: double.successes.slice(before.successes)[0] ?? null };
   };
 
-  // R20a: same key, fresh payment.
+  // R20a: same key, fresh payment. R20c grades the same exchange for safety only.
+  let r20c: Result;
   {
     const id = newPaymentId();
     const { before, first, firstTx } = await firstAttempt(id, header(id));
@@ -117,6 +126,17 @@ export async function probeRetry(url: string, double: Double, opts: RetryOptions
         ...(first.timedOut ? {} : { error: "the first attempt answered before the client gave up; nothing was retried" }),
         ...(charges > 1 ? { error: "the request was paid twice" } : {}),
         ...(charges === 1 && !earlier ? { error: "not charged twice, but the retry lost the earlier result" } : {}) }));
+    const namesId = retry.body.includes(id) || retry.required.includes(id);
+    const refused = retry.status === 409 || (retry.status >= 400 && retry.status < 500 && namesId);
+    r20c = res("R20c a retry re-signed under the same payment-identifier id is refused with 409 (or a 4xx naming the id) "
+      + "or gets the original result, and is never settled", first.timedOut && charges === 1 && (earlier || refused),
+      { first: { timed_out: first.timedOut, status: first.status },
+        retry: { status: retry.status, settlement_ref: retry.ref, names_id: namesId }, payment_identifier: id,
+        successful_settles: charges, outcome: earlier ? "original result" : refused ? "refused" : "neither",
+        ...(first.timedOut ? {} : { error: "the first attempt answered before the client gave up; nothing was retried" }),
+        ...(charges > 1 ? { error: "the re-signed retry was settled: the request was paid twice" } : {}),
+        ...(charges === 1 && !earlier && !refused ? { error: `the retry got ${retry.status || "no answer"}: neither the `
+          + "original result nor a 409 or a 4xx naming the id" } : {}) });
   }
   // R20b: same key, same signed payment.
   {
@@ -134,6 +154,7 @@ export async function probeRetry(url: string, double: Double, opts: RetryOptions
         successful_settles: charges, settle_calls_on_retry: resettled, first_transaction: firstTx,
         ...(charges === 1 && !original ? { error: "not settled twice, but the retry lost the original result" } : {}) }));
   }
+  out.push(r20c);
   return out;
 }
 
