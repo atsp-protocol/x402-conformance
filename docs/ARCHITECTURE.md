@@ -54,16 +54,18 @@ flowchart LR
 | `ts/src/provenance.ts` | The `provenance` block (suite, version, publisher, repository) every results document carries |
 | `ts/src/abort.ts`, `ts/src/header.ts` | R23 (a client abort during settle is recoverable) and R24 (a malformed payment header gets a 4xx) |
 | `ts/src/client-status.ts`, `ts/src/client-offers.ts`, `ts/src/client-version.ts` | C1, C2 and C3: a client's handling of a 402, its choice among several offers and its payment version, graded through a recording proxy in front of a paid route |
-| `src/x402conf/cli.py` | The `x402conf` command: `live`, `resource` (with `--well-known` for P10, `--malformed-header` for R24 and `--unpaid-head` for R16a), `offline`, `report` (SARIF, JUnit and `--badge`), `demo`, `pr-comment` and `devnet` |
+| `src/x402conf/cli.py` | The `x402conf` command: `live`, `resource` (with `--well-known` for P10, `--malformed-header` for R24 and `--unpaid-head` for R16a), `offline`, `report` (SARIF, JUnit and `--badge`), `demo`, `pr-comment`, `devnet` and `parity` |
 | `src/x402conf/discovery.py` | P9 and P10: the bazaar discovery `info` in a 402 against the schema it ships with, and the host's `/.well-known/x402` manifest against the live 402 |
 | `src/x402conf/external.py` | R16a and R24 from outside the project's stack, the Python ports of `ts/src/head-unpaid.ts` and `ts/src/header.ts`, for `x402conf resource` and the tier-1 queue |
 | `src/x402conf/pacing.py` | Pacing for live targets: at least 5 s between requests off loopback (`--min-interval`), an optional cap (`--max-requests`) and one log line per request |
 | `src/x402conf/tiers.py` | The matrix's two tiers (External-verified and Full suite, self-hosted) and the attestation of a self-hosted full run |
 | `src/x402conf/pytest_plugin.py` | The pytest plugin the package registers: the `x402` fixture, `--x402-report-dir` and `--x402-share` |
+| `src/x402conf/parity/__init__.py`, `src/x402conf/parity/runner.py` | `x402conf parity`: the shared vector set in `docs/parity/vectors.json` against one harness per official SDK (`ts/parity-harness/`, `examples/python/parity_harness.py`, `examples/go/parity/`) at the upstream release pinned in `docs/parity/pin`, with a recording facilitator double on loopback and no chain, key or network |
 | `src/x402conf/types.py` | Typed shapes used by the harness |
 | `tools/interdeps.py` | Generates `docs/INTERDEPENDENCY.md`. `--check` fails on a stale map, `--drift` on docs that disagree with the code, `--gate` on a pull request that leaves a downstream doc, contract or test component neither touched nor acknowledged, and `--docs` (the `docs-aligned` CI job) on any derived number, table or block in the docs that no longer matches the code and the contract; `--docs --fix` regenerates them |
 | `tools/check_ids.py` | Writes `docs/check-ids.json` from the catalogue. `--check --since v1.6.0` fails when that registry is stale, when an id published at v1.6.0 is missing, or when that id's property changed without a deprecation entry in `CHANGELOG.md` |
 | `tools/spec_anchors.py` | Checks the normative anchors in `docs/check-ids.json` against `docs/spec-snapshots/` with `--check --offline`, and checks `docs/crosswalk/usenix-2026.json` with `--crosswalk usenix-2026 --check` |
+| `tools/parity_report.py` | Checks a parity run (`--validate`), the vector set (`--coverage`, `--anchors`) and the committed parity evidence (`--check`), and lists each SDK's divergences from the expected outcome and from the other SDKs |
 | `tools/build_coverage.py` | Generates the check table in `docs/COVERAGE.md` from `CATALOG` |
 | `tools/mutation_matrix.py` | Builds `docs/site/mutation-matrix.json`: which faulty build each check is proven to catch |
 | `tools/compat_matrix.py`, `tools/row_from_evidence.py` | The compatibility matrix and the reference baseline in `docs/MATRIX.md`, generated from `evidence/impl-matrix/`; and one matrix row from a run's evidence bundle |

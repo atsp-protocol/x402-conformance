@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- Cross-SDK parity (task XC-56). `x402conf parity` sends one vector set (`docs/parity/vectors.json`, 30 vectors) to the official TypeScript, Python and Go x402 libraries at one pinned upstream release (`docs/parity/pin`), offline: facilitator verify with a stub signer and the payment middleware on loopback, no chain, key or network. `tools/parity_report.py` checks the run and lists where each library differs from the expected outcome and from the others, with the vector id and spec anchor. [docs/PARITY.md](docs/PARITY.md) says what it does and does not show.
 - Normative check ids name a pinned upstream spec line (task XC-55). `tools/spec_anchors.py --check --offline` fails when the quoted text in `docs/spec-snapshots/` no longer matches the anchor. `--drift COMMIT` lists the ids whose text changed at that snapshot. The USENIX Security 2026 rules SR1-SR8 and Server-SR1-SR2 are recorded as gaps for XC-59 in `docs/crosswalk/usenix-2026.json`, because this repo does not copy the paper. CI runs the offline check on every push and pull request.
 - Check ids are stable (task XC-53). [GOVERNANCE.md](GOVERNANCE.md) states how the project is run.
   `tools/check_ids.py` writes `docs/check-ids.json` from the catalogue (id, profile, one-line property,

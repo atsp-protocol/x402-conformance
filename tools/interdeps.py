@@ -164,7 +164,8 @@ def doc_files(root: str) -> list[str]:
 
 def code_flags(root: str) -> dict[str, set[str]]:
     py: set[str] = set()
-    for f in ("src/x402conf/cli.py", "src/x402conf/devnet/runner.py"):  # x402conf devnet hands its flags to the runner
+    # x402conf devnet and x402conf parity hand their flags to their runners
+    for f in ("src/x402conf/cli.py", "src/x402conf/devnet/runner.py", "src/x402conf/parity/runner.py"):
         py.update(re.findall(r"add_argument\(\s*\"(--[a-z][a-z0-9-]*)\"", read(root, f)))
     ts_src = read(root, "ts/src/cli.ts")
     ts: set[str] = set()
@@ -284,6 +285,9 @@ COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
     ("vv-doc", "doc", ("docs/VV.md",), "the V&V matrix"),
     ("catalog", "code", ("src/x402conf/spec.py", "src/x402conf/types.py"), "the check catalogue and its types"),
     ("pytest-plugin", "code", ("src/x402conf/pytest_plugin.py",), "the pytest plugin"),
+    ("parity", "code", ("src/x402conf/parity/**", "tools/parity_report.py", "ts/parity-harness/**",
+                        "examples/python/parity_harness.py", "examples/go/parity/**"),
+     "the cross-SDK parity oracle: the runner, the report and one harness per SDK at the pinned upstream release"),
     ("devnet", "code", ("src/x402conf/devnet/**", "src/x402conf/fixtures/**"),
      "the devnet runner, its node helpers and fixtures"),
     ("py-suite", "code", ("src/x402conf/**", "pyproject.toml"), "the Python suite: CLI, harness, mock and package"),
@@ -365,6 +369,8 @@ EDGES: list[tuple[str, str, str]] = [
     ("ts-cli", "impl-matrix", R), ("ts-examples", "impl-matrix", R), ("py-examples", "impl-matrix", R),
     ("impl-matrix", "evidence", R),
     ("evidence", "compat-matrix", R), ("compat-matrix", "docs", R), ("compat-matrix", "ci", R),
+    ("parity", "docs", R), ("parity", "py-tests", R), ("parity", "evidence", R), ("parity", "ci", R),
+    ("parity", "interdeps-map", U), ("py-suite", "parity", R),
 ]
 ACK = re.compile(r"^[ \t]*Interdeps-Ack:[ \t]*(?P<ids>[A-Za-z0-9_.-]+(?:[ \t]*,[ \t]*[A-Za-z0-9_.-]+)*)"
                  r"[ \t]+-[ \t]+(?P<why>\S.*)$", re.M)

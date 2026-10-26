@@ -1,0 +1,1395 @@
+{
+ "schema": "x402conf.parity-vectors/1",
+ "about": "Shared parity vectors (XC-56). verify vectors go to the library's facilitator verify, registered for the exact scheme on eip155:84532 with a stub signer; paid-route vectors go to the library's payment middleware on loopback as the PAYMENT-SIGNATURE header of a GET to a paid route. expect is the outcome the spec calls for.",
+ "registered": {
+  "scheme": "exact",
+  "network": "eip155:84532",
+  "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+  "amount": "1000"
+ },
+ "signer": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+ "vectors": [
+  {
+   "id": "verify-payload-array",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "the payment payload is a JSON array",
+   "input": {
+    "payload": [
+     1,
+     2,
+     3
+    ],
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-payload-string",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "the payment payload is a JSON string",
+   "input": {
+    "payload": "payment",
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-payload-number",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "the payment payload is a JSON number",
+   "input": {
+    "payload": 42,
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-payload-null",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "the payment payload is JSON null",
+   "input": {
+    "payload": null,
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-payload-empty-object",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "the payment payload is an empty object",
+   "input": {
+    "payload": {},
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-no-inner-payload",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "x402Version and accepted, but no payload",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-no-authorization",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "a signature but no authorization",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xf632d9684071568f663673b09a0cf7d7289a9f0abc805cf60b65e646c745c4cd54dcd620d305870b2de1b5c9b31f486fa8233029d4f96762e0c7e60d7c32f60c1b"
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-authorization-less",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "the inner payload names the scheme and network but carries no authorization, signature or transaction",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "scheme": "exact",
+      "network": "eip155:84532"
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-authorization-not-object",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "the authorization is a string",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xf632d9684071568f663673b09a0cf7d7289a9f0abc805cf60b65e646c745c4cd54dcd620d305870b2de1b5c9b31f486fa8233029d4f96762e0c7e60d7c32f60c1b",
+      "authorization": "x"
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-value-not-integer",
+   "target": "verify",
+   "tags": [
+    "malformed",
+    "F15"
+   ],
+   "anchor": "F1",
+   "profile": "normative",
+   "note": "the authorization value is not an integer",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xf632d9684071568f663673b09a0cf7d7289a9f0abc805cf60b65e646c745c4cd54dcd620d305870b2de1b5c9b31f486fa8233029d4f96762e0c7e60d7c32f60c1b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "ten",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0xa9f50690018bf79347e0653d11d6c54afea9f9f5d1a95257a8c8f93a274adfb7"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payload"
+    ]
+   }
+  },
+  {
+   "id": "verify-unregistered-network",
+   "target": "verify",
+   "tags": [
+    "unregistered-network",
+    "wildcard-network",
+    "F16"
+   ],
+   "anchor": "F12",
+   "profile": "security-profile",
+   "note": "registered for eip155:84532 only; a correctly signed payment for eip155:11155111, a testnet of the same family",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:11155111",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xbca7c14afe94c239bfd9e565997bc66e58bd29d27ebadf8f2003d3480535a5b878651881d1ed47fc99dba4ebbefe8a84c99aa2cc91ee092d4cf4fea5e72e83961b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0x6a82a4943c595817b92102fe0e727d29718b6c4359f544de1b7db2b6fb860780"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:11155111",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_network",
+     "unsupported_scheme"
+    ]
+   }
+  },
+  {
+   "id": "verify-other-namespace",
+   "target": "verify",
+   "tags": [
+    "unregistered-network"
+   ],
+   "anchor": "F12",
+   "profile": "security-profile",
+   "note": "registered for eip155:84532 only; a requirement on a Solana network",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xf632d9684071568f663673b09a0cf7d7289a9f0abc805cf60b65e646c745c4cd54dcd620d305870b2de1b5c9b31f486fa8233029d4f96762e0c7e60d7c32f60c1b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0xa9f50690018bf79347e0653d11d6c54afea9f9f5d1a95257a8c8f93a274adfb7"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_network",
+     "unsupported_scheme"
+    ]
+   }
+  },
+  {
+   "id": "verify-wildcard-requirement",
+   "target": "verify",
+   "tags": [
+    "wildcard-network"
+   ],
+   "anchor": "S2",
+   "profile": "normative",
+   "note": "the requirement's network is the pattern eip155:*, which is not a CAIP-2 chain id",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:*",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xf632d9684071568f663673b09a0cf7d7289a9f0abc805cf60b65e646c745c4cd54dcd620d305870b2de1b5c9b31f486fa8233029d4f96762e0c7e60d7c32f60c1b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0xa9f50690018bf79347e0653d11d6c54afea9f9f5d1a95257a8c8f93a274adfb7"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:*",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_network",
+     "unsupported_scheme"
+    ]
+   }
+  },
+  {
+   "id": "verify-accepted-network-mismatch",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes"
+   ],
+   "anchor": "F14",
+   "profile": "security-profile",
+   "note": "accepted names eip155:11155111 while the requirement is eip155:84532",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:11155111",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xf632d9684071568f663673b09a0cf7d7289a9f0abc805cf60b65e646c745c4cd54dcd620d305870b2de1b5c9b31f486fa8233029d4f96762e0c7e60d7c32f60c1b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0xa9f50690018bf79347e0653d11d6c54afea9f9f5d1a95257a8c8f93a274adfb7"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false
+   }
+  },
+  {
+   "id": "verify-overpay",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes",
+    "override-ceiling"
+   ],
+   "anchor": "S5",
+   "profile": "normative",
+   "note": "a valid signature authorising 2000 for a 1000 requirement",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0x40f55831e996938c5d209d7a7e0bfcc885496b96333e0e7aae2baede2bdd560c1aa840667fd1cbac61f07f93ad702bd1399c528757d17bbc8feb4298db6c90d01b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "2000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0x1c373b8d2e56b1bb6992de6a3b7203265996df20fc7e79bbd370e5ff7430f16b"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_exact_evm_payload_authorization_value_mismatch"
+    ]
+   }
+  },
+  {
+   "id": "verify-underpay",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes",
+    "override-ceiling"
+   ],
+   "anchor": "S5",
+   "profile": "normative",
+   "note": "a valid signature authorising 999 for a 1000 requirement",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xf5fc4d86b33f24e0b0d836c6afd2fe4daa2fe0766565b15414fb595ae510c481263f12100bf4b2c542aca00bf6331668dbceb08d7eb8061440acc4aef33112861b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "999",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0xd4e97e5941c9b248287a200407f9c8aa8ddf8cc6edb62e755206e02b5c02fdd1"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_exact_evm_payload_authorization_value_mismatch"
+    ]
+   }
+  },
+  {
+   "id": "verify-recipient-mismatch",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes"
+   ],
+   "anchor": "S5",
+   "profile": "normative",
+   "note": "a valid signature paying an address other than payTo",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xdc7fb83648ad68c9dcd088f7c5953f2e7593774ce3b27d73341f7a77bc0d9d3d5980e4625f7294b61b99390a7824724a315537a4eb4a27fcc42e3338a91bcde11c",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x000000000000000000000000000000000000dEaD",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0x5d71f7d5528014f73c7f502b833bf4aa54f67f60df94b164351e7dc6393f04f9"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_exact_evm_payload_recipient_mismatch"
+    ]
+   }
+  },
+  {
+   "id": "verify-expired",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes"
+   ],
+   "anchor": "S5",
+   "profile": "normative",
+   "note": "validBefore is in 1970",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0x03063d8bfa19895d9408a4fe61105c955e25015de2c9a83cef3474e2a896fe222e34088618c50cfbda31cc561e841ed1625e3e871649d802945100703d31c0c91c",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "1000",
+       "nonce": "0x02ce7cf4b2c730f953efbcda3f3b31768684125fa0ca567522c7c6ac10b6c0b5"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_exact_evm_payload_authorization_valid_before"
+    ]
+   }
+  },
+  {
+   "id": "verify-not-yet-valid",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes"
+   ],
+   "anchor": "S5",
+   "profile": "normative",
+   "note": "validAfter is in 2099",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xc383c357a5470c797b3373b32ab19069f40726341b15dafa087c623b74840571354c88ff8acea3b9df11b1d3fa0ffbf91f1f15fd6f21fe12be9bed803e57a7721c",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "4102444000",
+       "validBefore": "4102444800",
+       "nonce": "0xe69413cc008b31650ba79966370acd9281b024683f333f54468e915b70642a1f"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_exact_evm_payload_authorization_valid_after"
+    ]
+   }
+  },
+  {
+   "id": "verify-bad-signature",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes"
+   ],
+   "anchor": "S5",
+   "profile": "normative",
+   "note": "65 bytes that are not a signature by the payer",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0x1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0xa9f50690018bf79347e0653d11d6c54afea9f9f5d1a95257a8c8f93a274adfb7"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_exact_evm_payload_signature"
+    ]
+   }
+  },
+  {
+   "id": "verify-scheme-mismatch",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes"
+   ],
+   "anchor": "S5",
+   "profile": "normative",
+   "note": "accepted names the upto scheme while the requirement is exact",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "upto",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xf632d9684071568f663673b09a0cf7d7289a9f0abc805cf60b65e646c745c4cd54dcd620d305870b2de1b5c9b31f486fa8233029d4f96762e0c7e60d7c32f60c1b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0xa9f50690018bf79347e0653d11d6c54afea9f9f5d1a95257a8c8f93a274adfb7"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "unsupported_scheme",
+     "invalid_scheme"
+    ]
+   }
+  },
+  {
+   "id": "verify-version-3",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes"
+   ],
+   "anchor": "S5",
+   "profile": "normative",
+   "note": "x402Version 3",
+   "input": {
+    "payload": {
+     "x402Version": 3,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+       "name": "USDC",
+       "version": "2"
+      }
+     },
+     "payload": {
+      "signature": "0xf632d9684071568f663673b09a0cf7d7289a9f0abc805cf60b65e646c745c4cd54dcd620d305870b2de1b5c9b31f486fa8233029d4f96762e0c7e60d7c32f60c1b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0xa9f50690018bf79347e0653d11d6c54afea9f9f5d1a95257a8c8f93a274adfb7"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {
+      "name": "USDC",
+      "version": "2"
+     }
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_x402_version"
+    ]
+   }
+  },
+  {
+   "id": "verify-missing-eip712-domain",
+   "target": "verify",
+   "tags": [
+    "invalid-reason-codes"
+   ],
+   "anchor": "P5",
+   "profile": "normative",
+   "note": "the requirement has no extra.name or extra.version",
+   "input": {
+    "payload": {
+     "x402Version": 2,
+     "resource": {
+      "url": "http://127.0.0.1/paid"
+     },
+     "accepted": {
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "amount": "1000",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "extra": {}
+     },
+     "payload": {
+      "signature": "0xf632d9684071568f663673b09a0cf7d7289a9f0abc805cf60b65e646c745c4cd54dcd620d305870b2de1b5c9b31f486fa8233029d4f96762e0c7e60d7c32f60c1b",
+      "authorization": {
+       "from": "0x434A1eC8460a05811466a5D0664e2eC4E1F9f31a",
+       "to": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+       "value": "1000",
+       "validAfter": "0",
+       "validBefore": "4102444800",
+       "nonce": "0xa9f50690018bf79347e0653d11d6c54afea9f9f5d1a95257a8c8f93a274adfb7"
+      }
+     }
+    },
+    "requirements": {
+     "scheme": "exact",
+     "network": "eip155:84532",
+     "amount": "1000",
+     "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+     "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+     "maxTimeoutSeconds": 60,
+     "extra": {}
+    }
+   },
+   "expect": {
+    "isValid": false,
+    "threw": false,
+    "invalidReason": [
+     "invalid_payment_requirements"
+    ]
+   }
+  },
+  {
+   "id": "route-not-base64",
+   "target": "paid-route",
+   "tags": [
+    "status-mapping",
+    "error-content-type",
+    "malformed"
+   ],
+   "anchor": "P1",
+   "profile": "normative",
+   "note": "a PAYMENT-SIGNATURE that is not base64",
+   "input": {
+    "header": "%%%not-base64%%%"
+   },
+   "expect": {
+    "status": [
+     400,
+     402
+    ],
+    "content_type": "application/json",
+    "threw": false
+   }
+  },
+  {
+   "id": "route-base64-not-json",
+   "target": "paid-route",
+   "tags": [
+    "status-mapping",
+    "error-content-type",
+    "malformed"
+   ],
+   "anchor": "P1",
+   "profile": "normative",
+   "note": "base64 of text that is not JSON",
+   "input": {
+    "header": "dGhpcyBpcyBub3QganNvbg=="
+   },
+   "expect": {
+    "status": [
+     400,
+     402
+    ],
+    "content_type": "application/json",
+    "threw": false
+   }
+  },
+  {
+   "id": "route-json-array",
+   "target": "paid-route",
+   "tags": [
+    "status-mapping",
+    "error-content-type",
+    "malformed"
+   ],
+   "anchor": "P1",
+   "profile": "normative",
+   "note": "base64 of a JSON array",
+   "input": {
+    "header": "WzEsMiwzXQ=="
+   },
+   "expect": {
+    "status": [
+     400,
+     402
+    ],
+    "content_type": "application/json",
+    "threw": false
+   }
+  },
+  {
+   "id": "route-json-number",
+   "target": "paid-route",
+   "tags": [
+    "status-mapping",
+    "error-content-type",
+    "malformed"
+   ],
+   "anchor": "P1",
+   "profile": "normative",
+   "note": "base64 of a JSON number",
+   "input": {
+    "header": "NDI="
+   },
+   "expect": {
+    "status": [
+     400,
+     402
+    ],
+    "content_type": "application/json",
+    "threw": false
+   }
+  },
+  {
+   "id": "route-json-null",
+   "target": "paid-route",
+   "tags": [
+    "status-mapping",
+    "error-content-type",
+    "malformed"
+   ],
+   "anchor": "P1",
+   "profile": "normative",
+   "note": "base64 of JSON null",
+   "input": {
+    "header": "bnVsbA=="
+   },
+   "expect": {
+    "status": [
+     400,
+     402
+    ],
+    "content_type": "application/json",
+    "threw": false
+   }
+  },
+  {
+   "id": "route-empty-object",
+   "target": "paid-route",
+   "tags": [
+    "status-mapping",
+    "error-content-type",
+    "malformed"
+   ],
+   "anchor": "P1",
+   "profile": "normative",
+   "note": "base64 of an empty object",
+   "input": {
+    "header": "e30="
+   },
+   "expect": {
+    "status": [
+     400,
+     402
+    ],
+    "content_type": "application/json",
+    "threw": false
+   }
+  },
+  {
+   "id": "route-no-accepted",
+   "target": "paid-route",
+   "tags": [
+    "status-mapping",
+    "error-content-type",
+    "malformed"
+   ],
+   "anchor": "P1",
+   "profile": "normative",
+   "note": "x402Version 2 and nothing else",
+   "input": {
+    "header": "eyJ4NDAyVmVyc2lvbiI6Mn0="
+   },
+   "expect": {
+    "status": [
+     400,
+     402
+    ],
+    "content_type": "application/json",
+    "threw": false
+   }
+  }
+ ]
+}
