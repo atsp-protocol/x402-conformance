@@ -1,0 +1,636 @@
+{
+  "ids": [
+    {
+      "id": "S0",
+      "profile": "normative",
+      "property": "V2 7.3: GET /supported answers with a SupportedResponse",
+      "basis": "V2 7.3: GET /supported answers with a SupportedResponse",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "S1",
+      "profile": "normative",
+      "property": "V2 7.3.1 SupportedResponse: kinds, extensions, signers; V1 7.3: kinds",
+      "basis": "V2 7.3.1 SupportedResponse: kinds, extensions, signers; V1 7.3: kinds",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "S2",
+      "profile": "normative",
+      "property": "V2 11.1: networks are CAIP-2",
+      "basis": "V2 11.1: networks are CAIP-2",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "S3",
+      "profile": "normative",
+      "property": "V2 11.1 and SVM exact: Solana networks use the published CAIP-2 IDs",
+      "basis": "V2 11.1 and SVM exact: Solana networks use the published CAIP-2 IDs",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "S4",
+      "profile": "normative",
+      "property": "SVM exact: extra.feePayer is the sponsor's public key",
+      "basis": "SVM exact: extra.feePayer is the sponsor's public key",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "S5",
+      "profile": "normative",
+      "property": "V2 7.3: /supported lists the payment kinds the facilitator supports; V2 7.1: /verify answers isValid, with invalidReason when it is false",
+      "basis": "V2 7.3: /supported lists the payment kinds the facilitator supports; V2 7.1: /verify answers isValid, with invalidReason when it is false",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "P1",
+      "profile": "normative",
+      "property": "V2 HTTP transport: payment required is signalled with HTTP 402",
+      "basis": "V2 HTTP transport: payment required is signalled with HTTP 402",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "P2",
+      "profile": "normative",
+      "property": "V2 HTTP transport: PAYMENT-REQUIRED carries base64 JSON; V1 5.1 body",
+      "basis": "V2 HTTP transport: PAYMENT-REQUIRED carries base64 JSON; V1 5.1 body",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "P3",
+      "profile": "normative",
+      "property": "V2 5.1.2: x402Version, resource and accepts are required",
+      "basis": "V2 5.1.2: x402Version, resource and accepts are required",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "P4",
+      "profile": "normative",
+      "property": "V2 5.1.2: required accepts fields; amount in atomic token units",
+      "basis": "V2 5.1.2: required accepts fields; amount in atomic token units",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "P5",
+      "profile": "normative",
+      "property": "EVM exact: extra.name and extra.version; SVM exact: extra.feePayer",
+      "basis": "EVM exact: extra.name and extra.version; SVM exact: extra.feePayer",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "P6",
+      "profile": "resilience",
+      "property": "The spec sets no header budget; Node fetch fails above 16 KB of headers and aiohttp near 8 KB",
+      "basis": "The spec sets no header budget; Node fetch fails above 16 KB of headers and aiohttp near 8 KB",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "P7",
+      "profile": "normative",
+      "property": "V2 6.1: extra.paymentFlow MUST be present when the resolved flow is not authorization (a warning: the upto SVM scheme spec allows omitting it)",
+      "basis": "V2 6.1: extra.paymentFlow MUST be present when the resolved flow is not authorization (a warning: the upto SVM scheme spec allows omitting it)",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "P9",
+      "profile": "normative",
+      "property": "bazaar extension, Schema Validation: schema is JSON Schema Draft 2020-12 with same-document $ref only, and facilitators MUST validate info against schema before cataloging",
+      "basis": "bazaar extension, Schema Validation: schema is JSON Schema Draft 2020-12 with same-document $ref only, and facilitators MUST validate info against schema before cataloging",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "P10",
+      "profile": "resilience",
+      "property": "draft-hawkins-x402-dns-discovery 3.2: resources are HTTPS on the manifest's own host, and a manifest that diverges from the live endpoint is a misconfiguration (a warning; the runtime 402 is authoritative)",
+      "basis": "draft-hawkins-x402-dns-discovery 3.2: resources are HTTPS on the manifest's own host, and a manifest that diverges from the live endpoint is a misconfiguration (a warning; the runtime 402 is authoritative)",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "F1",
+      "profile": "normative",
+      "property": "V2 9 invalid_payload; V2 5.1.2 atomic units; SVM exact: fail closed",
+      "basis": "V2 9 invalid_payload; V2 5.1.2 atomic units; SVM exact: fail closed",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F2",
+      "profile": "normative",
+      "property": "SVM exact 1.1 and V2 9: an amount below the requirement is rejected",
+      "basis": "SVM exact 1.1 and V2 9: an amount below the requirement is rejected",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F3",
+      "profile": "normative",
+      "property": "SVM exact, Duplicate Settlement Mitigation: duplicate_settlement",
+      "basis": "SVM exact, Duplicate Settlement Mitigation: duplicate_settlement",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F4",
+      "profile": "security-profile",
+      "property": "V2 10.1 replay prevention; one memo or nonce, one purchase",
+      "basis": "V2 10.1 replay prevention; one memo or nonce, one purchase",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F5",
+      "profile": "normative",
+      "property": "V2 9: settlement_pending is non-terminal and MUST carry transaction and network",
+      "basis": "V2 9: settlement_pending is non-terminal and MUST carry transaction and network",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F6",
+      "profile": "normative",
+      "property": "Solana guide: a retry cannot settle or fulfil the same purchase twice; SVM exact: fail closed",
+      "basis": "Solana guide: a retry cannot settle or fulfil the same purchase twice; SVM exact: fail closed",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F7",
+      "profile": "normative",
+      "property": "V2 9 settlement_pending: retry reaches the final outcome",
+      "basis": "V2 9 settlement_pending: retry reaches the final outcome",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F8",
+      "profile": "normative",
+      "property": "V2 9 invalid_transaction_state is terminal",
+      "basis": "V2 9 invalid_transaction_state is terminal",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F9",
+      "profile": "resilience",
+      "property": "SVM exact 2.1.2: a transient failure fails closed and stays retryable",
+      "basis": "SVM exact 2.1.2: a transient failure fails closed and stays retryable",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F10",
+      "profile": "security-profile",
+      "property": "V2 5.1.2 and 5.2.2: a payment is verified against the requirements it was quoted under",
+      "basis": "V2 5.1.2 and 5.2.2: a payment is verified against the requirements it was quoted under",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F11",
+      "profile": "normative",
+      "property": "V2 7.1: /verify MUST NOT commit payment state",
+      "basis": "V2 7.1: /verify MUST NOT commit payment state",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "F12",
+      "profile": "security-profile",
+      "property": "V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network",
+      "basis": "V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "F13",
+      "profile": "security-profile",
+      "property": "V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment",
+      "basis": "V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment",
+      "first_release": "v1.6.0",
+      "status": "active"
+    },
+    {
+      "id": "F14",
+      "profile": "security-profile",
+      "property": "V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution)",
+      "basis": "V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution)",
+      "first_release": "v1.6.0",
+      "status": "active"
+    },
+    {
+      "id": "R0",
+      "profile": "normative",
+      "property": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED",
+      "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R1",
+      "profile": "normative",
+      "property": "V2 7.2: the resource server settles through its facilitator",
+      "basis": "V2 7.2: the resource server settles through its facilitator",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R2",
+      "profile": "normative",
+      "property": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R3",
+      "profile": "resilience",
+      "property": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R4",
+      "profile": "resilience",
+      "property": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R5",
+      "profile": "resilience",
+      "property": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R6",
+      "profile": "resilience",
+      "property": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R7",
+      "profile": "resilience",
+      "property": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R8",
+      "profile": "normative",
+      "property": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R9",
+      "profile": "normative",
+      "property": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "basis": "F3, F5, F6, F8 and F9 applied to a running resource server",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R10",
+      "profile": "normative",
+      "property": "V2 HTTP transport: settlement results go in PAYMENT-RESPONSE",
+      "basis": "V2 HTTP transport: settlement results go in PAYMENT-RESPONSE",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R11",
+      "profile": "normative",
+      "property": "control: each route is served and settled once with its own payment",
+      "basis": "control: each route is served and settled once with its own payment",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R11a",
+      "profile": "normative",
+      "property": "V2 5.2.2: accepted is matched against the route's own requirements",
+      "basis": "V2 5.2.2: accepted is matched against the route's own requirements",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R11b",
+      "profile": "normative",
+      "property": "V2 5.1.2 and 9: recipient, asset and network must match",
+      "basis": "V2 5.1.2 and 9: recipient, asset and network must match",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R11c",
+      "profile": "security-profile",
+      "property": "a route priced by method is priced for the method used",
+      "basis": "a route priced by method is priced for the method used",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R11d",
+      "profile": "security-profile",
+      "property": "a route priced by query is priced for the query sent",
+      "basis": "a route priced by query is priced for the query sent",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R11e",
+      "profile": "security-profile",
+      "property": "payment middleware and framework must agree on the path",
+      "basis": "payment middleware and framework must agree on the path",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R11f",
+      "profile": "security-profile",
+      "property": "sign-in-with-x: access is for the requested resource the server priced and settled",
+      "basis": "sign-in-with-x: access is for the requested resource the server priced and settled",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "W1",
+      "profile": "normative",
+      "property": "sign-in-with-x: domain MUST match the server's configured public origin host and the uri origin MUST match that origin, derived from the server's configuration, not from request headers such as Host",
+      "basis": "sign-in-with-x: domain MUST match the server's configured public origin host and the uri origin MUST match that origin, derived from the server's configuration, not from request headers such as Host",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "W2",
+      "profile": "security-profile",
+      "property": "sign-in-with-x: the nonce MUST be unique and the server SHOULD track used nonces, so one signed message signs in once",
+      "basis": "sign-in-with-x: the nonce MUST be unique and the server SHOULD track used nonces, so one signed message signs in once",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "W3",
+      "profile": "normative",
+      "property": "sign-in-with-x: issuedAt MUST be recent (under five minutes) and MUST NOT be in the future, and a present expirationTime MUST be in the future",
+      "basis": "sign-in-with-x: issuedAt MUST be recent (under five minutes) and MUST NOT be in the future, and a present expirationTime MUST be in the future",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "R12",
+      "profile": "security-profile",
+      "property": "payment-identifier: the id is an idempotency key that deduplicates requests, so parallel requests with one id are charged once",
+      "basis": "payment-identifier: the id is an idempotency key that deduplicates requests, so parallel requests with one id are charged once",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "R13",
+      "profile": "resilience",
+      "property": "payment-identifier: the id deduplicates requests for the service, not per process, so its replicas charge one id once",
+      "basis": "payment-identifier: the id deduplicates requests for the service, not per process, so its replicas charge one id once",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "R14",
+      "profile": "resilience",
+      "property": "payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile",
+      "basis": "payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R15",
+      "profile": "normative",
+      "property": "V2 6.1: in the authorization flow funds move only after the resource completes successfully; a failed, redirected or thrown request is not settled",
+      "basis": "V2 6.1: in the authorization flow funds move only after the resource completes successfully; a failed, redirected or thrown request is not settled",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "R16",
+      "profile": "security-profile",
+      "property": "RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to deliver and is not settled",
+      "basis": "RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to deliver and is not settled",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "R16a",
+      "profile": "security-profile",
+      "property": "the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402",
+      "basis": "the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "D1",
+      "profile": "normative",
+      "property": "V2 8 and the bazaar extension: GET /discovery/resources returns x402Version, items and pagination (limit, offset, total), GET /discovery/search returns resources; every item has resource, type, x402Version, accepts and lastUpdated (8.3), and limit and the network filter are honoured",
+      "basis": "V2 8 and the bazaar extension: GET /discovery/resources returns x402Version, items and pagination (limit, offset, total), GET /discovery/search returns resources; every item has resource, type, x402Version, accepts and lastUpdated (8.3), and limit and the network filter are honoured",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "G1",
+      "profile": "security-profile",
+      "property": "A2A transport: payment required is a task in input-required with x402.payment.status payment-required and the PaymentRequired in x402.payment.required; an agent that mirrors an HTTP route asks for the same requirements as its 402",
+      "basis": "A2A transport: payment required is a task in input-required with x402.payment.status payment-required and the PaymentRequired in x402.payment.required; an agent that mirrors an HTTP route asks for the same requirements as its 402",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "R17",
+      "profile": "security-profile",
+      "property": "RFC 9111: a shared cache may store a 200 that is not private or no-store and does not vary on the request header that decided it, so a paid response must say so or the next caller gets it for free",
+      "basis": "RFC 9111: a shared cache may store a 200 that is not private or no-store and does not vary on the request header that decided it, so a paid response must say so or the next caller gets it for free",
+      "first_release": "v1.6.0",
+      "status": "active"
+    },
+    {
+      "id": "R18",
+      "profile": "resilience",
+      "property": "V2 9: settlement_pending carries the transaction so the caller can reconcile; a pending, late or unanswered settlement ends served once after it is final, or refused with the payment surfaced",
+      "basis": "V2 9: settlement_pending carries the transaction so the caller can reconcile; a pending, late or unanswered settlement ends served once after it is final, or refused with the payment surfaced",
+      "first_release": "v1.6.0",
+      "status": "active"
+    },
+    {
+      "id": "R19",
+      "profile": "normative",
+      "property": "V2 6.1: at least one check MUST run before the resource executes, and a server MUST reject an unsupported flow; on an upfront or escrow offer the check that gates execution is the settle",
+      "basis": "V2 6.1: at least one check MUST run before the resource executes, and a server MUST reject an unsupported flow; on an upfront or escrow offer the check that gates execution is the settle",
+      "first_release": "v1.6.0",
+      "status": "active"
+    },
+    {
+      "id": "R20",
+      "profile": "security-profile",
+      "property": "control: the route answers 402 with an exact offer the probe can pay",
+      "basis": "control: the route answers 402 with an exact offer the probe can pay",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R20a",
+      "profile": "security-profile",
+      "property": "payment-identifier: a retry with the same id and a fresh payment is not charged again",
+      "basis": "payment-identifier: a retry with the same id and a fresh payment is not charged again",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R20b",
+      "profile": "security-profile",
+      "property": "a retry resending the same signed payment is settled once and gets the original result",
+      "basis": "a retry resending the same signed payment is settled once and gets the original result",
+      "first_release": "v1.4.0",
+      "status": "active"
+    },
+    {
+      "id": "R21",
+      "profile": "security-profile",
+      "property": "EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again",
+      "basis": "EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "C3",
+      "profile": "security-profile",
+      "property": "V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none",
+      "basis": "V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "C2",
+      "profile": "security-profile",
+      "property": "given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific",
+      "basis": "given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "C1",
+      "profile": "security-profile",
+      "property": "V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error",
+      "basis": "V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "R23",
+      "profile": "security-profile",
+      "property": "a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again",
+      "basis": "a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "R24",
+      "profile": "resilience",
+      "property": "V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures",
+      "basis": "V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "R22",
+      "profile": "normative",
+      "property": "after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15)",
+      "basis": "after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15)",
+      "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "U1",
+      "profile": "normative",
+      "property": "upto, Core Property 4: the settled amount MUST be less than or equal to the authorized maximum; the settle-time requirements.amount is the actual charge (Core Property 5)",
+      "basis": "upto, Core Property 4: the settled amount MUST be less than or equal to the authorized maximum; the settle-time requirements.amount is the actual charge (Core Property 5)",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "U2",
+      "profile": "normative",
+      "property": "upto SettlementResponse: amount, the actual amount charged in atomic units (may be 0), is required on EVM and on Solana",
+      "basis": "upto SettlementResponse: amount, the actual amount charged in atomic units (may be 0), is required on EVM and on Solana",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "U3",
+      "profile": "normative",
+      "property": "upto, Payment Flow: upto cannot use upfront, because the amount is known only after the handler runs; Permit2 on EVM supports authorization, the Solana channel escrow (V2 6.1 extra.paymentFlow, as P7)",
+      "basis": "upto, Payment Flow: upto cannot use upfront, because the amount is known only after the handler runs; Permit2 on EVM supports authorization, the Solana channel escrow (V2 6.1 extra.paymentFlow, as P7)",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "B1",
+      "profile": "normative",
+      "property": "batch-settlement: the settlement result MUST include a non-empty commitment identifier on success, the charge is at most the per-request amount, and the same authorization MUST NOT execute the handler twice",
+      "basis": "batch-settlement: the settlement result MUST include a non-empty commitment identifier on success, the charge is at most the per-request amount, and the same authorization MUST NOT execute the handler twice",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "B2",
+      "profile": "security-profile",
+      "property": "batch-settlement redemption: the server claims each channel's latest cumulative voucher, which supersedes the older ones, and a claim cannot advance accounting twice",
+      "basis": "batch-settlement redemption: the server claims each channel's latest cumulative voucher, which supersedes the older ones, and a claim cannot advance accounting twice",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "B3",
+      "profile": "resilience",
+      "property": "batch-settlement redemption in batches: a channel is not silently dropped from a batch, and a voucher whose claim failed stays claimable, so a partly failed run is reported and retried per item",
+      "basis": "batch-settlement redemption in batches: a channel is not silently dropped from a batch, and a voucher whose claim failed stays claimable, so a partly failed run is reported and retried per item",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "X1",
+      "profile": "normative",
+      "property": "MCP transport: a paid tool called without a payment MUST answer a tool result with isError true, the PaymentRequired object in structuredContent and the same object JSON-encoded in content[0].text",
+      "basis": "MCP transport: a paid tool called without a payment MUST answer a tool result with isError true, the PaymentRequired object in structuredContent and the same object JSON-encoded in content[0].text",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "X2",
+      "profile": "resilience",
+      "property": "MCP transport: the server verifies, runs the tool and settles, and when the settle fails it returns only the payment error, never the tool's content; the R0-R10 faults on a paid tool call",
+      "basis": "MCP transport: the server verifies, runs the tool and settles, and when the settle fails it returns only the payment error, never the tool's content; the R0-R10 faults on a paid tool call",
+      "first_release": "unreleased",
+      "status": "active"
+    }
+  ]
+}

@@ -264,6 +264,8 @@ def versions(root: str, at: str | None = None) -> dict[str, str]:
 # (id, kind, globs, what). The first component whose glob matches a file owns it, so specific ones come first.
 COMPONENTS: list[tuple[str, str, tuple[str, ...], str]] = [
     ("interdeps", "code", ("tools/interdeps.py",), "this map's generator, drift check and PR gate"),
+    ("governance", "doc", ("GOVERNANCE.md", "tools/check_ids.py"),
+     "how the project is run, and the tool that writes and checks the stable check-id registry"),
     ("interdeps-map", "doc", ("docs/INTERDEPENDENCY.md",), "this map"),
     ("interdeps-tests", "test", ("tests/test_interdeps.py",), "the generator's tests"),
     ("coverage", "code", ("tools/build_coverage.py",), "the generator of the check table in docs/COVERAGE.md"),
