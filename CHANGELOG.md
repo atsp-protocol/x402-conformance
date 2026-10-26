@@ -1,5 +1,10 @@
 # Changelog
 ## Unreleased
+- Check ids are stable (task XC-53). [GOVERNANCE.md](GOVERNANCE.md) states how the project is run.
+  `tools/check_ids.py` writes `docs/check-ids.json` from the catalogue (id, profile, one-line property,
+  spec basis, first release, status). `python3 tools/check_ids.py --check --since v1.6.0` fails when
+  that registry is stale, when an id published at v1.6.0 is missing, or when that id's property changed
+  without a deprecation entry in this file. CI runs the check on every push and pull request.
 - Docs stay aligned with the code and the contract after every commit. `python3 tools/interdeps.py --docs` (the new
   `docs-aligned` CI job) fails when a derived number, table or generated block is stale: the check, task and criteria
   counts in README.md, the release pins, the latest release on the architecture page, the summary at the top of
