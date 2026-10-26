@@ -41,6 +41,19 @@ jobs:
         run: python3 tools/matrix_rows.py --check && python3 tools/attestation.py check
       - run: PYTHONPATH=src python -m x402conf offline > /dev/null
       - run: cd evidence/2026-10-20 && sha256sum -c SHA256SUMS
+  ci-template:
+    # XC-83: run docs/ci/x402-conformance-offline.yml, the offline job a repository can paste in, as written: the same
+    # checkout and Python as the template, then its run steps in order (tests/test_ci_template.py --run). It installs the
+    # released suite from PyPI, so a template that stops working fails here before anyone copies it.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pyyaml==6.0.2
+      - name: Run the offline CI template as written
+        run: python3 tests/test_ci_template.py --run docs/ci/x402-conformance-offline.yml
   docs-aligned:
     # Every current-state doc agrees with the tree. Run `python3 tools/interdeps.py --docs --fix` before a push.
     runs-on: ubuntu-latest

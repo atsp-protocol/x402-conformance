@@ -1,5 +1,9 @@
 # Changelog
 ## Unreleased
+- An offline CI job another repository can paste in (task XC-83): `docs/ci/x402-conformance-offline.yml` installs the
+  released suite and runs `x402conf offline` against the bundled doubles, with no wallet, no funds, no secret and no
+  network beyond installing the package. `tests/test_ci_template.py` holds it to that and to the released version, and
+  CI's new `ci-template` job runs it as written. docs/USING.md shows it.
 - Docs stay aligned with the code and the contract after every commit. `python3 tools/interdeps.py --docs` (the new
   `docs-aligned` CI job) fails when a derived number, table or generated block is stale: the check, task and criteria
   counts in README.md, the release pins, the latest release on the architecture page, the summary at the top of
