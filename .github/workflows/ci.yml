@@ -37,6 +37,10 @@ jobs:
         run: |
           git fetch origin tag v1.4.0 tag v1.5.0 tag v1.6.0
           python3 tools/check_ids.py --check --since v1.6.0
+      - name: Check spec anchors offline
+        run: |
+          python3 tools/spec_anchors.py --check --offline
+          python3 tools/spec_anchors.py --crosswalk usenix-2026 --check
       - name: Every check catches at least one faulty build, and the published matrix is current
         run: python3 tools/mutation_matrix.py --check
       - name: The compatibility matrix matches the committed implementation-matrix runs
