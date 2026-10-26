@@ -224,6 +224,16 @@ accepts a payment in a token the route never priced, so the resource server serv
 `isValid: false` when they differ. Do not take the asset from the requirements on trust; read it from the signed
 authorization or the on-chain transfer and require an exact match.
 
+## F15
+**What failed.** `/verify` was given a non-object body, an empty object, or a body with no authorization. It answered HTTP 5xx, or the library raised and nothing turned that into `invalid_payload`.
+**Why it matters.** A malformed payload is a client error. A 5xx says the facilitator failed, so a caller retries or treats the route as down, and the failure is not the structured reject V2 §9 names.
+**How to fix it.** On those three bodies, return HTTP 400 or HTTP 200 with `isValid: false` and `invalidReason: invalid_payload`. Catch the decode error. Do not let it become an unhandled exception.
+
+## F16
+**What failed.** The facilitator is registered for one testnet and was given a requirement for a different network in the same family. It answered `isValid: true`.
+**Why it matters.** A family prefix is not a registration. Accepting every network in the family settles a payment against a network the facilitator did not advertise.
+**How to fix it.** Compare the requirement's CAIP-2 `network` to the exact ids you registered. Answer `isValid: false` with `invalid_network` or `unsupported_scheme`. Do not treat `eip155:*` as registered.
+
 ## F14
 **What failed.** The offline check asked the facilitator to verify a payment whose authorized network differed from
 the requirement's network, at the same amount, recipient and asset. It answered `isValid: true`, or settled it.
@@ -610,6 +620,11 @@ paid" lets one payment, or someone else's, unlock the resource as often as it is
 facilitator's reason, `permit2_invalid_nonce` included. If you want a resent payment to get the result it paid for,
 replay it from your own record of that grant (the same transaction in `PAYMENT-RESPONSE`), never from a failed settle.
 Settle before you serve (see `ts/example/preempt-server.ts`).
+
+## C4
+**What failed.** After a settle, the client had not stored its own record, and a resume of the same job signed a second payment.
+**Why it matters.** The job was already settled. A second signature is a second payment for the same job key.
+**How to fix it.** Key the settled result by the job key and return that result on resume. Sign only when the key is absent.
 
 ## C3
 **What failed.** The 402 offered V2 (the `PAYMENT-REQUIRED` header) and V1 (a V1 JSON body for the same offer), and the

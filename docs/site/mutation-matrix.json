@@ -90,6 +90,18 @@
    ],
    "profile": "security-profile"
   },
+  "C4": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'C4 drop_key: a client that drops the job key signs a second payment and is caught' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:C4 drop_key: a client that drops the job key signs a second payment and is caught"
+    }
+   ],
+   "profile": "security-profile"
+  },
   "D1": {
    "caught": 2,
    "faults": [
@@ -182,6 +194,42 @@
      "how": "the trust_network double, through check_safety: F14 fails",
      "kind": "fault",
      "ref": "fault:trust_network"
+    }
+   ],
+   "profile": "security-profile"
+  },
+  "F15": {
+   "caught": 3,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the http_500_non_object double, through check_safety: F15 fails",
+     "kind": "fault",
+     "ref": "fault:http_500_non_object"
+    },
+    {
+     "caught": true,
+     "how": "the http_500_empty double, through check_safety: F15 fails",
+     "kind": "fault",
+     "ref": "fault:http_500_empty"
+    },
+    {
+     "caught": true,
+     "how": "the http_500_no_authorization double, through check_safety: F15 fails",
+     "kind": "fault",
+     "ref": "fault:http_500_no_authorization"
+    }
+   ],
+   "profile": "resilience"
+  },
+  "F16": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "tests.test_offline.F16.test_wildcard_family_accept_is_caught: passed (1 run)",
+     "kind": "py",
+     "ref": "py:tests.test_offline.F16.test_wildcard_family_accept_is_caught"
     }
    ],
    "profile": "security-profile"
@@ -1171,6 +1219,6 @@
    "profile": "resilience"
   }
  },
- "generated_from": "7ff1f497fc0a5f2af32b436e404577b5857755ed435c1531edf088b94acf0ea3",
+ "generated_from": "2a53c96ec05888690126c2510753249a55a096f3eeefda928779f2bfa8876292",
  "schema": "x402-conformance.mutation-matrix/1"
 }
