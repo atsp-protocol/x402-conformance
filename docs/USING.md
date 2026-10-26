@@ -42,8 +42,8 @@ them from the docs (see [Examples that CI runs](#examples-that-ci-runs)).
 <!-- runnable: cli subst="npx -y x402-conformance-svm=node ts/dist/src/cli.js;pipx run --spec x402-conformance x402conf=python3 -m x402conf" -->
 ```
 npx -y x402-conformance-svm demo                                     # R0-R10 against a bundled mock server
-pipx run --spec x402-conformance x402conf demo                       # S1-S4, P1-P7 against a bundled mock, then F1-F11
-pipx run --spec x402-conformance x402conf offline                    # the F1-F11 self-test on its own
+pipx run --spec x402-conformance x402conf demo                       # S1-S4, P1-P7 against a bundled mock, then F1-F14 and S5
+pipx run --spec x402-conformance x402conf offline                    # the F1-F14 and S5 self-test on its own
 npx -y x402-conformance-svm demo --fault serve_on_any_settle         # a faulty server: exits 1 with a fix link per check
 ```
 

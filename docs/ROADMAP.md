@@ -181,7 +181,7 @@ most of this family normative.
 
 | check | what | profile | contract task |
 |---|---|---|---|
-| S5 | every kind `/supported` advertises gets a structured `/verify` answer | normative | XC-47, proposed |
+| S5 | every kind `/supported` advertises gets a structured `/verify` answer | normative | XC-47, signed |
 | F12 | `/verify` rejects an unsupported network or an asset with no token contract | security profile | XC-46, done |
 | F13 | `/verify` rejects a payment in a different asset at the quoted amount and recipient | security profile | XC-49, done in 1.6.0 |
 | F14 | `/verify` rejects a payment authorized for another network when amount, recipient and asset match | security profile | XC-50, done in 1.6.0 |
@@ -208,20 +208,20 @@ as a pass or a security failure.
 at least five stack-and-version rows with pinned, hashed evidence, regenerated in CI (A7), and the FastAPI, Flask and
 Go quickstarts (A4) are green.
 
-## XC-51: self-hosted open-source facilitators as matrix columns (proposed)
+## XC-51: self-hosted open-source facilitators as matrix columns (signed, not built)
 
 | task | acceptance |
 |---|---|
-| XC-51 `x402conf devnet --facilitator http://127.0.0.1:<port>` on Base Sepolia (`eip155:84532`): the F checks that need only `/verify`, over real `/verify` against any loopback facilitator, with throwaway keys and no `/settle` | each launchable self-hosted facilitator in [MATRIX.md](MATRIX.md#self-hosted-open-source-facilitators) has an evidence folder with `run.json` and `SHA256SUMS`; a failing row says "under disclosure" until SECURITY.md's window clears; nothing off loopback is called |
+| XC-51 `x402conf devnet --facilitator http://127.0.0.1:<port>` on Base Sepolia (`eip155:84532`): the F checks that need only `/verify`, over real `/verify` against any loopback facilitator, with throwaway keys and no `/settle` | each launchable self-hosted facilitator in [MATRIX.md](MATRIX.md) has an evidence folder with `run.json` and `SHA256SUMS`; a failing row says "under disclosure" until SECURITY.md's window clears; nothing off loopback is called |
 
-## After XC-51 to XC-53: a parity oracle first, then coverage (XC-54 to XC-78, proposed, unsigned)
+## After XC-51 to XC-53: a parity oracle first, then coverage (XC-54 to XC-78, signed)
 
-Everything in this section is a proposal. The 25 tasks are in [proposals/](proposals/) as
-`contract-addendum-xc54-*.json` to `contract-addendum-xc78-*.json`, with their order, dependencies and effort in
+The 25 tasks were drafted in [proposals/](proposals/) as `contract-addendum-xc54-*.json` to
+`contract-addendum-xc78-*.json`, with their order, dependencies and effort in
 [proposals/coverage/index.json](proposals/coverage/index.json) and the inventory they work from in
-[proposals/coverage/coverage-inventory.json](proposals/coverage/coverage-inventory.json). None of them is binding and
-nothing here gets built until I sign it into `proofline.json`. XC-51, XC-52 and XC-53 are signed first, because most of
-these depend on them. Every acceptance criterion passes only on committed evidence: a test, a hashed evidence folder or
+[proposals/coverage/coverage-inventory.json](proposals/coverage/coverage-inventory.json). They are now signed into
+`proofline.json` and binding; none is built yet. XC-51, XC-52 and XC-53 come first, because most of these depend on
+them. Every acceptance criterion passes only on committed evidence: a test, a hashed evidence folder or
 a generated file that CI checks, never a statement that something was done.
 
 **The lead feature: a cross-SDK parity oracle.** The x402 SDKs are maintained in parallel, and the same fix keeps
@@ -354,9 +354,10 @@ I count a user, a team or a repo only when it's public or they've said so public
 These were my original proposal for taking the suite from a working tool to a standard people rely on. Every milestone
 is a Proofline task in `proofline.json` (XC-M1 to XC-M6), with acceptance criteria that CI verifies. The v1.4 and v1.5
 work above, the checks built beyond the plan and the 1.5.0 and 1.6.0 release tasks are signed into `proofline.json` as
-XC-08 to XC-46 and XC-48 (XC-38 was never used). XC-47 (S5) is proposed in
-[proposals/contract-addendum-s5.json](proposals/contract-addendum-s5.json) and becomes binding only once I sign it. XC-54 to
-XC-78 are proposed the same way (see [the coverage plan](#after-xc-51-to-xc-53-a-parity-oracle-first-then-coverage-xc-54-to-xc-78-proposed-unsigned)).
+XC-08 to XC-46 and XC-48. XC-47 (S5, drafted in [proposals/contract-addendum-s5.json](proposals/contract-addendum-s5.json)),
+XC-38 (R20c), XC-51 to XC-98 and XC-110 are signed into `proofline.json` too (see
+[the coverage plan](#after-xc-51-to-xc-53-a-parity-oracle-first-then-coverage-xc-54-to-xc-78-signed)); which of them are
+built is in [VV.md](VV.md) and [INTERDEPENDENCY.md](INTERDEPENDENCY.md).
 
 | id | deliverable | acceptance (summary) | status |
 |---|---|---|---|

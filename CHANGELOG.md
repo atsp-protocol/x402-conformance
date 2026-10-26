@@ -1,6 +1,25 @@
 # Changelog
 ## Unreleased
-- External modes for R16a and R24 in the tier-1 queue (proposed task XC-110).
+- Docs stay aligned with the code and the contract after every commit. `python3 tools/interdeps.py --docs` (the new
+  `docs-aligned` CI job) fails when a derived number, table or generated block is stale: the check, task and criteria
+  counts in README.md, the release pins, the latest release on the architecture page, the summary at the top of
+  docs/VV.md, the coverage table, the mutation and compatibility matrices, the listed projects and the interdependency
+  map. It also fails on a built check with no row in docs/SPEC.md or no section in docs/FIXES.md, a criterion with no
+  VV.md row, a module the architecture page doesn't name, an Action input or output missing from the README tables, a
+  signed task still called proposed, a stale F range, a version behind the latest release, and a broken relative link
+  or anchor. `--docs --fix` regenerates everything generated and leaves the rest to fix by hand; it never writes
+  `proofline.json`, a `.sig` file or `guard/`.
+- docs/INTERDEPENDENCY.md has a new section, "Action parameters: upstream and downstream": for each step of the
+  Action, the inputs it consumes, the files it writes under `results-dir` and the outputs it sets, then each input
+  with the steps that consume it.
+- Docs brought in line with `main`: SPEC.md rows for F13 and F14; the README's Action tables list `evidence`, `row`,
+  `evidence-upload`, `attest`, `not-applicable`, `evidence-dir` and `attestation`; the architecture page names every
+  module, including P9, P10, R16a and R24 in the Python CLI, the Lean `Replicas.lean` models and the library checks
+  added since 1.6.0; USING.md gives the offline self-test as F1 to F14 and S5; ROADMAP.md and RELEASES.md say which
+  tasks are signed, and RELEASES.md lists what is on `main` and not released yet; links to the self-hosted section the
+  opt-in matrix removed are gone; COVERAGE.md lists `x402conf resource --unpaid-head` and `--malformed-header` for R16a
+  and R24.
+- External modes for R16a and R24 in the tier-1 queue (task XC-110).
   - `x402conf resource --malformed-header` adds R24 (five unpaid GETs with a malformed `PAYMENT-SIGNATURE`, graded
     like `x402conf-svm live`), and `--unpaid-head` adds R16a (one unpaid `HEAD`), both on the GET that P1-P7 already
     sent. A `HEAD` is not a `GET`: off loopback it is sent only with `--operator-permission <ref>` (the devnet runner's
@@ -9,7 +28,7 @@
     when the row ticked the new optional form box (`consent.unpaid_head`), with the row's consent issue as the
     permission. Tier 1 is now 11 checks (P1-P7, P9, P10, R16a, R24); an external check the run did not reach counts
     as needing the self-hosted run.
-- Two tiers in the matrix (proposed task XC-98).
+- Two tiers in the matrix (task XC-98).
   - **External-verified** (tier 1): the run queue runs the checks that work from outside a project's stack (P1 to
     P7, P9, P10: unpaid GETs, paced, zero spend) against its public testnet endpoint, with the pinned suite release
     (`matrix/queue/suite.json`), on each new release. The queue no longer checks out or runs the project's code, and
@@ -25,7 +44,7 @@
   - The notify hook asks for the tier-1 rerun and, when enabled, runs the full suite and submits its attestation; the
     weekly check asks for tier-1 reruns of new releases and verifies new attestations. The free six months cover
     tier-1 reruns and tier-2 verification and listing. A hosted-staging full run is an exception path by arrangement.
-- Free run program (proposed task XC-97). I run the suite for a project, free: one initial run, then queued reruns
+- Free run program (task XC-97). I run the suite for a project, free: one initial run, then queued reruns
   on new releases only, for six months from consent (`program_start`, `program_end` in the row).
   - In return the project is listed with its results, displays the badge in its README with "Conformance tested by
     Optitransfer/x402-conformance", and installs the notify hook (`docs/templates/x402-conformance-notify.yml`, on
@@ -41,7 +60,7 @@
   - The weekly check flags a row whose public README no longer links it.
   - The Action gains `evidence-upload`.
   - The attribution line is now "Optitransfer/x402-conformance" throughout.
-- Opt-in matrix (proposed task XC-96): only projects that accept are listed. `docs/MATRIX.md` is compact: a coverage
+- Opt-in matrix (task XC-96): only projects that accept are listed. `docs/MATRIX.md` is compact: a coverage
   summary of accepted projects (by type, chain, language and environment), the accepted projects with evidence, a
   labelled example row, and the suite's reference baseline; the full searchable table is generated on Pages
   (`docs/site/matrix/`, one anchor per row). The named facilitator and self-hosted lists that had not accepted are no
@@ -50,21 +69,21 @@
   template (`docs/templates/x402-conformance.yml`), and a weekly job (`tools/matrix_freshness.py`,
   `.github/workflows/matrix-freshness.yml`) that records each project's latest release and default-branch commit,
   pulls the evidence from its own runs and opens a pull request; a release-alignment column (current, behind, stale).
-- Add your project to the matrix (proposed task XC-96): the "Add or update my row" issue form
+- Add your project to the matrix (task XC-96): the "Add or update my row" issue form
   (`.github/ISSUE_TEMPLATE/matrix-row.yml`) asks for public details only and three required consents (listing, CC BY
   4.0 for public results, testnet-only probes). The `matrix-row` workflow checks it with `tools/matrix_rows.py` against
   `matrix/schema/row.schema.json` and the public-safe rules (no emails, no secrets, https links, a public handle),
   labels it, comments what to fix, and opens a pull request adding or updating `matrix/rows/<slug>.json` for review.
   Pasted evidence goes through the same refusals as `tools/row_from_evidence.py`. Nothing merges automatically. The
   "Listed projects" table in `docs/MATRIX.md` is generated from the rows and checked in CI.
-- Run it yourself (proposed task XC-94): the Action's `evidence: true` and `row:` inputs write one matrix row's
+- Run it yourself (task XC-94): the Action's `evidence: true` and `row:` inputs write one matrix row's
   evidence bundle (the run.json as written, a README and `SHA256SUMS`) and upload it as an artifact. A mainnet network
   is refused before any request, and so is a run graded on mainnet or with a facilitator off loopback. New
   "Add or update my row" issue form, and `docs/RUN-IT-YOURSELF.md` (CLI, Action, MCP, how to get listed).
-- Matrix rows (proposed task XC-93): every row in `docs/MATRIX.md` has an environment (testnet, devnet, live-not-run
+- Matrix rows (task XC-93): every row in `docs/MATRIX.md` has an environment (testnet, devnet, live-not-run
   or out-of-reach), checks passed out of checks run, a failed count only, the version tested and the run date linking
   its evidence, plus "rerun / get listed" and "missing check?" links. No score or ranking.
-- Attribution (proposed task XC-95): a "Tested with x402-conformance" SVG badge per row on the Pages site
+- Attribution (task XC-95): a "Tested with x402-conformance" SVG badge per row on the Pages site
   (`docs/site/badge/`, terms in `docs/BADGE.md`, built and checked by `tools/compat_matrix.py`). The public results
   and evidence are CC BY 4.0 (`DATA-LICENSE`); the code stays Apache-2.0. `CITATION.cff`, and a credit line in
   `NOTICE`. Every results document has `provenance` (suite, version, publisher, repo), and the Action's job summary
@@ -72,25 +91,25 @@
 - `x402conf-svm mcp --url <mcp-endpoint> --tool <name> [--arguments '<json>'] [--no-initialize]`: one unpaid
   `tools/call` of a paid MCP tool on a live server, paced like `live`, graded X1 on the tool result and P3, P4, P5 and
   P7 on the `PaymentRequired` in it (`checkMcpSeller`). `--no-initialize` grades a server that needs no session in one
-  request. MCP is JSON-RPC over `POST`, so it is for servers whose operator agreed. Proposed task XC-89.
-- P9 and P10 (proposed task XC-85). P9: the bazaar discovery `info` in a 402, including its example query, body or
+  request. MCP is JSON-RPC over `POST`, so it is for servers whose operator agreed. Task XC-89.
+- P9 and P10 (task XC-85). P9: the bazaar discovery `info` in a 402, including its example query, body or
   tool arguments, validates against the `schema` the endpoint ships next to it (a Draft 2020-12 subset with no
   dependency; keywords it does not grade are listed, never guessed). P10, with `x402conf resource --well-known`: the
   host's `/.well-known/x402` manifest lists the paid URL, lists only HTTPS URLs on its own host or a subdomain, and
   declares terms a live offer matches; one GET per origin, a 404 is not graded.
 - R16a passes an unpaid `HEAD` that is refused with 405 and no `PAYMENT-RESPONSE`, as well as a 402 with an offer: both
-  keep `HEAD` away from the handler. A 2xx still fails. Proposed task XC-86.
+  keep `HEAD` away from the handler. A 2xx still fails. Task XC-86.
 - C2 and C3 grade a client the caller declares does not sign (`{ signsPayments: false }`) and that signs nothing as not
   applicable instead of failed. Reports, `explain`, SARIF, JUnit (skipped) and the badge show it as N/A and never count
-  it as a failure. Without the declaration a client that never pays still fails. Proposed task XC-87.
+  it as a failure. Without the declaration a client that never pays still fails. Task XC-87.
 - Live targets are paced by default: at least 5 s between requests to a non-loopback host (`--min-interval`), an
   optional cap (`--max-requests`; a request over it is not sent and the target is reported skipped), one log line per
   request on stderr and the log in the JSON under `pacing`. This applies to `x402conf live` and `resource` and to
   `x402conf-svm resource` and the new `x402conf-svm live --url`, which grades P1-P7, R16a and R24 on one paid URL in
-  7 unpaid requests. Proposed task XC-88.
-- Seventeen open-source facilitators are listed in `docs/MATRIX.md` as self-hosted columns, each at a pinned commit, run
-  on 127.0.0.1 as my own instance against public testnets; S0 to S4 run against them today. The verify-only F checks on
-  Base Sepolia for these columns are the proposed task XC-51.
+  7 unpaid requests. Task XC-88.
+- Seventeen open-source facilitators were listed in `docs/MATRIX.md` as self-hosted columns, each at a pinned commit,
+  run on 127.0.0.1 as my own instance against public testnets, with S0 to S4. The opt-in matrix (XC-96) removed the
+  list again, since none of them had accepted. The verify-only F checks on Base Sepolia are task XC-51.
 - U1 to U3 for the `upto` scheme and B1 to B3 for the `batch-settlement` scheme (XC-35), on Solana devnet and Base
   Sepolia, exported as `probeUpto` and `probeBatch` with a scheme double, `startSchemeDouble`. U1: a settle never
   exceeds the authorised maximum; U2: `PAYMENT-RESPONSE` reports the settled amount; U3: an `upto` offer never declares

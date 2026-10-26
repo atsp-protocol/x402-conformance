@@ -29,6 +29,7 @@ Thanks for helping. This project is experimental. Review happens in the open, th
       (cd ts/mcp && npm ci && npm test)
       (cd lean && lake build) && python3 tools/lean_axioms.py
       python3 tools/interdeps.py && python3 tools/interdeps.py --drift   # regenerate docs/INTERDEPENDENCY.md, then check the docs match the code
+      python3 tools/interdeps.py --docs --fix   # regenerate every derived count, table and block in the docs, then list what is left to fix by hand
       python3 tools/vv.py verify --pre-merge     # on a branch; plain `verify` is the strict run on main
       python3 tools/interdeps.py --gate --base origin/main   # the downstream docs, contracts and tests your change needs
 

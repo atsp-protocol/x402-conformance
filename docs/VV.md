@@ -9,6 +9,10 @@ Contract state: **signed by the owner key** (`guard/owner.pub`). The owner signs
 verifies `proofline.json.sig` against `guard/owner.pub`. Anyone can repeat that check from a clone with
 `node tools/verify-sig.mjs` or `npx -y @optitransfer/proofline@next contract verify-sig`.
 
+<!-- docs-aligned:summary -->
+**At a glance** (generated from `proofline.json` and `vv/claims.json`): 106 tasks and 742 acceptance criteria, 742 of them mandatory, one row each below. 46 tasks are claimed done. 60 signed tasks are open: XC-32 to XC-38, XC-47, XC-51 to XC-98, XC-110, XC-M2, XC-M5, XC-M6.
+<!-- /docs-aligned:summary -->
+
 | task | requirement | criterion | artefact | evidence |
 |---|---|---|---|---|
 | XC-00 | R-OPEN, R-GOV | XC-00-AC01: LICENSE is the Apache License 2.0 | `LICENSE` must be present for `Apache License\s+Version 2\.0` | CI `vv` receipt |

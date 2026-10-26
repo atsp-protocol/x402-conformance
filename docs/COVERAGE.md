@@ -83,7 +83,7 @@ Every check has at least one control that passes and one faulty build it catches
 | R14 | resilience | payment-identifier: same id, same payload returns the cached response; V2 6.1: in the authorization flow funds move only after the resource completes; V2 9: a transaction is surfaced so the caller can reconcile | `x402conf-svm probe --crash`, Action `crash` | 1 | 3 |
 | R15 | normative | V2 6.1: in the authorization flow funds move only after the resource completes successfully; a failed, redirected or thrown request is not settled | library only: `probeDelivery` from `x402-conformance-svm` | 1 | 2 |
 | R16 | security-profile | RFC 9110 9.3.2: a HEAD response carries no content, so a HEAD carrying a payment has nothing to deliver and is not settled | library only: `probeHead` from `x402-conformance-svm` | 1 | 1 |
-| R16a | security-profile | the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402 | `x402conf-svm live` (unpaid, paced), and `probeUnpaidHead` from `x402-conformance-svm` | 1 | 1 |
+| R16a | security-profile | the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402 | `x402conf-svm live` and `x402conf resource --unpaid-head` (unpaid, paced; off loopback only with `--operator-permission`), and `probeUnpaidHead` from `x402-conformance-svm` | 1 | 1 |
 | R17 | security-profile | RFC 9111: a shared cache may store a 200 that is not private or no-store and does not vary on the request header that decided it, so a paid response must say so or the next caller gets it for free | library only: `probeCacheLeak` from `x402-conformance-svm` | 1 | 2 |
 | R18 | resilience | V2 9: settlement_pending carries the transaction so the caller can reconcile; a pending, late or unanswered settlement ends served once after it is final, or refused with the payment surfaced | library only: `probePending` from `x402-conformance-svm` | 1 | 2 |
 | R19 | normative | V2 6.1: at least one check MUST run before the resource executes, and a server MUST reject an unsupported flow; on an upfront or escrow offer the check that gates execution is the settle | library only: `probeFlows` from `x402-conformance-svm` | 1 | 2 |
@@ -93,7 +93,7 @@ Every check has at least one control that passes and one faulty build it catches
 | R21 | security-profile | EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again | library only: `probePreempt` from `x402-conformance-svm` | 1 | 2 |
 | R22 | normative | after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15) | library only: `probeStatus` from `x402-conformance-svm` | 1 | 2 |
 | R23 | security-profile | a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again | library only: `probeAbort` from `x402-conformance-svm` | 1 | 2 |
-| R24 | resilience | V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures | `x402conf-svm live` (unpaid, paced), and `probeMalformedHeader` from `x402-conformance-svm` | 1 | 3 |
+| R24 | resilience | V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures | `x402conf-svm live` and `x402conf resource --malformed-header` (unpaid, paced), and `probeMalformedHeader` from `x402-conformance-svm` | 1 | 3 |
 | S0 | normative | V2 7.3: GET /supported answers with a SupportedResponse | `x402conf live`, Action `facilitators` | 1 | 1 |
 | S1 | normative | V2 7.3.1 SupportedResponse: kinds, extensions, signers; V1 7.3: kinds | `x402conf live`, Action `facilitators` | 2 | 2 |
 | S2 | normative | V2 11.1: networks are CAIP-2 | `x402conf live`, Action `facilitators` | 1 | 1 |
@@ -152,9 +152,9 @@ Flask, Next and Go servers, and the compatibility matrix rebuilt in CI, are in t
 The live run of 2026-10-20 covers fifteen public facilitators with one `GET /supported` each (S0 to S4); the table is in
 [../README.md](../README.md#results) and the raw bodies in [../evidence/2026-10-20-v1.3.0](../evidence/2026-10-20-v1.3.0).
 The devnet safety run (F1 to F6) covers my self-hosted reference facilitator only; third-party facilitators are run only
-with the operator's permission, and none has been asked yet ([MATRIX.md](MATRIX.md)). Seventeen open-source
-facilitators are built at pinned commits and run on loopback as my own instances; S0 to S4 run against them today and the
-verify-only F checks follow with XC-51 ([MATRIX.md](MATRIX.md#self-hosted-open-source-facilitators)).
+with the operator's permission, and none has been asked yet ([MATRIX.md](MATRIX.md)). The matrix is opt-in, so it no
+longer names open-source facilitators that have not accepted. Verify-only F checks against open-source facilitators
+built at pinned commits and run on loopback as my own instances are signed as XC-51 and not built yet.
 
 ## Lean models
 

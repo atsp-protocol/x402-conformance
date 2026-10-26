@@ -41,6 +41,17 @@ jobs:
         run: python3 tools/matrix_rows.py --check && python3 tools/attestation.py check
       - run: PYTHONPATH=src python -m x402conf offline > /dev/null
       - run: cd evidence/2026-10-20 && sha256sum -c SHA256SUMS
+  docs-aligned:
+    # Every current-state doc agrees with the tree. Run `python3 tools/interdeps.py --docs --fix` before a push.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pyyaml==6.0.2
+      - name: README, CHANGELOG, architecture, spec, VV, coverage and the interdependency map are aligned
+        run: python3 tools/interdeps.py --docs
   interdeps-gate:
     # A PR that changes a component must touch, or acknowledge, every doc, contract and test component directly
     # downstream of it. Acks are `Interdeps-Ack: <component>[, <component>] - <reason>` in a commit message or in

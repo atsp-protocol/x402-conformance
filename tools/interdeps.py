@@ -31,6 +31,17 @@ covers and on a component that covers nothing.
             Interdeps-Ack: <component>[, <component> ...] - <reason>
         upstream components, other downstream kinds and components two steps out are printed for review only
 
+    python3 tools/interdeps.py --docs [--fix]
+        docs alignment: exit 1 unless every current-state doc agrees with the tree. The generated blocks between
+        <!-- docs-aligned:NAME --> markers (README counts and pins, the architecture status, the VV summary) are
+        current; CHANGELOG.md starts with ## Unreleased and no doc names a version older than the latest release;
+        docs/SPEC.md and docs/FIXES.md cover every built check; docs/VV.md has one row per criterion; the architecture
+        page names every module; the README Action tables name every input and output; offline ranges name F1-F14;
+        no doc calls a signed task proposed; relative links and anchors resolve; and --drift passes.
+        --fix rewrites the generated blocks, the Unreleased task wording, docs/INTERDEPENDENCY.md and the generated
+        COVERAGE, mutation, compatibility and matrix-row outputs, then checks again. It never writes proofline.json,
+        a .sig file or guard/.
+
 --root DIR runs against another tree (the tests use it on a copy)."""
 
 from __future__ import annotations
@@ -549,10 +560,41 @@ def build(root: str) -> str:
     for tool, fl in sorted(code_flags(root).items()):
         o.append(f"| {tool} | {', '.join(f'`{f}`' for f in sorted(fl))} |")
     o.append(f"| action.yml inputs | {', '.join(f'`{i}`' for i in action_inputs(root))} |")
+    o += action_params(root)
     o += ["", "## Versions", "", "| file | version |", "|---|---|"]
     for f, v in sorted(versions(root).items()):
         o.append(f"| `{f}` | {v} |")
     return "\n".join(o) + "\n"
+
+
+def action_params(root: str) -> list[str]:
+    """Upstream and downstream of each Action step: the inputs it consumes, the files it writes and the step outputs
+    it sets, read from action.yml, then each input with the steps that consume it."""
+    act = read(root, "action.yml")
+    if "\n  steps:" not in act:
+        return []
+    steps = re.split(r"(?m)^    - name: ", act.split("\n  steps:", 1)[1])[1:]
+    rows, users = [], {}
+    for st in steps:
+        name = st.split("\n", 1)[0].strip()
+        ins = sorted(set(re.findall(r"inputs\.([a-z][a-z0-9-]*)", st)))
+        files = sorted(set(re.findall(r"\$X402C_DIR/([\w.-]+)", st)) - {"evidence"})
+        outs = sorted(set(re.findall(r"echo \"([a-z][a-z0-9-]*)=", st)))
+        ids = sorted(check_ids_in(name), key=lambda c: (PREFIXES.index(c[0]), int(re.sub(r"\D", "", c)), c))
+        for i in ins:
+            users.setdefault(i, []).append(name)
+        rows.append(f"| {name.replace('|', '/')} | {cell(ids)} | {cell([f'`{i}`' for i in ins])} | "
+                    f"{cell([f'`{f}`' for f in files])} | {cell([f'`{x}`' for x in outs])} |")
+    o = ["", "## Action parameters: upstream and downstream", "",
+         "Read from `action.yml`: each step, the check ids its name gives, the inputs it consumes (upstream), and what it "
+         "produces for the steps and jobs after it (downstream): the files it names under `results-dir` and the step "
+         "outputs it sets. The Action's own outputs (`result`, `sarif`, `junit`, `badge`, `pr-comment`, `evidence-dir`, "
+         "`attestation`) point at those files.", "",
+         "| step | checks | consumes inputs | writes under results-dir | sets outputs |", "|---|---|---|---|---|"] + rows
+    o += ["", "| input | consumed by |", "|---|---|"]
+    for i in action_inputs(root):
+        o.append(f"| `{i}` | {'; '.join(users.get(i, [])) or 'no step (documentation only)'} |")
+    return o
 
 
 ENTRY_POINTS = [
@@ -608,6 +650,322 @@ def drift(root: str) -> list[str]:
     return problems
 
 
+# ---------------- docs alignment (--docs, --docs --fix) ----------------
+# The numbers and tables the docs derive from the code and the contract, checked after every commit. A block between
+#     <!-- docs-aligned:NAME -->  and  <!-- /docs-aligned:NAME -->
+# is generated here and rewritten by --fix; everything else is hand-written and only checked. Signed files
+# (proofline.json, *.sig, guard/**) are read, never written.
+BLOCK = re.compile(r"(<!-- docs-aligned:([a-z0-9-]+) -->\n)(.*?)(\n<!-- /docs-aligned:\2 -->)", re.S)
+NEVER_WRITE = ("proofline.json", ".sig", "guard/")
+# Docs that describe main as it is now. Release notes and the released CHANGELOG sections are history and are not
+# held to the current state; the CHANGELOG's Unreleased section is.
+CURRENT = ("README.md", "RELEASES.md", "docs/ARCHITECTURE.md", "docs/COVERAGE.md", "docs/ROADMAP.md", "docs/MATRIX.md",
+           "docs/USING.md", "docs/RUN-IT-YOURSELF.md", "docs/BADGE.md", "docs/ADOPTION.md", "docs/THREAT-MODEL.md",
+           "ts/mcp/README.md", "CONTRIBUTING.md", "SECURITY.md")
+# Every module the architecture page has to name. A row may name a file, its directory (with the trailing slash) or,
+# for the Lean models, the file name.
+MODULE_GLOBS = ("src/x402conf/*.py", "src/x402conf/devnet/*.py", "ts/src/*.ts", "tools/*", "lean/X402Conformance/*.lean")
+MODULE_SKIP = ("src/x402conf/__init__.py", "src/x402conf/__main__.py", "src/x402conf/devnet/__init__.py")
+GENERATORS = (  # (tool, args to check, args to write) run with --root; the interdependency map is written last
+    ("tools/build_coverage.py", ("--check",), ()),
+    ("tools/mutation_matrix.py", ("--check",), ("--write",)),
+    ("tools/compat_matrix.py", ("--check",), ("--write",)),
+    ("tools/matrix_rows.py", ("--check",), ("--write",)),
+)
+
+
+def released(root: str) -> str:
+    """The latest release: the first dated `## X.Y.Z (YYYY-MM-DD)` heading in CHANGELOG.md."""
+    m = re.search(r"^## (\d+\.\d+\.\d+) \(\d{4}-\d{2}-\d{2}\)", read(root, "CHANGELOG.md"), re.M)
+    return m.group(1) if m else ""
+
+
+def unreleased(text: str) -> tuple[int, int]:
+    """Start and end offsets of the CHANGELOG's `## Unreleased` section, or (-1, -1)."""
+    m = re.search(r"^## Unreleased[^\n]*\n", text, re.M)
+    if not m:
+        return -1, -1
+    n = re.search(r"^## ", text[m.end():], re.M)
+    return m.start(), m.end() + n.start() if n else len(text)
+
+
+def contract_state(root: str) -> dict[str, Any]:
+    c = json.loads(read(root, "proofline.json") or "{}")
+    signed = c.get("tasks", [])
+    claims = set(json.loads(read(root, "vv/claims.json") or "{}").get("done", []))
+    crit = [a for t in signed for a in t.get("criteria", [])]
+    return {"tasks": len(signed), "criteria": len(crit), "mandatory": sum(1 for a in crit if a.get("mandatory")),
+            "done": sorted((t["id"] for t in signed if t["id"] in claims), key=task_key),
+            "open": sorted((t["id"] for t in signed if t["id"] not in claims), key=task_key),
+            "signed": {t["id"] for t in signed},
+            "proposed": sorted((t["id"] for t in tasks(root) if t["_status"] == "proposed"), key=task_key)}
+
+
+def id_list(ids: list[str]) -> str:
+    """XC-51, XC-52, XC-53 -> 'XC-51 to XC-53'; runs of three or more consecutive numbers are shortened."""
+    out: list[str] = []
+    run: list[str] = []
+
+    def flush() -> None:
+        if len(run) >= 3:
+            out.append(f"{run[0]} to {run[-1]}")
+        else:
+            out.extend(run)
+        run.clear()
+
+    for i in ids:
+        m, p = re.fullmatch(r"XC-(\d+)", i), re.fullmatch(r"XC-(\d+)", run[-1]) if run else None
+        if m and p and int(m.group(1)) == int(p.group(1)) + 1:
+            run.append(i)
+            continue
+        flush()
+        (run if m else out).append(i)
+    flush()
+    return ", ".join(out)
+
+
+def render_blocks(root: str) -> dict[tuple[str, str], str]:
+    cat = catalog(root)
+    prof = {p: sum(1 for e in cat.values() if e.get("profile") == p) for p in ("normative", "security-profile", "resilience")}
+    fams = sorted({c[0] for c in cat})
+    st = contract_state(root)
+    rel = released(root)
+    major = rel.split(".")[0] if rel else "1"
+    counts = (f"The catalogue has {len(cat)} checks in {len(fams)} families: {prof['normative']} normative, "
+              f"{prof['security-profile']} security profile and {prof['resilience']} resilience "
+              f"([docs/COVERAGE.md](docs/COVERAGE.md)). The contract, `proofline.json`, has {st['tasks']} tasks and "
+              f"{st['criteria']} acceptance criteria; {len(st['done'])} tasks are claimed done, and CI holds each of them "
+              f"to every criterion ([docs/VV.md](docs/VV.md)).")
+    if st["proposed"]:
+        counts += f" {len(st['proposed'])} more are proposed in unsigned addenda ({id_list(st['proposed'])})."
+    vv = (f"**At a glance** (generated from `proofline.json` and `vv/claims.json`): {st['tasks']} tasks and "
+          f"{st['criteria']} acceptance criteria, {st['mandatory']} of them mandatory, one row each below. "
+          f"{len(st['done'])} tasks are claimed done. {len(st['open'])} signed tasks are open: {id_list(st['open'])}.")
+    return {
+        ("README.md", "counts"): counts,
+        ("README.md", "pins"): (f"Pin `x402-conformance=={rel}`, `x402-conformance-svm@{rel}` or the Action at `@v{rel}` if "
+                                f"you want a fixed version; `@v{major}` follows the latest {major}.x release."),
+        ("docs/ARCHITECTURE.md", "status"): (f"Status: experimental. The latest release is {rel}; this page describes "
+                                             "`main`. Expect changes."),
+        ("docs/VV.md", "summary"): vv,
+    }
+
+
+def fix_changelog(root: str, text: str) -> str:
+    """In the Unreleased section, a task that is now signed into proofline.json is no longer 'proposed'."""
+    a, b = unreleased(text)
+    if a < 0:
+        return text
+    signed = contract_state(root)["signed"]
+
+    def sub(m: re.Match[str]) -> str:
+        if m.group(3) not in signed:
+            return m.group(0)
+        return ("Task " if m.group(2) == "P" and not m.group(1) else "task ") + m.group(3)
+
+    return text[:a] + re.sub(r"\b(the )?([Pp])roposed task (XC-M?\d+)", sub, text[a:b]) + text[b:]
+
+
+def ids_near(segment: str) -> list[str]:
+    out: list[str] = []
+    for m in re.finditer(r"XC-(\d+) to XC-(\d+)", segment):
+        out += [f"XC-{n}" for n in range(int(m.group(1)), int(m.group(2)) + 1)]
+    return out + re.findall(r"XC-M?\d+", segment)
+
+
+def stale_proposed(root: str, path: str, text: str, signed: set[str]) -> list[str]:
+    out = []
+    for n, line in enumerate(text.splitlines(), 1):
+        for m in re.finditer(r"\b[Pp]roposed\b", line):
+            seg = re.split(r"\||(?<=[a-z0-9)])\. ", line[max(0, m.start() - 120):m.start()])[-1]
+            seg += line[m.end():m.end() + 12].split("|")[0] if line[m.end():].startswith(" task") else ""
+            hit = sorted(set(ids_near(seg)) & signed, key=task_key)
+            if hit:
+                out.append(f"{path}:{n}: calls {', '.join(hit)} proposed, but it is signed into proofline.json")
+    return out
+
+
+def spec_rows(text: str) -> set[str]:
+    have: set[str] = set()
+    for m in re.finditer(r"^\| ?([A-Z]\d+[a-z]?)(?:-([A-Z])?(\d+))? ?\|", text, re.M):
+        first = m.group(1)
+        have.add(first)
+        if m.group(3):
+            p, lo = first[0], int(re.sub(r"\D", "", first))
+            have |= {f"{p}{i}" for i in range(lo, int(m.group(3)) + 1)}
+    return have
+
+
+def align_problems(root: str) -> list[str]:
+    p: list[str] = []
+    files = tracked(root)
+    cat = catalog(root)
+    st = contract_state(root)
+    # generated blocks
+    for (path, name), body in render_blocks(root).items():
+        text = read(root, path)
+        blocks = {m.group(2): m.group(3) for m in BLOCK.finditer(text)}
+        if name not in blocks:
+            p.append(f"{path}: no docs-aligned:{name} block (add the two marker comments, then run --docs --fix)")
+        elif blocks[name] != body:
+            p.append(f"{path}: the docs-aligned:{name} block is stale: run python3 tools/interdeps.py --docs --fix")
+    ch = read(root, "CHANGELOG.md")
+    if not re.match(r"# Changelog\n## Unreleased\b", ch):
+        p.append("CHANGELOG.md: the first section is not `## Unreleased`")
+    if fix_changelog(root, ch) != ch:
+        p.append("CHANGELOG.md: the Unreleased section calls a signed task proposed: run --docs --fix")
+    # versions: every package agrees, and none is behind the latest release in the CHANGELOG
+    v, rel = versions(root), released(root)
+    key = lambda s: tuple(int(x) for x in re.findall(r"\d+", s))  # noqa: E731
+    for f, x in sorted(v.items()):
+        if rel and x and key(x) < key(rel):
+            p.append(f"version: {f} is {x}, behind the latest release in CHANGELOG.md ({rel})")
+    # SPEC.md, FIXES.md and COVERAGE.md name every built check
+    rows = spec_rows(read(root, "docs/SPEC.md"))
+    for c in sorted(cat, key=lambda c: (PREFIXES.index(c[0]), int(re.sub(r"\D", "", c)), c)):
+        base = re.sub(r"[a-z]$", "", c)
+        if c not in rows and base not in rows:
+            p.append(f"docs/SPEC.md: no row for {c}")
+        if not re.search(rf"(?m)^#+ [^\n]*(?<![A-Za-z0-9]){re.escape(c)}(?![0-9a-z])", read(root, "docs/FIXES.md")):
+            p.append(f"docs/FIXES.md: no section for {c}")
+    # VV.md: one row per criterion, none for a criterion the contract doesn't have
+    vv = read(root, "docs/VV.md")
+    want = {a["id"]: a.get("statement", "") for t in json.loads(read(root, "proofline.json") or "{}").get("tasks", [])
+            for a in t.get("criteria", [])}
+    got = re.findall(r"^\| XC-M?\d+ \|[^|]*\| (XC-M?\d+-AC\d+): ", vv, re.M)
+    for a in sorted(set(want) - set(got)):
+        p.append(f"docs/VV.md: no row for {a}")
+    for a in sorted(set(got) - set(want)):
+        p.append(f"docs/VV.md: a row for {a}, which is not in proofline.json")
+    for a in sorted({a for a in got if got.count(a) > 1}):
+        p.append(f"docs/VV.md: more than one row for {a}")
+    # the architecture page names every module
+    arch = read(root, "docs/ARCHITECTURE.md")
+    for f in files:
+        if f in MODULE_SKIP or not any(fnmatch.fnmatchcase(f, g) for g in MODULE_GLOBS) or "/__pycache__/" in f:
+            continue
+        parents = [f[:i + 1] for i in range(len(f)) if f[i] == "/"]
+        if f"`{f}`" not in arch and not any(f"`{d}`" in arch for d in parents[1:]) and \
+                not (f.endswith(".lean") and f"`{os.path.basename(f)}`" in arch):
+            p.append(f"docs/ARCHITECTURE.md: the components table doesn't name `{f}`")
+    # the README's Action tables name every input and output
+    readme = read(root, "README.md")
+    act = read(root, "action.yml")
+    outs = re.findall(r"^  ([a-z][a-z0-9-]*):$", act.split("\noutputs:", 1)[1].split("\nruns:", 1)[0], re.M) \
+        if "\noutputs:" in act else []
+    for i in action_inputs(root):
+        if not re.search(rf"(?m)^\| [^|]*`{re.escape(i)}`[^|]*\|", readme):
+            p.append(f"README.md: the Action inputs table has no row for `{i}`")
+    for o in outs:
+        if not re.search(rf"(?m)^\| `{re.escape(o)}` \|", readme):
+            p.append(f"README.md: the Action outputs table has no row for `{o}`")
+    # current-state docs: the offline range is F1 to the last F check, the devnet range F1 to F6
+    fmax = max((int(c[1:]) for c in cat if re.fullmatch(r"F\d+", c)), default=0)
+    for path in CURRENT:
+        text = read(root, path)
+        if path == "docs/COVERAGE.md":
+            text = re.sub(r"<!-- generated from.*?<!-- end generated -->", "", text, flags=re.S)
+        for n, line in enumerate(text.splitlines(), 1):
+            for m in re.finditer(r"(?<![A-Za-z0-9])F1(?:-| to )F(\d+)\b", line):
+                if int(m.group(1)) not in (6, fmax):
+                    p.append(f"{path}:{n}: names {m.group(0)}; the offline self-test is F1 to F{fmax} and devnet F1 to F6")
+        p += stale_proposed(root, path, text, st["signed"])
+    a, b = unreleased(ch)
+    if a >= 0:
+        p += stale_proposed(root, "CHANGELOG.md (Unreleased)", ch[a:b], st["signed"])
+    # relative links and anchors in the tracked Markdown
+    p += broken_links(root, files)
+    return p
+
+
+def anchors(text: str) -> set[str]:
+    out = set(re.findall(r'<a id="([^"]+)"', text))
+    for h in re.findall(r"^#+ (.*)$", re.sub(r"```.*?```", "", text, flags=re.S), re.M):
+        out.add(re.sub(r"[^\w\- ]", "", h.strip().lower()).replace(" ", "-"))
+    return out
+
+
+def broken_links(root: str, files: list[str]) -> list[str]:
+    out = []
+    md = [f for f in files if f.endswith(".md") and not f.startswith(("corpus/cases/", "evidence/", "docs/proposals/"))]
+    for f in md:
+        text = re.sub(r"```.*?```", "", read(root, f), flags=re.S)
+        for m in re.finditer(r"\]\(([^)\s]+)\)", text):
+            u = m.group(1)
+            if re.match(r"^[a-z]+:", u):
+                continue
+            path, _, anc = u.partition("#")
+            tgt = os.path.normpath(os.path.join(os.path.dirname(f), path)) if path else f
+            if not os.path.exists(os.path.join(root, tgt)):
+                out.append(f"{f}: link to {u}: {tgt} does not exist")
+            elif anc and tgt.endswith(".md") and anc.lower() not in anchors(read(root, tgt)):
+                out.append(f"{f}: link to {u}: {tgt} has no #{anc}")
+    return out
+
+
+def run_tool(root: str, tool: str, args: tuple[str, ...]) -> tuple[int, str]:
+    if not os.path.exists(os.path.join(root, tool)):
+        return 0, ""
+    r = subprocess.run([sys.executable, os.path.join(root, tool), *args, "--root", root], capture_output=True, text=True,
+                       timeout=600)
+    return r.returncode, (r.stdout + r.stderr).strip()
+
+
+def docs_fix(root: str) -> list[str]:
+    """Rewrite every generated block and table, then the interdependency map. Returns the files it changed."""
+    changed: list[str] = []
+    by_file: dict[str, dict[str, str]] = {}
+    for (path, name), body in render_blocks(root).items():
+        by_file.setdefault(path, {})[name] = body
+    for path, blocks in by_file.items():
+        old = read(root, path)
+        new = BLOCK.sub(lambda m, b=blocks: m.group(1) + b.get(m.group(2), m.group(3)) + m.group(4), old)
+        if path == "CHANGELOG.md":
+            new = fix_changelog(root, new)
+        if new != old:
+            write(root, path, new)
+            changed.append(path)
+    old = read(root, "CHANGELOG.md")
+    if fix_changelog(root, old) != old:
+        write(root, "CHANGELOG.md", fix_changelog(root, old))
+        changed.append("CHANGELOG.md")
+    for tool, check, fix in GENERATORS:
+        if run_tool(root, tool, check)[0] != 0:
+            rc, out = run_tool(root, tool, fix)
+            changed.append(f"{tool} ({'rewrote its output' if rc == 0 else 'failed: ' + out[-200:]})")
+    if read(root, MAP) != build(root):
+        write(root, MAP, build(root))
+        changed.append(MAP)
+    return changed
+
+
+def write(root: str, path: str, text: str) -> None:
+    assert not path.startswith(NEVER_WRITE) and not path.endswith(NEVER_WRITE), f"refusing to write signed file {path}"
+    with open(os.path.join(root, path), "w", encoding="utf-8") as f:
+        f.write(text)
+
+
+def run_docs(root: str, fix: bool) -> int:
+    if fix:
+        for c in docs_fix(root):
+            print(f"docs-aligned: fixed {c}")
+    problems = align_problems(root)
+    for tool, check, _fix in GENERATORS:
+        rc, out = run_tool(root, tool, check)
+        if rc:
+            problems.append(f"{tool} {' '.join(check)}: {out.splitlines()[-1] if out else 'failed'}")
+    if read(root, MAP) != build(root):
+        problems.append(f"{MAP} is stale: run python3 tools/interdeps.py --docs --fix")
+    problems += [f"drift: {x}" for x in drift(root)]
+    for x in problems:
+        print("docs-aligned:", x, file=sys.stderr)
+    print(f"docs-aligned: {len(problems)} problem(s)" + ("" if problems or fix else "; every generated block is current"))
+    if problems and not fix:
+        print("docs-aligned: run python3 tools/interdeps.py --docs --fix, review the diff, fix the rest by hand",
+              file=sys.stderr)
+    return 1 if problems else 0
+
+
 def main(argv: list[str]) -> int:
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if "--root" in argv:
@@ -618,6 +976,8 @@ def main(argv: list[str]) -> int:
             return 2
         head = argv[argv.index("--head") + 1] if "--head" in argv else "HEAD"
         return run_gate(root, argv[argv.index("--base") + 1], head)
+    if "--docs" in argv:
+        return run_docs(root, "--fix" in argv)
     if "--check" in argv:
         want = build(root)
         bad = coverage(root)
