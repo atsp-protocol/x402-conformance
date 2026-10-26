@@ -37,7 +37,8 @@ covers and on a component that covers nothing.
         current; CHANGELOG.md starts with ## Unreleased and no doc names a version older than the latest release;
         docs/SPEC.md and docs/FIXES.md cover every built check; docs/VV.md has one row per criterion; the architecture
         page names every module; the README Action tables name every input and output; offline ranges name F1-F14;
-        no doc calls a signed task proposed; relative links and anchors resolve; and --drift passes.
+        no doc calls a signed task proposed; relative links and anchors resolve, except under
+        docs/spec-snapshots/, which is the upstream's text; and --drift passes.
         --fix rewrites the generated blocks, the Unreleased task wording, docs/INTERDEPENDENCY.md and the generated
         COVERAGE, mutation, compatibility and matrix-row outputs, then checks again. It never writes proofline.json,
         a .sig file or guard/.
@@ -893,7 +894,9 @@ def anchors(text: str) -> set[str]:
 
 def broken_links(root: str, files: list[str]) -> list[str]:
     out = []
-    md = [f for f in files if f.endswith(".md") and not f.startswith(("corpus/cases/", "evidence/", "docs/proposals/"))]
+    # Vendored upstream specs link to files and headings this snapshot does not contain.
+    skip = ("corpus/cases/", "evidence/", "docs/proposals/", "docs/spec-snapshots/")
+    md = [f for f in files if f.endswith(".md") and not f.startswith(skip)]
     for f in md:
         text = re.sub(r"```.*?```", "", read(root, f), flags=re.S)
         for m in re.finditer(r"\]\(([^)\s]+)\)", text):
