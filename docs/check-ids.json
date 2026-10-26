@@ -632,5 +632,610 @@
       "first_release": "unreleased",
       "status": "active"
     }
+  ],
+  "checks": [
+    {
+      "id": "S0",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 439,
+        "line_end": 441,
+        "quoted_text_sha256": "2808e0201d09b00a682a1bc3fbaf502c16734cdc2e2c225c727052f142a5c195"
+      }
+    },
+    {
+      "id": "S1",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 477,
+        "line_end": 483,
+        "quoted_text_sha256": "1ee6efae2d22a221279c4f826c4c05b1075c5b127f50943ec4abf69cabca0100"
+      }
+    },
+    {
+      "id": "S2",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 627,
+        "line_end": 629,
+        "quoted_text_sha256": "fe5195759d22fb20581cbdf27bb9ff426c1d4cd90aa211d1d2fa1bc57de71f34"
+      }
+    },
+    {
+      "id": "S3",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 635,
+        "line_end": 642,
+        "quoted_text_sha256": "3badbfe16463ce1cd5559f2f4457685f70aecc16607b7f67679a8d66e809e1e6"
+      }
+    },
+    {
+      "id": "S4",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/exact/scheme_exact_svm.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 74,
+        "line_end": 74,
+        "quoted_text_sha256": "bb06d7ad650fff3f5c9018ab22e782f68e542744b12e2042fb635d9d475b979d"
+      }
+    },
+    {
+      "id": "S5",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 263,
+        "line_end": 264,
+        "quoted_text_sha256": "c6d2f45b6b7bee8da240f5f62f00d6fe2200bd05a4e7924f55f862ed49c1ef17"
+      }
+    },
+    {
+      "id": "P1",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/transports-v2/http.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 9,
+        "line_end": 11,
+        "quoted_text_sha256": "f18588517115ae8dc6dd1f6ab6995084ad10d494fe50ac965ef561accc97f4da"
+      }
+    },
+    {
+      "id": "P2",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/transports-v2/http.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 168,
+        "line_end": 168,
+        "quoted_text_sha256": "d7177a0b6ce7dbaef715dcbd17b8dfad0528e254c4879c3118229ec8649f1065"
+      }
+    },
+    {
+      "id": "P3",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 114,
+        "line_end": 118,
+        "quoted_text_sha256": "a447a956cf34125d9a864de888ebf54a497fcc5490fd4196081f1a759a628a74"
+      }
+    },
+    {
+      "id": "P4",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 126,
+        "line_end": 126,
+        "quoted_text_sha256": "2f02c00345ba8183a209feecc3a06c6e66785238c34ec8fac18d1680b87a559d"
+      }
+    },
+    {
+      "id": "P5",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/exact/scheme_exact_evm.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 72,
+        "line_end": 73,
+        "quoted_text_sha256": "913cc340171a474f306af12fa7c457ac15b4308e3d1ea406aabb5316e5df0243"
+      }
+    },
+    {
+      "id": "P6",
+      "profile": "resilience"
+    },
+    {
+      "id": "P7",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 289,
+        "line_end": 289,
+        "quoted_text_sha256": "f82af1fe94ac7806ced0d7739cbd37346391b3d09deb19b03aea58f47f6b0247"
+      }
+    },
+    {
+      "id": "P9",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/extensions/bazaar.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 312,
+        "line_end": 323,
+        "quoted_text_sha256": "d4754b12fd900c3895e1d3c7828e1364b4f45359efd83560dc2c95417b1a6aa7"
+      }
+    },
+    {
+      "id": "P10",
+      "profile": "resilience"
+    },
+    {
+      "id": "F1",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 600,
+        "line_end": 600,
+        "quoted_text_sha256": "aa2adf08689fadbbae6fc047a9ad434dc9a8272ab6f808f6d1a50ccc8c821c8a"
+      }
+    },
+    {
+      "id": "F2",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/exact/scheme_exact_svm.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 187,
+        "line_end": 187,
+        "quoted_text_sha256": "368697fc1892f0fd13db12810f9fcc9dc3606ae03a29e3c51d7241ecc48ff523"
+      }
+    },
+    {
+      "id": "F3",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/exact/scheme_exact_svm.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 366,
+        "line_end": 366,
+        "quoted_text_sha256": "83fbd13d10fff83169366faf5bea174129e8344f941e5410816788e9898a1ce1"
+      }
+    },
+    {
+      "id": "F4",
+      "profile": "security-profile"
+    },
+    {
+      "id": "F5",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 608,
+        "line_end": 608,
+        "quoted_text_sha256": "0dd2e2dc1d1201083c1a51bc351f60265d3185717c612cc1621df877f0ef9fcf"
+      }
+    },
+    {
+      "id": "F6",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/exact/scheme_exact_svm.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 214,
+        "line_end": 214,
+        "quoted_text_sha256": "2bfb1f23bac9fab3d71d7e1420c8aefd268cccd00b293bc746b7a14569d82b79"
+      }
+    },
+    {
+      "id": "F7",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 608,
+        "line_end": 608,
+        "quoted_text_sha256": "0dd2e2dc1d1201083c1a51bc351f60265d3185717c612cc1621df877f0ef9fcf"
+      }
+    },
+    {
+      "id": "F8",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 605,
+        "line_end": 605,
+        "quoted_text_sha256": "c9dfee69c670e48b16f30f1de3e2ff6cb031ecedee93721d7a5675f6643c58a8"
+      }
+    },
+    {
+      "id": "F9",
+      "profile": "resilience"
+    },
+    {
+      "id": "F10",
+      "profile": "security-profile"
+    },
+    {
+      "id": "F11",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 307,
+        "line_end": 307,
+        "quoted_text_sha256": "f6460ee257129b38771447b56d3158ce60cd8569bfb0b95d192a5b9e55e01390"
+      }
+    },
+    {
+      "id": "F12",
+      "profile": "security-profile"
+    },
+    {
+      "id": "F13",
+      "profile": "security-profile"
+    },
+    {
+      "id": "F14",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R0",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/transports-v2/http.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 9,
+        "line_end": 11,
+        "quoted_text_sha256": "f18588517115ae8dc6dd1f6ab6995084ad10d494fe50ac965ef561accc97f4da"
+      }
+    },
+    {
+      "id": "R1",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 303,
+        "line_end": 303,
+        "quoted_text_sha256": "e89d0eb023e9a14d9d5f60baba41bbc56d99af8f14776bbaf92264aec9d1ec7b"
+      }
+    },
+    {
+      "id": "R2",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 589,
+        "line_end": 608,
+        "quoted_text_sha256": "9fb85e19dbdfc258f083bcbb8094190c581983e972da9c9fbc04795772921d04"
+      }
+    },
+    {
+      "id": "R3",
+      "profile": "resilience"
+    },
+    {
+      "id": "R4",
+      "profile": "resilience"
+    },
+    {
+      "id": "R5",
+      "profile": "resilience"
+    },
+    {
+      "id": "R6",
+      "profile": "resilience"
+    },
+    {
+      "id": "R7",
+      "profile": "resilience"
+    },
+    {
+      "id": "R8",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 589,
+        "line_end": 608,
+        "quoted_text_sha256": "9fb85e19dbdfc258f083bcbb8094190c581983e972da9c9fbc04795772921d04"
+      }
+    },
+    {
+      "id": "R9",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 589,
+        "line_end": 608,
+        "quoted_text_sha256": "9fb85e19dbdfc258f083bcbb8094190c581983e972da9c9fbc04795772921d04"
+      }
+    },
+    {
+      "id": "R10",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/transports-v2/http.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 113,
+        "line_end": 113,
+        "quoted_text_sha256": "4d3a2af9db080042b8626b1f6195f5c7e05a48151839cb808a5693a0c7c79e70"
+      }
+    },
+    {
+      "id": "R11",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/exact/scheme_exact.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 52,
+        "line_end": 52,
+        "quoted_text_sha256": "1f5205f2354ae41c4a5ebacc5a9bce19b827b8c1a446177fb3a5eed873413485"
+      }
+    },
+    {
+      "id": "R11a",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 205,
+        "line_end": 205,
+        "quoted_text_sha256": "599309b8e6a21d54e1fb245a2213031e90c8ec050fe8fef5682de2ec5a49fc71"
+      }
+    },
+    {
+      "id": "R11b",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 124,
+        "line_end": 128,
+        "quoted_text_sha256": "7839bab519a0bad0149c85951b69ed66086cfadbeb1e77d6979e1d9c60fae417"
+      }
+    },
+    {
+      "id": "R11c",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R11d",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R11e",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R11f",
+      "profile": "security-profile"
+    },
+    {
+      "id": "W1",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/extensions/sign-in-with-x.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 268,
+        "line_end": 269,
+        "quoted_text_sha256": "affcdb7eba836e19747bafcb332dd6583a46b70a5c312538bbf07e8191584215"
+      }
+    },
+    {
+      "id": "W2",
+      "profile": "security-profile"
+    },
+    {
+      "id": "W3",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/extensions/sign-in-with-x.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 270,
+        "line_end": 271,
+        "quoted_text_sha256": "1092612a8eeeab0ed2d5305127d9384cf77c2c571dece4ab57d1c525f30655a7"
+      }
+    },
+    {
+      "id": "R12",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R13",
+      "profile": "resilience"
+    },
+    {
+      "id": "R14",
+      "profile": "resilience"
+    },
+    {
+      "id": "R15",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 295,
+        "line_end": 295,
+        "quoted_text_sha256": "bb08dd44322bd4caf02562163e88b424ccabc7940e99dfa006a2fd1168dc3587"
+      }
+    },
+    {
+      "id": "R16",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R16a",
+      "profile": "security-profile"
+    },
+    {
+      "id": "D1",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 500,
+        "line_end": 514,
+        "quoted_text_sha256": "ed849b2e719e26f2383b96f01842b6e26adb9441f777aaaa9d946fae762d2c65"
+      }
+    },
+    {
+      "id": "G1",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R17",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R18",
+      "profile": "resilience"
+    },
+    {
+      "id": "R19",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/x402-specification-v2.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 289,
+        "line_end": 299,
+        "quoted_text_sha256": "a2a8ee69bcef821ec52d397cd0aabb6f89a15160b7a090c3e5e3e3a0632a7d21"
+      }
+    },
+    {
+      "id": "R20",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R20a",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R20b",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R21",
+      "profile": "security-profile"
+    },
+    {
+      "id": "C3",
+      "profile": "security-profile"
+    },
+    {
+      "id": "C2",
+      "profile": "security-profile"
+    },
+    {
+      "id": "C1",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R23",
+      "profile": "security-profile"
+    },
+    {
+      "id": "R24",
+      "profile": "resilience"
+    },
+    {
+      "id": "R22",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/transports-v2/http.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 172,
+        "line_end": 174,
+        "quoted_text_sha256": "78b9bee6b119406486098893756720539d7530a7eee2049f61f571004e036d51"
+      }
+    },
+    {
+      "id": "U1",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/upto/scheme_upto.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 49,
+        "line_end": 59,
+        "quoted_text_sha256": "48e85ef92342d64c964a9a8879c009d9317fb92c9d77b48d637f98952fd3a773"
+      }
+    },
+    {
+      "id": "U2",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/upto/scheme_upto_evm.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 282,
+        "line_end": 289,
+        "quoted_text_sha256": "06cdb77c645738ed7a1e2894fe51701d58d942898b6b5a5a262e6a26bf909ad0"
+      }
+    },
+    {
+      "id": "U3",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/upto/scheme_upto.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 17,
+        "line_end": 17,
+        "quoted_text_sha256": "c6b2c1386863a7928ac78368f29c73b85f591203ee7f91aac6d4de44967ed7a6"
+      }
+    },
+    {
+      "id": "B1",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/schemes/batch-settlement/scheme_batch_settlement.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 21,
+        "line_end": 21,
+        "quoted_text_sha256": "9e22ac44c9c5a040cc1fffa26e8d8045b2ee814e468c56f411347d70603bb3f5"
+      }
+    },
+    {
+      "id": "B2",
+      "profile": "security-profile"
+    },
+    {
+      "id": "B3",
+      "profile": "resilience"
+    },
+    {
+      "id": "X1",
+      "profile": "normative",
+      "anchor": {
+        "spec_file": "specs/transports-v2/mcp.md",
+        "upstream_commit": "0e6e8c55d86b4f14234fb6e49a4052074fb93e57",
+        "line_start": 18,
+        "line_end": 28,
+        "quoted_text_sha256": "acde9be5edae8170ff1785484202c99fb6f49c44b8d2f85f03e3251ec9ec025b"
+      }
+    },
+    {
+      "id": "X2",
+      "profile": "resilience"
+    }
   ]
 }

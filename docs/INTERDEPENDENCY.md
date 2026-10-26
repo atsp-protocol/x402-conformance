@@ -582,6 +582,7 @@ Every tracked file belongs to one component (`COMPONENTS` in `tools/interdeps.py
 graph LR
   interdeps["interdeps<br/>code"]
   governance["governance<br/>doc"]
+  spec_anchors["spec-anchors<br/>code"]
   interdeps_map["interdeps-map<br/>doc"]
   interdeps_tests["interdeps-tests<br/>test"]
   coverage["coverage<br/>code"]
@@ -724,6 +725,7 @@ graph LR
 |---|---|---|---|
 | interdeps | code | `tools/interdeps.py` | this map's generator, drift check and PR gate |
 | governance | doc | `GOVERNANCE.md`; `tools/check_ids.py` | how the project is run, and the tool that writes and checks the stable check-id registry |
+| spec-anchors | code | `tools/spec_anchors.py` | pins each normative check id to a line of the vendored upstream spec and checks the USENIX crosswalk |
 | interdeps-map | doc | `docs/INTERDEPENDENCY.md` | this map |
 | interdeps-tests | test | `tests/test_interdeps.py` | the generator's tests |
 | coverage | code | `tools/build_coverage.py` | the generator of the check table in docs/COVERAGE.md |
