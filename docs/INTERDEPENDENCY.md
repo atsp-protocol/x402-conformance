@@ -581,6 +581,7 @@ Every tracked file belongs to one component (`COMPONENTS` in `tools/interdeps.py
 ```mermaid
 graph LR
   interdeps["interdeps<br/>code"]
+  governance["governance<br/>doc"]
   interdeps_map["interdeps-map<br/>doc"]
   interdeps_tests["interdeps-tests<br/>test"]
   coverage["coverage<br/>code"]
@@ -722,6 +723,7 @@ graph LR
 | component | kind | covers | what |
 |---|---|---|---|
 | interdeps | code | `tools/interdeps.py` | this map's generator, drift check and PR gate |
+| governance | doc | `GOVERNANCE.md`; `tools/check_ids.py` | how the project is run, and the tool that writes and checks the stable check-id registry |
 | interdeps-map | doc | `docs/INTERDEPENDENCY.md` | this map |
 | interdeps-tests | test | `tests/test_interdeps.py` | the generator's tests |
 | coverage | code | `tools/build_coverage.py` | the generator of the check table in docs/COVERAGE.md |
@@ -861,8 +863,6 @@ graph LR
 | evidence | compat-matrix | review |
 | compat-matrix | docs | review |
 | compat-matrix | ci | review |
-
-Files no component covers: `GOVERNANCE.md`, `tools/check_ids.py`
 
 ## Entry points
 
