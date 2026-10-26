@@ -101,8 +101,8 @@ report everywhere. Failures you choose to share build the public
 
 Live targets are paced: at least 5 s between requests to a non-loopback host (`--min-interval`), an optional cap on the
 whole run (`--max-requests`), and one line per request on stderr. `x402conf-svm live --url <paid-url>` adds R16a and
-R24 to P1-P7 against a server you may test, unpaid, in 7 requests; `x402conf resource --malformed-header --unpaid-head`
-does the same in Python. HEAD is not a GET, so off loopback R16a runs only with `--operator-permission <ref>` (the
+R24 to P1-P7 against a server you may test, unpaid, in 16 requests (28 when the route advertises both V1 and V2);
+`x402conf resource --malformed-header --unpaid-head` does the same in Python with R24's original five values, in 7. HEAD is not a GET, so off loopback R16a runs only with `--operator-permission <ref>` (the
 operator's written permission) and is skipped without it. `x402conf-svm mcp --url <mcp-endpoint> --tool <name>`
 calls a paid MCP tool once, unpaid, and grades X1 and P3-P5 and P7 on the offer in its result (`--no-initialize` for a
 server that needs no session: one request).
@@ -158,8 +158,10 @@ to each check ([docs/USING.md](docs/USING.md#checks-you-call-from-code) has an e
   202 stays a 202 with its `Content-Location` (`probeStatus`)
 - **R23** not charge a client that disconnects while `/settle` is in flight, or charge it once and give a resend of the
   same payment the settled result (`probeAbort`)
-- **R24** answer five malformed `PAYMENT-SIGNATURE` values (not base64, not JSON or not an object) with 402 or 400 and
-  a structured error, never a 5xx, a dropped connection or the content (`probeMalformedHeader`)
+- **R24** answer twelve malformed payment header values (not base64, not JSON, not an object, JSON `null`, `true` or
+  `false`, an empty object, an object with null members, empty or blank), sent in the header the route advertises
+  (`PAYMENT-SIGNATURE`, the V1 `X-PAYMENT` or both), with 402 or 400 and a structured error, never a 5xx, a dropped
+  connection, the content or a facilitator call, and keep answering the unpaid request with 402 (`probeMalformedHeader`)
 
 On a paid route that declares sign-in-with-x (unreleased), your server must (`probeSiwx`):
 - **W1** check the message's `domain` and `uri` against its configured public origin, never against `Host` or

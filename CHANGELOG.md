@@ -1,5 +1,15 @@
 # Changelog
 ## Unreleased
+- R24 sends seven more malformed payment header values (task XC-90): the JSON literals `null`, `true` and `false`, an
+  empty object, an object whose required members are `null`, an empty value and a blank one, twelve in all. fetch trims
+  the blank one, so it reaches the server empty. The values go in the header the route's unpaid 402 advertises:
+  `PAYMENT-SIGNATURE` for V2, the V1 `X-PAYMENT` for a route that advertises only x402Version 1, and both for a route
+  that advertises both. A case now also fails when it reaches the facilitator's `/verify` or `/settle`, and the check
+  fails when the unpaid request stops getting 402 after the batch. Three new faulty builds pass the original five-value
+  R24 and fail the twelve-value one: `null_member_deref`, `parse_error_is_500` and `v1_header_unchecked`.
+  `probeMalformedHeader` takes `unpaid` (the unpaid answer, so it picks the header without a request of its own),
+  `values` and `headers`; given only `unpaidGetStatus: 402`, it sends its own unpaid GET. The Python
+  `x402conf resource --malformed-header` still sends the original five in `PAYMENT-SIGNATURE`.
 - Docs stay aligned with the code and the contract after every commit. `python3 tools/interdeps.py --docs` (the new
   `docs-aligned` CI job) fails when a derived number, table or generated block is stale: the check, task and criteria
   counts in README.md, the release pins, the latest release on the architecture page, the summary at the top of
