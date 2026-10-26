@@ -108,6 +108,7 @@ graph LR
   XC_97["XC-97<br/>Free run program: a free initial run and release..."]
   XC_98["XC-98<br/>Two tiers: External-verified runs from the queue..."]
   XC_110["XC-110<br/>External modes for R16a and R24 in the tier-1 qu..."]
+  XC_125("XC-125<br/>The vv job is sharded by task across a matrix an...")
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -355,6 +356,7 @@ graph LR
   XC_86 --> XC_110
   XC_88 --> XC_110
   XC_98 --> XC_110
+  XC_05 --> XC_125
   XC_05 --> XC_M1
   XC_05 --> XC_M2
   XC_05 --> XC_M3
@@ -364,6 +366,7 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_08,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_20,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_48,XC_49,XC_50,XC_M1,XC_M3,XC_M4 done
+  class XC_125 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -377,7 +380,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-02 Safety checks F1-F6 with devnet fixtures and facilitator doubles | implement | done | XC-01 | XC-04, XC-05, XC-08, XC-09, XC-15, XC-47 | R-F1, R-F2, R-F3, R-F4, R-F5, R-F6 | 11 (command 9, pushed 1, scope 1) | `src/x402conf/mock.py`; `src/x402conf/fixtures/**`; `tests/test_offline.py` |
 | XC-03 Lean models of the credit rule and nonce, standard axioms only | verify | done | - | XC-04, XC-05, XC-24 | R-LEAN | 13 (command 2, grep 7, metric 2, pushed 1, scope 1) | `lean/lean-toolchain`; `lean/lakefile.toml`; `lean/lake-manifest.json`; `lean/X402Conformance.lean`; `lean/X402Conformance/**`; `lean/Axioms.lean`; `tools/lean_axioms.py` |
 | XC-04 Documentation: architecture, spec mapping, threat model, roadmap, V&V | verify | done | XC-01, XC-02, XC-03 | XC-23 | R-DOCS | 16 (command 1, grep 13, pushed 1, scope 1) | `docs/**` |
-| XC-05 CI: lint, types, tests, Lean, V&V with receipts | integrate | done | XC-02, XC-03 | XC-21, XC-23, XC-M1, XC-M2, XC-M3, XC-M4, XC-M5, XC-M6 | R-CI | 6 (command 2, grep 2, pushed 1, scope 1) | `.github/workflows/**`; `tools/vv.py`; `tools/verify-sig.mjs`; `vv/claims.json` |
+| XC-05 CI: lint, types, tests, Lean, V&V with receipts | integrate | done | XC-02, XC-03 | XC-21, XC-23, XC-125, XC-M1, XC-M2, XC-M3, XC-M4, XC-M5, XC-M6 | R-CI | 6 (command 2, grep 2, pushed 1, scope 1) | `.github/workflows/**`; `tools/vv.py`; `tools/verify-sig.mjs`; `vv/claims.json` |
 | XC-06 Evidence: first live GET /supported run, hashed and reproducible | verify | done | XC-01 | - | R-EVID | 6 (command 2, file_exists 1, grep 1, pushed 1, scope 1) | `evidence/**`; `tests/test_live.py` |
 | XC-07 Hygiene: no secrets, keys, internal paths or AI attribution; commits by mgillr | release | done | - | - | R-HYG | 3 (metric 1, pushed 1, scope 1) | - |
 | XC-08 Cross-request payment replay and requirement substitution are rejected | implement | done | XC-02 | XC-09, XC-10, XC-49, XC-50 | R-F10 | 8 (command 8) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `docs/SPEC.md`; `docs/FIXES.md` |
@@ -472,6 +475,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-97 Free run program: a free initial run and release reruns for six months, a notify hook, a run queue with caps and no spend, full results privately first | integrate | signed | XC-94, XC-95, XC-96 | XC-98 | R-ADOPT, R-MATRIX, R-SAFE-GET | 12 (command 10, pushed 1, scope 1) | `.github/workflows/run-queue.yml`; `.github/workflows/matrix-freshness.yml`; `.github/ISSUE_TEMPLATE/matrix-row.yml`; `tools/run_queue.py`; `tests/test_run_queue.py`; `tools/matrix_rows.py`; `tools/matrix_freshness.py`; `tests/test_matrix_rows.py`; `matrix/**`; `action.yml`; `docs/templates/**`; `docs/MATRIX.md`; `docs/RUN-IT-YOURSELF.md`; `docs/BADGE.md`; `docs/site/**`; `docs/INTERDEPENDENCY.md`; `tools/interdeps.py`; `docs/**`; `CONTRIBUTING.md`; `README.md`; `CHANGELOG.md`; `NOTICE`; `DATA-LICENSE`; `CITATION.cff` |
 | XC-98 Two tiers: External-verified runs from the queue against the public testnet endpoint, and Full suite (self-hosted) listed from a verified, signed attestation of the project's own CI run | integrate | signed | XC-94, XC-96, XC-97 | XC-110 | R-ADOPT, R-MATRIX, R-SAFE-GET | 11 (command 9, pushed 1, scope 1) | `src/x402conf/tiers.py`; `tools/attestation.py`; `tests/test_attestation.py`; `tests/tier1_run.json`; `tools/run_queue.py`; `tests/test_run_queue.py`; `tools/matrix_rows.py`; `tools/matrix_freshness.py`; `tests/test_matrix_rows.py`; `tools/row_from_evidence.py`; `tools/compat_matrix.py`; `tools/interdeps.py`; `.github/workflows/run-queue.yml`; `.github/workflows/matrix-freshness.yml`; `.github/workflows/matrix-row.yml`; `.github/workflows/ci.yml`; `.github/ISSUE_TEMPLATE/matrix-row.yml`; `action.yml`; `matrix/**`; `docs/templates/**`; `docs/MATRIX.md`; `docs/RUN-IT-YOURSELF.md`; `docs/BADGE.md`; `docs/site/**`; `docs/INTERDEPENDENCY.md`; `CHANGELOG.md` |
 | XC-110 External modes for R16a and R24 in the tier-1 queue: one unpaid HEAD with the operator's permission and five malformed-header GETs against the public testnet endpoint | integrate | signed | XC-42, XC-86, XC-88, XC-98 | - | R-SAFE-GET, R-R24, R-DELIV, R-MATRIX | 10 (command 8, pushed 1, scope 1) | `src/x402conf/external.py`; `src/x402conf/harness.py`; `src/x402conf/cli.py`; `src/x402conf/tiers.py`; `ts/src/head-unpaid.ts`; `ts/src/cli.ts`; `ts/test/head-unpaid.test.ts`; `ts/README.md`; `tests/test_external.py`; `tests/tier1_run.json`; `tests/test_attestation.py`; `tests/test_matrix_rows.py`; `tests/test_run_queue.py`; `tools/matrix_rows.py`; `tools/run_queue.py`; `tools/row_from_evidence.py`; `tools/compat_matrix.py`; `.github/workflows/run-queue.yml`; `.github/ISSUE_TEMPLATE/matrix-row.yml`; `matrix/schema/row.schema.json`; `docs/MATRIX.md`; `docs/RUN-IT-YOURSELF.md`; `docs/BADGE.md`; `docs/USING.md`; `docs/templates/**`; `docs/site/**`; `docs/INTERDEPENDENCY.md`; `README.md`; `CHANGELOG.md` |
+| XC-125 The vv job is sharded by task across a matrix and the shard receipts merge into one strict verdict | implement | proposed | XC-05 | - | R-CI | 9 (command 5, grep 1, metric 1, pushed 1, scope 1) | `tools/vv.py`; `tests/test_vv_shard.py`; `.github/workflows/ci.yml`; `docs/VV.md`; `docs/ARCHITECTURE.md`; `docs/INTERDEPENDENCY.md`; `CHANGELOG.md`; `evidence/XC-125.json` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | done | XC-05 | XC-51 | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |

@@ -22,7 +22,7 @@ Release map: [RELEASES.md](RELEASES.md). What the suite covers, check by check: 
 How the project is run: [GOVERNANCE.md](GOVERNANCE.md).
 
 <!-- docs-aligned:counts -->
-The catalogue has 79 checks in 11 families: 41 normative, 24 security profile and 14 resilience ([docs/COVERAGE.md](docs/COVERAGE.md)). The contract, `proofline.json`, has 106 tasks and 742 acceptance criteria; 46 tasks are claimed done, and CI holds each of them to every criterion ([docs/VV.md](docs/VV.md)).
+The catalogue has 79 checks in 11 families: 41 normative, 24 security profile and 14 resilience ([docs/COVERAGE.md](docs/COVERAGE.md)). The contract, `proofline.json`, has 106 tasks and 742 acceptance criteria; 46 tasks are claimed done, and CI holds each of them to every criterion ([docs/VV.md](docs/VV.md)). 1 more are proposed in unsigned addenda (XC-125).
 <!-- /docs-aligned:counts -->
 
 ## 60-second quickstart
