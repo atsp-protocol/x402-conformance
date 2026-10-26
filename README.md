@@ -22,7 +22,7 @@ Release map: [RELEASES.md](RELEASES.md). What the suite covers, check by check: 
 How the project is run: [GOVERNANCE.md](GOVERNANCE.md).
 
 <!-- docs-aligned:counts -->
-The catalogue has 79 checks in 11 families: 41 normative, 24 security profile and 14 resilience ([docs/COVERAGE.md](docs/COVERAGE.md)). The contract, `proofline.json`, has 106 tasks and 742 acceptance criteria; 46 tasks are claimed done, and CI holds each of them to every criterion ([docs/VV.md](docs/VV.md)).
+The catalogue has 82 checks in 11 families: 41 normative, 26 security profile and 15 resilience ([docs/COVERAGE.md](docs/COVERAGE.md)). The contract, `proofline.json`, has 106 tasks and 742 acceptance criteria; 46 tasks are claimed done, and CI holds each of them to every criterion ([docs/VV.md](docs/VV.md)).
 <!-- /docs-aligned:counts -->
 
 ## 60-second quickstart
@@ -31,7 +31,7 @@ See it work first, with nothing to set up: no project, no wallet, no chain, a fe
 
 ```
 npx -y x402-conformance-svm demo                       # R0-R10 against a bundled mock server behind a facilitator double
-pipx run --spec x402-conformance x402conf demo         # S1-S4, P1-P7 against a bundled mock, then the F1-F14 and S5 self-test
+pipx run --spec x402-conformance x402conf demo         # S1-S4, P1-P7 against a bundled mock, then the F1-F16 and S5 self-test
 npx -y x402-conformance-svm demo --fault serve_on_any_settle   # what a failure looks like, with a fix link per check
 ```
 
@@ -207,7 +207,7 @@ Every result carries its **profile** (`normative`: the spec says MUST; `security
 leaves open; `resilience`: behaviour under failure), its spec **basis** and a **fix** link (results format
 `x402-conformance-evidence/2`).
 
-**Safety suite (`x402conf offline` and `devnet`, F1-F14 and S5):** a malformed payment accepted (F1), an underpayment
+**Safety suite (`x402conf offline` and `devnet`, F1-F16 and S5):** a malformed payment accepted (F1), an underpayment
 accepted (F2), a payment settled twice (F3), a memo or nonce replayed (F4), success before confirmation, or
 `settlement_pending` without a transaction and network (F5), a timeout or garbage answer credited (F6), a pending
 payment never finalised or credited twice (F7), a failure stuck pending (F8), a broken `/settle` transport credited
@@ -248,7 +248,7 @@ Pin `x402-conformance==1.6.0`, `x402-conformance-svm@1.6.0` or the Action at `@v
 x402conf demo [--fault no_fee_payer|no_402] [--dir DIR] # a bundled mock on loopback, then the self-test
 x402conf live https://x402.org/facilitator             # S0-S4, GET /supported only
 x402conf resource https://api.example.com/paid         # P1-P7, one unpaid GET
-x402conf offline                                       # F1-F14 and S5 self-test against the built-in doubles
+x402conf offline                                       # F1-F16 and S5 self-test against the built-in doubles
 x402conf report --dir DIR --sarif out.sarif --junit junit.xml --badge badge.json
 x402conf pr-comment DIR/pr-comment.md                  # sticky PR comment (GITHUB_TOKEN, in a pull_request run)
 x402conf devnet --faults --keys DIR                    # F1-F6 over real /verify and /settle on Solana devnet
@@ -308,7 +308,7 @@ The [quickstart](#60-second-quickstart) workflow runs as is. Inputs:
 | `start` | empty | Command that starts your server; it receives `X402_FACILITATOR_URL` |
 | `network` | `auto` | Which offered network the probe pays on: `auto`, `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` or `eip155:84532` |
 | `port` | `4402` | Loopback port for the facilitator double |
-| `offline` | `true` | Also run the F1-F14 and S5 self-test of the suite (it tests the suite, not your code; set `false` to skip) |
+| `offline` | `true` | Also run the F1-F16 and S5 self-test of the suite (it tests the suite, not your code; set `false` to skip) |
 | `results-dir` | `x402-conformance` | Where `live.json`, `resource-402.json`, `resource-server.json` and `offline.json` are written |
 | `fail-on-error` | `true` | Fail the job when a check fails, a requested run left no results, or the probe found nothing to grade |
 | `pr-comment` | `false` | `true` posts one sticky pull request comment with the result and a fix link per failed check (needs `permissions: { pull-requests: write }`) |

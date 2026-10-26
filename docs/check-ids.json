@@ -233,6 +233,22 @@
       "status": "active"
     },
     {
+      "id": "F15",
+      "profile": "resilience",
+      "property": "V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or isValid false), never an HTTP 5xx and never an uncaught exception",
+      "basis": "V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or isValid false), never an HTTP 5xx and never an uncaught exception",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
+      "id": "F16",
+      "profile": "security-profile",
+      "property": "V2 7.3 and 11.1: a facilitator registered for one testnet does not accept a requirement for a different network in the same family; a family wildcard is not a registration",
+      "basis": "V2 7.3 and 11.1: a facilitator registered for one testnet does not accept a requirement for a different network in the same family; a family wildcard is not a registration",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
       "id": "R0",
       "profile": "normative",
       "property": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED",
@@ -542,6 +558,14 @@
       "property": "V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error",
       "basis": "V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error",
       "first_release": "v1.5.0",
+      "status": "active"
+    },
+    {
+      "id": "C4",
+      "profile": "security-profile",
+      "property": "a client that resumes after a crash between settle and its own record reuses the settled result and does not sign a second payment for the same job key",
+      "basis": "a client that resumes after a crash between settle and its own record reuses the settled result and does not sign a second payment for the same job key",
+      "first_release": "unreleased",
       "status": "active"
     },
     {

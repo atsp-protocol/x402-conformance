@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- F15, F16 and C4 (task XC-58). F15: a non-object, empty-object or authorization-less `/verify` body is `invalid_payload` (HTTP 400 or `isValid: false`), never an HTTP 5xx. F16: a facilitator registered for one testnet rejects a different testnet in the same family with `invalid_network` or `unsupported_scheme`, and a family wildcard is caught. C4: a client that resumes a settled job reuses that result and does not sign again. Fix sections are in [docs/FIXES.md](docs/FIXES.md#f15). The parity vector file for F15 and F16 is XC-56 and is not in this change.
 - Normative check ids name a pinned upstream spec line (task XC-55). `tools/spec_anchors.py --check --offline` fails when the quoted text in `docs/spec-snapshots/` no longer matches the anchor. `--drift COMMIT` lists the ids whose text changed at that snapshot. The USENIX Security 2026 rules SR1-SR8 and Server-SR1-SR2 are recorded as gaps for XC-59 in `docs/crosswalk/usenix-2026.json`, because this repo does not copy the paper. CI runs the offline check on every push and pull request.
 - Check ids are stable (task XC-53). [GOVERNANCE.md](GOVERNANCE.md) states how the project is run.
   `tools/check_ids.py` writes `docs/check-ids.json` from the catalogue (id, profile, one-line property,

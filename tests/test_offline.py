@@ -625,5 +625,40 @@ class Provenance(unittest.TestCase):
         self.assertIn("https://github.com/atsp-protocol/x402-conformance", last)
 
 
+class F15(unittest.TestCase):
+    """XC-58-AC01. A structured reject for three malformed payloads. An exception is a 5xx, not a pass."""
+
+    def test_reference_rejects_three_payloads(self):
+        r = next(x for x in H.check_safety(M.Reference(), M.vectors()) if x["check"].startswith("F15 "))
+        self.assertTrue(r["pass"], r)
+        for name in ("non_object", "empty_object", "authorization_less"):
+            got = r["detail"][name]
+            self.assertIsInstance(got, dict, name)
+            self.assertIs(got.get("isValid"), False, name)
+            self.assertEqual(got.get("invalidReason"), "invalid_payload", name)
+
+    def test_three_http_500_builds_are_caught(self):
+        for name in ("http_500_non_object", "http_500_empty", "http_500_no_authorization"):
+            self.assertIn("F15", fails(H.check_safety(M.FAULTS[name](), M.vectors())), name)
+
+
+class F16(unittest.TestCase):
+    """XC-58-AC02. Registered for one testnet. Another testnet in the same family is not a wildcard accept.
+
+    The signed example names a mainnet id. The task stop rule forbids a mainnet CAIP-2 id, so the
+    requirement uses eip155:11155111. No network is dialed."""
+
+    def test_registered_testnet_rejects_other_testnet(self):
+        ok, got = H.f16_rejects_unregistered(M.RegisteredNetwork(H.F16_REGISTERED))
+        self.assertTrue(ok, got)
+        self.assertIn(got["invalidReason"], H.F16_REASONS)
+        self.assertNotEqual(H.F16_OTHER, H.F16_REGISTERED)
+
+    def test_wildcard_family_accept_is_caught(self):
+        ok, got = H.f16_rejects_unregistered(M.WildcardFamily("eip155"))
+        self.assertFalse(ok, got)
+        self.assertIs(got.get("isValid"), True)
+
+
 if __name__ == "__main__":
     unittest.main()

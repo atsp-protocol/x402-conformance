@@ -119,6 +119,14 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "security-profile",
   "basis": "V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution)"
  },
+ "F15": {
+  "profile": "resilience",
+  "basis": "V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or isValid false), never an HTTP 5xx and never an uncaught exception"
+ },
+ "F16": {
+  "profile": "security-profile",
+  "basis": "V2 7.3 and 11.1: a facilitator registered for one testnet does not accept a requirement for a different network in the same family; a family wildcard is not a registration"
+ },
  "R0": {
   "profile": "normative",
   "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED"
@@ -274,6 +282,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
  "C1": {
   "profile": "security-profile",
   "basis": "V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error"
+ },
+ "C4": {
+  "profile": "security-profile",
+  "basis": "a client that resumes after a crash between settle and its own record reuses the settled result and does not sign a second payment for the same job key"
  },
  "R23": {
   "profile": "security-profile",

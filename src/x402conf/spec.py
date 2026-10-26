@@ -152,6 +152,16 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
                      "amount, asset and payTo match (facilitator-layer network substitution)",
             "controls": [_OFF + "test_f14_reference_rejects_network_substitution"],
             "faulty": ["fault:trust_network"]},
+    "F15": {"profile": "resilience",
+            "basis": "V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or "
+                     "isValid false), never an HTTP 5xx and never an uncaught exception",
+            "controls": ["py:tests.test_offline.F15.test_reference_rejects_three_payloads"],
+            "faulty": ["fault:http_500_non_object", "fault:http_500_empty", "fault:http_500_no_authorization"]},
+    "F16": {"profile": "security-profile",
+            "basis": "V2 7.3 and 11.1: a facilitator registered for one testnet does not accept a requirement for a "
+                     "different network in the same family; a family wildcard is not a registration",
+            "controls": ["py:tests.test_offline.F16.test_registered_testnet_rejects_other_testnet"],
+            "faulty": ["py:tests.test_offline.F16.test_wildcard_family_accept_is_caught"]},
     "R0": {"profile": "normative", "basis": "V2 HTTP transport: an unpaid request gets 402 with PAYMENT-REQUIRED",
            "controls": [_TS_OK, _TS_STOCK], "faulty": ["ts:a server that serves without payment is caught"]},
     "R1": {"profile": "normative", "basis": "V2 7.2: the resource server settles through its facilitator",
@@ -303,6 +313,11 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
            "faulty": ["ts:C1 accept_any_status: a client whose status check passes 402 through unpaid is caught",
                       "ts:C1 gate: a URL that is not a paid route fails the check",
                       "ts:C1 gate: a client that rejects before it receives a 402 does not pass"]},
+    "C4": {"profile": "security-profile",
+           "basis": "a client that resumes after a crash between settle and its own record reuses the settled result "
+                    "and does not sign a second payment for the same job key",
+           "controls": ["ts:C4 control: a client that keeps the job key reuses the settled result and does not sign again"],
+           "faulty": ["ts:C4 drop_key: a client that drops the job key signs a second payment and is caught"]},
     "R23": {"profile": "security-profile",
             "basis": "a client that disconnects while /settle is in flight is not charged, or a resend of the same "
                      "payment gets the settled result and is not charged again",
