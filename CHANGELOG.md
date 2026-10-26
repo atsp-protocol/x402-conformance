@@ -4,6 +4,7 @@
   released suite and runs `x402conf offline` against the bundled doubles, with no wallet, no funds, no secret and no
   network beyond installing the package. `tests/test_ci_template.py` holds it to that and to the released version, and
   CI's new `ci-template` job runs it as written. docs/USING.md shows it.
+- Normative check ids name a pinned upstream spec line (task XC-55). `tools/spec_anchors.py --check --offline` fails when the quoted text in `docs/spec-snapshots/` no longer matches the anchor. `--drift COMMIT` lists the ids whose text changed at that snapshot. The USENIX Security 2026 rules SR1-SR8 and Server-SR1-SR2 are recorded as gaps for XC-59 in `docs/crosswalk/usenix-2026.json`, because this repo does not copy the paper. CI runs the offline check on every push and pull request.
 - Check ids are stable (task XC-53). [GOVERNANCE.md](GOVERNANCE.md) states how the project is run.
   `tools/check_ids.py` writes `docs/check-ids.json` from the catalogue (id, profile, one-line property,
   spec basis, first release, status). `python3 tools/check_ids.py --check --since v1.6.0` fails when
