@@ -1,0 +1,149 @@
+{
+ "about": "PROPOSED, UNSIGNED. One new Proofline task, XC-125: split the vv job by task across a CI matrix and merge the shard receipts into one strict verdict, because the single vv job is at its 30-minute limit and raising the limit is forbidden by this contract. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[] (XC-125)",
+ "applies_after": [
+  "XC-05"
+ ],
+ "tasks": [
+  {
+   "id": "XC-125",
+   "title": "The vv job is sharded by task across a matrix and the shard receipts merge into one strict verdict",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-05"
+   ],
+   "requirements": [
+    "R-CI"
+   ],
+   "description": "The vv job runs every criterion of every task one after another in a single job, and its 30-minute limit is now the binding constraint. Measured on 26 Oct 2026 from the jobs API: main's strict vv took 23.6, 27.0, 28.1 and 27.7 minutes; on e0fc8f5 the V&V step was 27.2 of the job's 27.7 minutes for 106 tasks; pull-request runs were cancelled at the limit at 30.2, 30.3, 30.3 and 30.6 minutes. Every new task adds to it, and once main's strict run times out no task's 'pushed' criterion can be decided in CI. Raising timeout-minutes is forbidden by this contract (forbidden.timeout_raise), and proofline's own scan flags 30 -> 60 on ci.yml. Running criteria in parallel inside one job is unsafe: 57 command verifiers run 'cd ts && npm ci', which deletes and reinstalls ts/node_modules, so two at once break each other. Separate jobs each have their own checkout, so the work is split there. tools/vv.py verify gains --shard I/N, which verifies the tasks whose position in proofline.json is I modulo N, and records the shard, the task ids it was assigned and each task's seconds in its receipt. tools/vv.py merge DIR reads the N shard receipts and writes one receipt in the existing schema, with the tasks in contract order, plus the list of shard receipts it merged. The merge fails closed: it exits 1 and writes ok false when a shard is missing or duplicated, when the shards disagree on head, contract hash, mode or signature state, when a shard's task list is not exactly its partition, or when any shard failed. In ci.yml the vv job becomes vv-shard, a matrix of at least three shards, each with timeout-minutes of 20 at most, each uploading its receipt; a job still named vv needs vv-shard, downloads every shard receipt, runs the merge and uploads the merged receipt, so the job name XC-05 checks for and the artifact other tasks read are unchanged. No timeout is raised anywhere in the diff. A run without --shard behaves exactly as today.",
+   "scope": {
+    "allow": [
+     "tools/vv.py",
+     "tests/test_vv_shard.py",
+     ".github/workflows/ci.yml",
+     "docs/VV.md",
+     "docs/ARCHITECTURE.md",
+     "docs/INTERDEPENDENCY.md",
+     "CHANGELOG.md",
+     "evidence/XC-125.json"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-125-AC01",
+     "mandatory": true,
+     "statement": "--shard I/N assigns every contract task to exactly one shard, deterministically, for N from 1 to 8, and refuses a malformed or out-of-range shard or a shard combined with named tasks",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.Partition",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-125-AC02",
+     "mandatory": true,
+     "statement": "Merging a complete set of passing shard receipts exits 0 and writes one receipt in the existing schema with every contract task once, in contract order, and the shard receipts it merged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.Merge",
+      "expect_exit": 0,
+      "min_tests": 2,
+      "max_skipped": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-125-AC03",
+     "mandatory": true,
+     "statement": "The merge fails closed: a missing shard, a duplicated shard, a different head, a different contract hash, a different mode, a different signature state, a shard whose tasks are not its partition, and a failed shard each exit 1 with ok false",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.FailsClosed",
+      "expect_exit": 0,
+      "min_tests": 8,
+      "max_skipped": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-125-AC04",
+     "mandatory": true,
+     "statement": "Sharded and merged, a contract gives the same per-task states and pass counts as one unsharded run on the same tree, for N of 1, 2, 3 and 5, with real grep and file_exists verifiers and one failing claimed task",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.Equivalence",
+      "expect_exit": 0,
+      "min_tests": 2,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-125-AC05",
+     "mandatory": true,
+     "statement": "ci.yml runs vv-shard as a matrix of at least three shards, each with timeout-minutes of 20 at most and a --shard argument whose N equals the matrix size; the job named vv needs vv-shard, merges every shard receipt and uploads the result; no job's timeout-minutes is above 30",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.Workflow",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-125-AC06",
+     "mandatory": true,
+     "statement": "On the pull request's CI run, every vv-shard job finished in 15 minutes or less (run id and per-shard minutes from the jobs API in evidence/XC-125.json)",
+     "verifier": {
+      "type": "metric",
+      "cmd": "python3 -c \"import json;d=json.load(open('evidence/XC-125.json'));m=[s['minutes'] for s in d['shards']];print(json.dumps({'max_shard_minutes':max(m) if len(m)>=3 and d.get('run_id') else 999}))\"",
+      "key": "max_shard_minutes",
+      "op": "<=",
+      "value": 15,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-125-AC07",
+     "mandatory": true,
+     "statement": "docs/VV.md explains the shards and the merge",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/VV.md",
+      "pattern": "--shard I/N[\\s\\S]*vv\\.py merge",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-125-AC08",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-125-AC09",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Every verifier runs as written by every shard; no criterion is dropped, cached across runs or moved out of vv."
+   ]
+  }
+ ],
+ "changes": []
+}
