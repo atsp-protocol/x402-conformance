@@ -95,7 +95,7 @@ JUnit for test summaries.
 ## Offline CI job: no wallet, no funds, no secrets
 
 [`docs/ci/x402-conformance-offline.yml`](ci/x402-conformance-offline.yml) is a GitHub Actions workflow you can copy
-into `.github/workflows/`. It installs the suite at the released version and runs `x402conf offline`, the F1-F14 and S5
+into `.github/workflows/`. It installs the suite at the released version and runs `x402conf offline`, the offline
 self-test against the bundled reference and faulty facilitator doubles. It needs no wallet, no funds, no secret and no
 network beyond installing the package. It doesn't test your own code: it shows the suite runs in your CI and gives you
 a job to grow, with `x402conf resource` for a paid URL or `x402conf-svm probe` for a server it can start. This
