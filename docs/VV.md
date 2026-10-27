@@ -12,7 +12,7 @@ verifies `proofline.json.sig` against `guard/owner.pub`. Anyone can repeat that 
 `node tools/verify-sig.mjs` or `npx -y @optitransfer/proofline@next contract verify-sig`.
 
 <!-- docs-aligned:summary -->
-**At a glance** (generated from `proofline.json` and `vv/claims.json`): 109 tasks and 766 acceptance criteria, 766 of them mandatory, one row each below. 46 tasks are claimed done. 63 signed tasks are open: XC-32 to XC-38, XC-47, XC-51 to XC-98, XC-110, XC-123 to XC-125, XC-M2, XC-M5, XC-M6.
+**At a glance** (generated from `proofline.json` and `vv/claims.json`): 109 tasks and 766 acceptance criteria, 766 of them mandatory, one row each below. 49 tasks are claimed done. 60 signed tasks are open: XC-32 to XC-38, XC-47, XC-51 to XC-98, XC-110, XC-M2, XC-M5, XC-M6.
 <!-- /docs-aligned:summary -->
 
 | task | requirement | criterion | artefact | evidence |
