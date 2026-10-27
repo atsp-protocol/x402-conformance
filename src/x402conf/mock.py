@@ -204,7 +204,8 @@ class Faulty(Reference):
                  lenient_amounts: bool = False, pending_without_tx: bool = False,
                  verify_commits: bool = False, trust_kind: bool = False, advertise_unhandled: bool = False,
                  reasonless_invalid: bool = False, trust_asset: bool = False,
-                 trust_network: bool = False) -> None:
+                 trust_network: bool = False, http_500_non_object: bool = False,
+                 http_500_empty: bool = False, http_500_no_authorization: bool = False) -> None:
         super().__init__()
         self.open_on_malformed, self.accept_dust = open_on_malformed, accept_dust
         self.no_dup_cache, self.no_memo_check = no_dup_cache, no_memo_check
@@ -216,6 +217,9 @@ class Faulty(Reference):
         self.trust_kind = trust_kind
         self.advertise_unhandled, self.reasonless_invalid = advertise_unhandled, reasonless_invalid
         self.trust_asset, self.trust_network = trust_asset, trust_network
+        self.http_500_non_object = http_500_non_object
+        self.http_500_empty = http_500_empty
+        self.http_500_no_authorization = http_500_no_authorization
         self.burned: set[str] = set()
 
     def supported(self) -> Json:
@@ -226,6 +230,14 @@ class Faulty(Reference):
         return doc
 
     def verify(self, p: Any, req: Json) -> Json:
+        # The in-process form of HTTP 500: the library raises instead of returning invalid_payload.
+        if self.http_500_non_object and not isinstance(p, dict):
+            raise RuntimeError("non-object payload")
+        if self.http_500_empty and isinstance(p, dict) and not p:
+            raise RuntimeError("empty object payload")
+        if (self.http_500_no_authorization and isinstance(p, dict) and p
+                and "authorization" not in p and not p.get("tx")):
+            raise RuntimeError("authorization-less payload")
         if isinstance(req, dict) and req.get("network") == ADVERTISED_ONLY:
             if self.advertise_unhandled:
                 raise KeyError(f"no verifier registered for {ADVERTISED_ONLY}")   # in HTTP terms, a 500
@@ -318,4 +330,35 @@ FAULTS: dict[str, Callable[[], Reference]] = {
     "trust_network": lambda: Faulty(trust_network=True),
     "advertise_unhandled": lambda: Faulty(advertise_unhandled=True),
     "reasonless_invalid": lambda: Faulty(reasonless_invalid=True),
+    "http_500_non_object": lambda: Faulty(http_500_non_object=True),
+    "http_500_empty": lambda: Faulty(http_500_empty=True),
+    "http_500_no_authorization": lambda: Faulty(http_500_no_authorization=True),
 }
+
+
+class RegisteredNetwork:
+    """Registered for one exact network. A different network, including the same family, is invalid_network.
+
+    Nothing is dialed. The object only answers the verify call the offline check makes."""
+
+    def __init__(self, network: str) -> None:
+        self.network = network
+
+    def verify(self, _p: Any, req: Json) -> Json:
+        net = req.get("network") if isinstance(req, dict) else None
+        if net != self.network:
+            return {"isValid": False, "invalidReason": "invalid_network"}
+        return {"isValid": True}
+
+
+class WildcardFamily:
+    """The fault: every network in the family is accepted, which is a wildcard registration."""
+
+    def __init__(self, family: str) -> None:
+        self.family = family
+
+    def verify(self, _p: Any, req: Json) -> Json:
+        net = str(req.get("network")) if isinstance(req, dict) else ""
+        if net.startswith(self.family + ":"):
+            return {"isValid": True}
+        return {"isValid": False, "invalidReason": "invalid_network"}

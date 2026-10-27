@@ -8,22 +8,22 @@ says which release added what, and [SPEC.md](SPEC.md) quotes the spec text behin
 
 <!-- generated from src/x402conf/spec.py by tools/build_coverage.py; edit RUNS there, not this block -->
 
-## Checks: 79 in the catalogue
+## Checks: 82 in the catalogue
 
 - **S**: Facilitator, `GET /supported` (S0 to S4 live; S5 offline): S0, S1, S2, S3, S4, S5 (6 checks)
 - **P**: Any paid URL's 402 answer, one unpaid GET: P1, P2, P3, P4, P5, P6, P7, P9, P10 (9 checks)
-- **F**: Facilitator safety, against doubles offline and on devnet: F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14 (14 checks)
+- **F**: Facilitator safety, against doubles offline and on devnet: F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16 (16 checks)
 - **D**: A facilitator's discovery API (Bazaar), GET only: D1 (1 checks)
 - **R**: Resource server behind the facilitator double: R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R11a, R11b, R11c, R11d, R11e, R11f, R12, R13, R14, R15, R16, R16a, R17, R18, R19, R20, R20a, R20b, R21, R22, R23, R24 (34 checks)
 - **G**: An A2A agent's paid skill, against the HTTP route it mirrors: G1 (1 checks)
-- **C**: Client, through a recording proxy: C1, C2, C3 (3 checks)
+- **C**: Client, through a recording proxy: C1, C2, C3, C4 (4 checks)
 - **W**: Sign-in-with-x on a paid route, behind the facilitator double: W1, W2, W3 (3 checks)
 - **U**: The upto scheme on a paid route, behind the scheme double: U1, U2, U3 (3 checks)
 - **B**: The batch-settlement scheme on a paid route and its redemption runs, behind the scheme double: B1, B2, B3 (3 checks)
 - **X**: Paid MCP tools, over the MCP transport (JSON-RPC over Streamable HTTP): X1, X2 (2 checks)
 
-By profile: 41 normative (the spec says MUST), 24 security
-profile (a hardening rule the spec leaves open), 14 resilience (behaviour under failure).
+By profile: 41 normative (the spec says MUST), 26 security
+profile (a hardening rule the spec leaves open), 15 resilience (behaviour under failure).
 Every check has at least one control that passes and one faulty build it catches, and CI runs every one of them
 (`tests/test_offline.py`, `ts/test/`).
 
@@ -35,6 +35,7 @@ Every check has at least one control that passes and one faulty build it catches
 | C1 | security-profile | V2 4 and HTTP transport: a 402 is Payment Required or Payment Failed, not Success, so a client pays and retries or raises an error | library only: `checkClientHandles402` from `x402-conformance-svm` | 3 | 3 |
 | C2 | security-profile | given several offers a client pays one within its own networks and maximum amount, not the first; V2 12.1: spending controls are implementation-specific | library only: `checkClientOfferPolicy` from `x402-conformance-svm` | 1 | 2 |
 | C3 | security-profile | V2 HTTP transport: PAYMENT-REQUIRED is canonical; V2 5.2.2 accepted is Required, and a V1 payload (V1 5.2.2) has none | library only: `checkClientKeepsV2` from `x402-conformance-svm` | 1 | 1 |
+| C4 | security-profile | a client that resumes after a crash between settle and its own record reuses the settled result and does not sign a second payment for the same job key | `node --test` on `ts/test/c4-resume.test.ts` | 1 | 1 |
 | D1 | normative | V2 8 and the bazaar extension: GET /discovery/resources returns x402Version, items and pagination (limit, offset, total), GET /discovery/search returns resources; every item has resource, type, x402Version, accepts and lastUpdated (8.3), and limit and the network filter are honoured | library only: `checkDiscovery` from `x402-conformance-svm` (GET only) | 1 | 2 |
 | F1 | normative | V2 9 invalid_payload; V2 5.1.2 atomic units; SVM exact: fail closed | `x402conf offline`, `x402conf devnet` (real `/verify` and `/settle` on Solana devnet) | 1 | 2 |
 | F2 | normative | SVM exact 1.1 and V2 9: an amount below the requirement is rejected | `x402conf offline`, `x402conf devnet` (real `/verify` and `/settle` on Solana devnet) | 1 | 1 |
@@ -50,6 +51,8 @@ Every check has at least one control that passes and one faulty build it catches
 | F12 | security-profile | V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network | `x402conf offline` | 1 | 1 |
 | F13 | security-profile | V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment | `x402conf offline` | 1 | 1 |
 | F14 | security-profile | V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution) | `x402conf offline` | 1 | 1 |
+| F15 | resilience | V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or isValid false), never an HTTP 5xx and never an uncaught exception | `x402conf offline` | 1 | 3 |
+| F16 | security-profile | V2 7.3 and 11.1: a facilitator registered for one testnet does not accept a requirement for a different network in the same family; a family wildcard is not a registration | `python3 -m unittest tests.test_offline.F16` | 1 | 1 |
 | G1 | security-profile | A2A transport: payment required is a task in input-required with x402.payment.status payment-required and the PaymentRequired in x402.payment.required; an agent that mirrors an HTTP route asks for the same requirements as its 402 | library only: `checkA2aMirrorsHttp` from `x402-conformance-svm` | 1 | 2 |
 | P1 | normative | V2 HTTP transport: payment required is signalled with HTTP 402 | `x402conf resource`, `x402conf-svm resource`, Action `resources`, pytest `check_payment_required`, MCP `x402_check_payment_required` | 1 | 1 |
 | P2 | normative | V2 HTTP transport: PAYMENT-REQUIRED carries base64 JSON; V1 5.1 body | `x402conf resource`, `x402conf-svm resource`, Action `resources`, pytest `check_payment_required`, MCP `x402_check_payment_required` | 2 | 1 |

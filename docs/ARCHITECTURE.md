@@ -12,7 +12,7 @@ flowchart LR
     PROBE[x402conf-svm probe<br/>R0-R11, R14, R20] --> DBL[Facilitator double<br/>loopback, fault modes]
     LIB[x402-conformance-svm library<br/>R12, R13, R15-R19, R16a, R21-R24, C1-C3,<br/>W1-W3, U1-U3, B1-B3, D1, G1, X1, X2] --> DBL
     DBL -->|X402_FACILITATOR_URL| RS[(Your resource server<br/>Solana devnet or Base Sepolia)]
-    CLI --> OFF[Safety checks F1-F14, S5]
+    CLI --> OFF[Safety checks F1-F16, S5]
     OFF --> DOUBLES[Facilitator doubles<br/>Reference + Faulty]
     CLI --> DEVNET[Devnet runner F1-F6<br/>self-hosted or permitted facilitator]
     GUARD[ResourceServerGuard<br/>credit rule] --- OFF
@@ -33,7 +33,7 @@ flowchart LR
 | `src/x402conf/mock.py` | The `Reference` double, which behaves as the spec asks, and `Faulty` doubles, each reproducing one known failure. `Chain` is the simulated ledger F7 to F9 advance |
 | `src/x402conf/fixtures/devnet.json` | Devnet requirements (`solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`, devnet USDC) and the test vectors |
 | `lean/` | Lean 4 models of the credit rule (`Settlement.lean`), the nonce state machine (`Nonce.lean`), timeouts, `settlement_pending` reconciliation and concurrent settles (`Pending.lean`), and n replicas with a shared atomic check-and-set versus partitioned caches (`Replicas.lean`), built by `lake build`. `tools/lean_axioms.py` runs `lean/Axioms.lean`, and CI fails on an unexpected axiom |
-| `tools/vv.py` | Verifies every Proofline criterion in `proofline.json` and writes receipts |
+| `tools/vv.py` | Verifies every Proofline criterion in `proofline.json` and writes receipts; `--shard I/N` verifies one partition of the tasks and `merge` combines the shard receipts into one verdict that fails closed |
 | `src/x402conf/devnet/` | The devnet runner: F1 to F6 over real `/verify` and `/settle` on Solana devnet, with a self-hosted reference facilitator (`node/`) and its fault-injected builds |
 | `ts/` | The `x402-conformance-svm` npm package: the facilitator double, the resource-server and client checks, the Node CLI and the test-framework entry points, with example servers and clients in `ts/example/` |
 | `ts/src/double.ts` | The facilitator double: `GET /supported`, `POST /verify` and `POST /settle` on loopback with one switchable fault mode, on Solana devnet and Base Sepolia. It never touches a chain or a key |

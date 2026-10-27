@@ -44,8 +44,13 @@ def make_root() -> str:
 
 
 def make_attestation(root: str, **over: object) -> tuple[str, str]:
-    """An attestation file and the gh attestation verify output that signs it."""
-    results = {cid: {"status": "pass"} for cid in spec.CATALOG}
+    """An attestation file and the gh attestation verify output that signs it.
+
+    The results are the pinned suite's checks. A check the pin does not list is not a current-suite attestation.
+    """
+    pin_doc = json.load(open(os.path.join(root, "matrix", "queue", "suite.json")))
+    ids = pin_doc.get("checks") if isinstance(pin_doc.get("checks"), list) and pin_doc.get("checks") else spec.CATALOG
+    results = {cid: {"status": "pass"} for cid in ids}
     for cid in ("U1", "U2", "U3", "B1", "B2", "B3", "X1", "X2", "G1", "W1", "W2", "W3", "D1"):
         results[cid] = {"status": "not_applicable", "reason": "this server has no such surface"}
     results["R13"] = {"status": "fail"}
@@ -198,11 +203,11 @@ class Attestation(unittest.TestCase):
         r = T.tier1_results(T.results_from_run(os.path.join(ROOT, "tests", "tier1_run.json")))
         self.assertEqual(set(r), set(T.EXTERNAL))
         c = T.denominator(r, T.TIER1)
+        pin = json.load(open(os.path.join(ROOT, "matrix", "queue", "suite.json")))
         self.assertEqual((c["passed"], c["applicable"], c["failed"], c["not_applicable"], c["needs_self_hosted"]),
-                         (8, 9, 1, 2, len(spec.CATALOG) - len(T.EXTERNAL)))
+                         (8, 9, 1, 2, len(pin["checks"]) - len(T.EXTERNAL)))
         self.assertEqual((r["R16a"]["status"], r["R24"]["status"]), ("pass", "pass"))
         self.assertTrue(T.EXTERNAL <= set(spec.CATALOG))
-        pin = json.load(open(os.path.join(ROOT, "matrix", "queue", "suite.json")))
         self.assertTrue(set(pin["checks"]) <= set(spec.CATALOG))
 
 

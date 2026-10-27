@@ -1,5 +1,7 @@
 # Changelog
 ## Unreleased
+- The vv job runs in six shards (task XC-125). It had reached its 30-minute limit: main's strict runs took 23.6 to 28.1 minutes, and pull-request runs were cancelled at 30.2 to 30.6. `tools/vv.py verify --shard I/N` verifies the tasks at positions I modulo N, and `tools/vv.py merge` combines the shard receipts into one verdict that fails closed on a missing, duplicated, inconsistent, edited or failed shard. CI runs the shards as the `vv-shard` matrix, 20 minutes each at most, and the job named `vv` merges them. No timeout was raised and every criterion still runs.
+- F15, F16 and C4 (task XC-58). F15: a non-object, empty-object or authorization-less `/verify` body is `invalid_payload` (HTTP 400 or `isValid: false`), never an HTTP 5xx. F16: a facilitator registered for one testnet rejects a different testnet in the same family with `invalid_network` or `unsupported_scheme`, and a family wildcard is caught. C4: a client that resumes a settled job reuses that result and does not sign again. Fix sections are in [docs/FIXES.md](docs/FIXES.md#f15). The parity vector file for F15 and F16 is XC-56 and is not in this change.
 - An offline CI job another repository can paste in (task XC-83): `docs/ci/x402-conformance-offline.yml` installs the
   released suite and runs `x402conf offline` against the bundled doubles, with no wallet, no funds, no secret and no
   network beyond installing the package. `tests/test_ci_template.py` holds it to that and to the released version, and

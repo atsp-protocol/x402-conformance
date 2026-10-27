@@ -20,7 +20,7 @@ A check is admitted only when it meets the bar in [docs/ROADMAP.md](docs/ROADMAP
 
 An id is never reused and never removed. A change of meaning gets a new id. A deprecated id stays in [docs/check-ids.json](docs/check-ids.json) with its original property text, and the deprecation is listed in [CHANGELOG.md](CHANGELOG.md).
 
-`python3 tools/check_ids.py --since v1.6.0` writes the registry from the catalogue. `python3 tools/check_ids.py --check --since v1.6.0` fails when the registry is stale, when an id published at v1.6.0 is missing, or when that id's property changed without a deprecation entry.
+`python3 tools/check_ids.py --since v1.6.0` writes the `ids` list from the catalogue and keeps every other top-level key in the file. `python3 tools/check_ids.py --check --since v1.6.0` fails when the registry is stale, when an id published at v1.6.0 is missing, or when that id's property changed without a deprecation entry.
 
 ## Neutrality
 
