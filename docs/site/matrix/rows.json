@@ -2,7 +2,7 @@
  "schema": "x402-conformance.matrix-pages/2",
  "license": "CC BY 4.0",
  "attribution": "Optitransfer/x402-conformance, https://github.com/atsp-protocol/x402-conformance",
- "catalogue": 82,
+ "catalogue": 83,
  "example": {
   "slug": "example",
   "project": "example-org/example-x402-server",

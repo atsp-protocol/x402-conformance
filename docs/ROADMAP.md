@@ -185,6 +185,7 @@ most of this family normative.
 | F12 | `/verify` rejects an unsupported network or an asset with no token contract | security profile | XC-46, done |
 | F13 | `/verify` rejects a payment in a different asset at the quoted amount and recipient | security profile | XC-49, done in 1.6.0 |
 | F14 | `/verify` rejects a payment authorized for another network when amount, recipient and asset match | security profile | XC-50, done in 1.6.0 |
+| F14a | `/verify` and `/settle` reject an EIP-3009 signature over a domain without `chainId` replayed onto another network | security profile | XC-123, done |
 | R16a | an unpaid `HEAD` on a paid `GET` route gets the same 402 as `GET` | security profile | XC-39, done |
 | R22 | the paid response keeps the handler's 2xx status and headers | normative | XC-40, done |
 | R23 | a client abort during settle is recoverable | security profile | XC-41, done |

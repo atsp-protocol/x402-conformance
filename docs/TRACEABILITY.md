@@ -7,7 +7,7 @@ Every check is in one of two classes. A **normative** check tests a MUST or SHOU
 | class | checks |
 |---|---|
 | normative | 41 |
-| hardening | 41 |
+| hardening | 42 |
 
 ## Checks
 
@@ -35,6 +35,7 @@ Every check is in one of two classes. A **normative** check tests a MUST or SHOU
 | F12 | hardening | security-profile: V2 7.1 and 7.3: /verify checks a payment against the kinds /supported advertises; an asset is a token contract on the network |
 | F13 | hardening | security-profile: V2 5.1.2: a payment settles the asset the requirement names; the amount and recipient alone do not bind the asset, so a different mint at the same price is a distinct payment |
 | F14 | hardening | security-profile: V2 5.1.2 and 11.1: the verifier binds the payment's authorized network to the requirement; a payment authorized for one network is not valid against a requirement on another, even when amount, asset and payTo match (facilitator-layer network substitution) |
+| F14a | hardening | security-profile: EIP-712 and EVM exact (EIP-3009): a signature is bound to a chain only by the domain's chainId; an authorization signed over a domain without chainId is valid on every chain with the same token address, so the verifier requires the domain's chainId to be the requirement's network and rejects a chainless domain replayed on another network |
 | F15 | hardening | resilience: V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or isValid false), never an HTTP 5xx and never an uncaught exception |
 | F16 | hardening | security-profile: V2 7.3 and 11.1: a facilitator registered for one testnet does not accept a requirement for a different network in the same family; a family wildcard is not a registration |
 | G1 | hardening | security-profile: A2A transport: payment required is a task in input-required with x402.payment.status payment-required and the PaymentRequired in x402.payment.required; an agent that mirrors an HTTP route asks for the same requirements as its 402 |

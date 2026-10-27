@@ -45,7 +45,7 @@ for _i in ("P1", "P2", "P3", "P4", "P5", "P6", "P7"):
                 "MCP `x402_check_payment_required`")
 for _i in ("F1", "F2", "F3", "F4", "F5", "F6"):
     RUNS[_i] = "`x402conf offline`, `x402conf devnet` (real `/verify` and `/settle` on Solana devnet)"
-for _i in ("F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F15"):
+for _i in ("F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F14a", "F15"):
     RUNS[_i] = "`x402conf offline`"
 RUNS["F16"] = "`python3 -m unittest tests.test_offline.F16`"
 RUNS["C4"] = "`node --test` on `ts/test/c4-resume.test.ts`"

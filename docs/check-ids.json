@@ -233,6 +233,14 @@
       "status": "active"
     },
     {
+      "id": "F14a",
+      "profile": "security-profile",
+      "property": "EIP-712 and EVM exact (EIP-3009): a signature is bound to a chain only by the domain's chainId; an authorization signed over a domain without chainId is valid on every chain with the same token address, so the verifier requires the domain's chainId to be the requirement's network and rejects a chainless domain replayed on another network",
+      "basis": "EIP-712 and EVM exact (EIP-3009): a signature is bound to a chain only by the domain's chainId; an authorization signed over a domain without chainId is valid on every chain with the same token address, so the verifier requires the domain's chainId to be the requirement's network and rejects a chainless domain replayed on another network",
+      "first_release": "unreleased",
+      "status": "active"
+    },
+    {
       "id": "F15",
       "profile": "resilience",
       "property": "V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or isValid false), never an HTTP 5xx and never an uncaught exception",

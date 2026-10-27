@@ -1,7 +1,7 @@
 """The checks.
 
 Live checks (S0-S4) read a facilitator's public GET /supported and nothing else: no signing, no payment, no POST.
-Offline checks (F1-F16) drive a facilitator implementation in-process through /verify and /settle semantics and test
+Offline checks (F1-F16 and F14a) drive a facilitator implementation in-process through /verify and /settle semantics and test
 the safety properties a resource server depends on. F7 and F8 advance the double's simulated chain between retries of
 the same /settle body; F9 puts a broken transport (a 503, a non-JSON page, a truncated body) between the resource
 server and the facilitator. On devnet they run only against a facilitator its operator
@@ -21,7 +21,8 @@ import urllib.request
 from collections.abc import Callable, Mapping
 from typing import Any
 
-from . import __version__
+from . import __version__, eip712
+from . import mock as M
 from . import spec as S
 from .discovery import check_bazaar, check_well_known, fetch_well_known, well_known_url
 from .mock import Chain, Vectors
@@ -497,14 +498,65 @@ OTHER_NETWORK_SVM = "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
 def _f14(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
     # The same amount, recipient and asset, carrying a different authorized network. A verifier that does not
     # bind the payment's network to the requirement lets a payment for one chain settle a route on another.
-    # (The deeper cross-chain-signature replay, an EIP-3009 domain that omits chainId, needs a live signature
-    # and is out of the offline doubles' reach; this check covers the facilitator-side binding.)
+    # (The cross-chain signature replay, an EIP-3009 domain that omits chainId, is F14a: a real signature from a
+    # throwaway key. This check covers the facilitator-side network binding.)
     other_net = OTHER_NETWORK_EVM if not str(req["network"]).startswith("eip155:") else OTHER_NETWORK_SVM
     p = dict(mk("good"), tx="tx-f14", memo="m-f14", net=other_net)
     v = fac.verify(p, req)
     s = fac.settle(p, req)
     rejected = isinstance(v, dict) and v.get("isValid") is False and not _success(s)
     return result(F14, rejected, {"authorized_network": other_net, "verify": v, "settle": s})
+
+
+F14a = ("F14a an EIP-3009 authorization signed over an EIP-712 domain that omits chainId, made for one network, is "
+        "rejected by /verify and /settle when replayed on another network")
+# EIP-712 binds a signature to a chain only through the domain's chainId. Without it the domain separator, and so the
+# digest and the signature, are identical on every chain where the token has the same address. F14 tests the
+# facilitator's network field; F14a tests the signature itself, with a real signature from a throwaway key.
+F14A_PAYTO = "0x209693Bc6afc0C5328bA36FaF03C514EF312287C"
+
+
+def _f14a_payment(priv: int, net: str, domain: Json, amount: str, tag: str) -> Json:
+    """A signed EIP-3009 TransferWithAuthorization for the same-address token, presented as being for net."""
+    msg = {"from": eip712.key_address(priv), "to": F14A_PAYTO, "value": amount, "validAfter": "0",
+           "validBefore": "4102444800", "nonce": "0x" + eip712.keccak256(f"x402conf-f14a-{tag}".encode()).hex()}
+    sig = eip712.sign_digest(priv, eip712.transfer_digest(domain, msg))
+    return {"tx": f"tx-f14a-{tag}", "memo": msg["nonce"], "mint": M.SAME_ADDRESS_TOKEN, "dest": F14A_PAYTO,
+            "net": net, "amount": amount, "finalized": True,
+            "authorization": {"domain": domain, "message": msg, "signature": sig}}
+
+
+def _f14a(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
+    # A throwaway key, generated for this run and never funded, signs two authorizations on network A: one over a
+    # domain bound to A's chainId (the control: it must verify and settle on A), and one over a domain with chainId
+    # omitted. The chainless one is then replayed on network B, at the same token address, amount and recipient.
+    # Its signature is valid there, so only a facilitator that requires the domain to carry B's chainId rejects it.
+    priv = eip712.throwaway_key()
+    amount = str(req.get("amount") or "10000")
+    base = {"scheme": "exact", "asset": M.SAME_ADDRESS_TOKEN, "payTo": F14A_PAYTO, "amount": amount}
+    req_a, req_b = dict(base, network=M.EVM_NETWORK_A), dict(base, network=M.EVM_NETWORK_B)
+    chain_a = M.evm_chain_id(M.EVM_NETWORK_A)
+    bound = dict(M.EVM_TOKEN_DOMAIN, chainId=chain_a, verifyingContract=M.SAME_ADDRESS_TOKEN)
+    chainless = dict(M.EVM_TOKEN_DOMAIN, verifyingContract=M.SAME_ADDRESS_TOKEN)
+    control = _f14a_payment(priv, M.EVM_NETWORK_A, bound, amount, "control")
+    replay = _f14a_payment(priv, M.EVM_NETWORK_B, chainless, amount, "chainless")
+    detail: dict[str, Any] = {"network_a": M.EVM_NETWORK_A, "network_b": M.EVM_NETWORK_B,
+                              "signer": control["authorization"]["message"]["from"],
+                              "chainless_domain": chainless}
+    try:
+        cv, cs = fac.verify(control, req_a), fac.settle(control, req_a)
+        detail["control_on_a"] = {"verify": cv, "settle": cs}
+        if not (isinstance(cv, dict) and cv.get("isValid") is True and _success(cs)):
+            detail["error"] = ("the control, signed over a domain bound to network A's chainId, did not verify and "
+                               "settle on A, so the replay below proves nothing")
+            return result(F14a, False, detail)
+        rv, rs = fac.verify(replay, req_b), fac.settle(replay, req_b)
+    except Exception as e:  # noqa: BLE001  a facilitator that cannot read an EIP-3009 payload is not graded as safe
+        detail["error"] = f"raised {type(e).__name__}: {e}"
+        return result(F14a, False, detail)
+    detail["replay_on_b"] = {"verify": rv, "settle": rs}
+    rejected = isinstance(rv, dict) and rv.get("isValid") is False and not _success(rs)
+    return result(F14a, rejected, detail)
 
 
 F15 = ("F15 a non-object, empty-object or authorization-less payload is invalid_payload "
@@ -654,6 +706,7 @@ def check_safety(fac: Facilitator, mk: Vectors,
     out.append(_f12(fac, mk, req))
     out.append(_f13(fac, mk, req))
     out.append(_f14(fac, mk, req))
+    out.append(_f14a(fac, mk, req))
     out.append(_f15(fac, mk, req))
     s5 = _s5(fac, mk, req)
     if s5 is not None:

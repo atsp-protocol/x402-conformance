@@ -240,10 +240,25 @@ the requirement's network, at the same amount, recipient and asset. It answered 
 **Why it matters.** A verifier that binds only the amount and the recipient lets a payment authorized for one chain
 settle a route priced on another. The sharpest form is a cross-chain signature replay: an EIP-3009 authorization
 whose EIP-712 domain omits `chainId` is cryptographically valid on every chain that shares the token address. This
-check covers the facilitator-side network binding; catching a mis-bound signature itself needs a live devnet test.
+check covers the facilitator-side network binding; F14a tests the mis-bound signature itself.
 **How to fix it.** In `/verify`, reject a payment whose authorized network is not the requirement's `network`
 (`invalid_payment_requirements`), even when amount, recipient and asset match. Separately, make sure the EIP-712
 domain carries the correct `chainId` so the signature itself cannot be replayed across chains.
+
+## F14a
+**What failed.** The offline check had a throwaway key, generated for the run and never funded, sign an EIP-3009
+`TransferWithAuthorization` over an EIP-712 domain with `chainId` omitted, then replayed that signature against a
+requirement on a second network at the same token address, amount and recipient. The facilitator answered
+`isValid: true` on `/verify`, or settled it. (If the control, signed over a domain bound to the first network's
+`chainId`, did not verify and settle there, the result says so and the replay is not graded as safe.)
+**Why it matters.** EIP-712 binds a signature to a chain only through the domain's `chainId`. Without it the domain
+separator, the digest and so the signature are the same on every chain where the token has the same address, which
+is common for CREATE2 deployments. Anyone who sees the payment on one chain can settle it again on another and move
+the payer's funds there.
+**How to fix it.** In `/verify` and again in `/settle`, rebuild the EIP-712 domain the signature must cover from the
+requirement: its `chainId` from the requirement's `network` and its `verifyingContract` from `asset`. Reject a
+payload whose domain omits `chainId` or names another chain (`invalid_exact_evm_payload_signature`). Never verify
+against a domain taken from the payload as given.
 
 ## R0
 **What failed.** An unpaid request to your paid route didn't get a 402 with a decodable `PAYMENT-REQUIRED` header.

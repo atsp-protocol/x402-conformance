@@ -1,7 +1,20 @@
 # Changelog
 ## Unreleased
 - Spec traceability (task XC-82). `tools/traceability.py` writes `docs/traceability.json` and [docs/TRACEABILITY.md](docs/TRACEABILITY.md) from the check catalogue: every check is normative (it tests a MUST or SHOULD clause, and its row names the pinned spec lines from XC-55) or hardening (it tests safety beyond the spec, and its row gives the reason). The table gives a count per class, not a coverage percentage. `python3 tools/traceability.py --check` fails CI on an unclassified check, a check in both classes, a normative row with no anchor or one that no longer resolves, a hardening row with no reason, and a stale table.
+- F14a, a facilitator check in the offline suite (task XC-123). A throwaway key, generated for each run and
+  never funded, signs a real EIP-3009 `TransferWithAuthorization` over an EIP-712 domain with `chainId` omitted on
+  `eip155:84532`; the same signature is replayed on `eip155:11155111` at the same token address, amount and recipient,
+  and `/verify` and `/settle` must both reject it. A control signed over a domain bound to the first network's
+  `chainId` must verify and settle there. The faulty `chainless_domain` double accepts a domain without `chainId` and
+  is caught. Signing is plain Python (`x402conf.eip712`: Keccak-256, secp256k1 with RFC 6979 nonces), so the package
+  still has no dependencies. This closes the gap F14 left open, which needed a live signature.
+- The vv job runs in six shards (task XC-125). It had reached its 30-minute limit: main's strict runs took 23.6 to 28.1 minutes, and pull-request runs were cancelled at 30.2 to 30.6. `tools/vv.py verify --shard I/N` verifies the tasks at positions I modulo N, and `tools/vv.py merge` combines the shard receipts into one verdict that fails closed on a missing, duplicated, inconsistent, edited or failed shard. CI runs the shards as the `vv-shard` matrix, 20 minutes each at most, and the job named `vv` merges them. No timeout was raised and every criterion still runs.
+- The live pacing test derives its request count (task XC-124). `ts/test/pace.test.ts` no longer asserts that `x402conf-svm live` sends exactly 7 requests: it expects 2 (the shared unpaid GET and R16a's HEAD) plus R24's own requests, read from the run, so it holds when R24 sends more. It reads the report from `--out` and waits for the process to close, because the CLI exits right after printing and a piped stdout can be cut at 8192 bytes on macOS.
 - F15, F16 and C4 (task XC-58). F15: a non-object, empty-object or authorization-less `/verify` body is `invalid_payload` (HTTP 400 or `isValid: false`), never an HTTP 5xx. F16: a facilitator registered for one testnet rejects a different testnet in the same family with `invalid_network` or `unsupported_scheme`, and a family wildcard is caught. C4: a client that resumes a settled job reuses that result and does not sign again. Fix sections are in [docs/FIXES.md](docs/FIXES.md#f15). The parity vector file for F15 and F16 is XC-56 and is not in this change.
+- An offline CI job another repository can paste in (task XC-83): `docs/ci/x402-conformance-offline.yml` installs the
+  released suite and runs `x402conf offline` against the bundled doubles, with no wallet, no funds, no secret and no
+  network beyond installing the package. `tests/test_ci_template.py` holds it to that and to the released version, and
+  CI's new `ci-template` job runs it as written. docs/USING.md shows it.
 - Normative check ids name a pinned upstream spec line (task XC-55). `tools/spec_anchors.py --check --offline` fails when the quoted text in `docs/spec-snapshots/` no longer matches the anchor. `--drift COMMIT` lists the ids whose text changed at that snapshot. The USENIX Security 2026 rules SR1-SR8 and Server-SR1-SR2 are recorded as gaps for XC-59 in `docs/crosswalk/usenix-2026.json`, because this repo does not copy the paper. CI runs the offline check on every push and pull request.
 - Check ids are stable (task XC-53). [GOVERNANCE.md](GOVERNANCE.md) states how the project is run.
   `tools/check_ids.py` writes `docs/check-ids.json` from the catalogue (id, profile, one-line property,
