@@ -424,10 +424,16 @@ jobs:
         run: |
           python3 -c "import json,sys;d=json.load(open('crash-faulty/x402-conformance.sarif'));ids={r['ruleId'] for r in d['runs'][0]['results']};print(sorted(ids));sys.exit(0 if ids=={'R14'} else 1)"
           grep -q 'R14' crash-faulty/junit.xml && grep -q 'FIXES.md#r14' crash-faulty/pr-comment.md
-  vv:
+  vv-shard:
+    # XC-125: the contract's tasks split by position modulo 6, each shard on its own runner and checkout. Every
+    # criterion still runs, in exactly one shard; the job named vv merges the six receipts into one verdict.
     needs: [lint, test, lean, ts, first-run, mcp, pytest-plugin, docker, action]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -445,8 +451,37 @@ jobs:
           key: elan-${{ hashFiles('lean/lean-toolchain') }}
       - name: Owner signature state
         run: node tools/verify-sig.mjs || [ $? -eq 3 ]
-      - name: Proofline V&V (fails on a claimed-but-unmet task, out-of-scope files or a bad signature)
-        run: python3 tools/vv.py verify --receipts vv/receipts ${{ github.event_name == 'pull_request' && '--pre-merge' || '' }}
+      - name: Install and build the TypeScript suite once
+        # Some signed verifiers (XC-11, XC-58, XC-90) run `cd ts && npx tsc` or read ts/dist without installing
+        # first. In one vv job an earlier task's verifier had installed and built ts/; each shard starts clean.
+        run: cd ts && npm ci --silent && npx tsc -p .
+      - name: Proofline V&V, shard ${{ matrix.shard }} of 6
+        run: python3 tools/vv.py verify --shard ${{ matrix.shard }}/6 --receipts vv/shard ${{ github.event_name == 'pull_request' && '--pre-merge' || '' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vv-shard-${{ matrix.shard }}
+          path: vv/shard/
+          retention-days: 7
+  vv:
+    # One verdict from the shard receipts. It fails on a missing, duplicated, inconsistent or failed shard, so a shard
+    # that timed out or never ran fails the merge too. Skipped only when the shards are, which happens when a job
+    # they need failed.
+    needs: [vv-shard]
+    if: ${{ !cancelled() && needs.vv-shard.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: vv-shard-*
+          path: vv/shards
+      - name: Proofline V&V (fails on a claimed-but-unmet task, out-of-scope files, a bad signature or a missing shard)
+        run: python3 tools/vv.py merge vv/shards --receipts vv/receipts
       - uses: actions/upload-artifact@v4
         if: always()
         with:

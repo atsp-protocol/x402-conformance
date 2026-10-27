@@ -5,6 +5,8 @@ such as a test id, a CI job, a Lean theorem with its axioms check, or a file has
 a receipt, which the `vv` CI job uploads. A task counts as done only when it is listed in `vv/claims.json` and all its mandatory
 criteria pass. A claimed task that fails, or any tracked file that no task owns, fails CI.
 
+CI runs the criteria in shards (XC-125). `tools/vv.py verify --shard I/N` verifies the tasks whose position in `proofline.json` is I modulo N, and each shard runs on its own runner as the `vv-shard` matrix (six shards, 20 minutes each at most). `tools/vv.py merge` then combines the shard receipts into one receipt in the same schema, with the tasks in contract order, in the job still named `vv`. Every criterion runs in exactly one shard. The merge fails, and so does CI, when a shard is missing or duplicated, when the shards disagree on the head, the contract, the mode, the signature state, the out-of-scope files or the unknown claims, when a shard did not verify exactly its partition, when a receipt was edited after it was sealed, or when any shard failed. A run without `--shard` verifies everything in one process, as before. Each shard installs and builds the TypeScript suite before it starts, because some verifiers (XC-11, XC-58, XC-90) assume `ts/node_modules` and `ts/dist`, which in a single run an earlier task's verifier had already made.
+
 Contract state: **signed by the owner key** (`guard/owner.pub`). The owner signs on his own machine (`proofline contract sign`), and CI
 verifies `proofline.json.sig` against `guard/owner.pub`. Anyone can repeat that check from a clone with
 `node tools/verify-sig.mjs` or `npx -y @optitransfer/proofline@next contract verify-sig`.
