@@ -216,6 +216,74 @@ class Offline(unittest.TestCase):
         # XC-50-AC02: a facilitator that takes the authorization's network from the requirement on trust is caught by F14
         self.assertEqual(fails(H.check_safety(M.FAULTS["trust_network"](), M.vectors())), {"F14"})
 
+    def _f14a(self, fac):
+        return next(x for x in H.check_safety(fac, M.vectors()) if x["check"].startswith("F14a "))
+
+    def test_f14a_reference_rejects_chainless_domain_replay(self):
+        # XC-123-AC01: a real signature over an EIP-712 domain with no chainId, from a throwaway key, made on network A
+        # and replayed on network B, is rejected by both /verify and /settle; the bound control settles on A
+        r = self._f14a(M.Reference())
+        self.assertTrue(r["pass"], r)
+        d = r["detail"]
+        self.assertNotIn("chainId", d["chainless_domain"])
+        self.assertNotEqual(d["network_a"], d["network_b"])
+        self.assertTrue(d["network_a"].startswith("eip155:") and d["network_b"].startswith("eip155:"))
+        self.assertIs(d["control_on_a"]["verify"]["isValid"], True)
+        self.assertIs(d["control_on_a"]["settle"]["success"], True)
+        self.assertIs(d["replay_on_b"]["verify"]["isValid"], False)
+        self.assertTrue(d["replay_on_b"]["verify"]["invalidReason"])
+        self.assertIs(d["replay_on_b"]["settle"]["success"], False)
+
+    def test_f14a_chainless_domain_caught(self):
+        # XC-123-AC02: a facilitator that accepts a domain without chainId is caught by F14a, and only by F14a
+        r = self._f14a(M.FAULTS["chainless_domain"]())
+        self.assertFalse(r["pass"], r)
+        self.assertIs(r["detail"]["replay_on_b"]["verify"]["isValid"], True)
+        self.assertIs(r["detail"]["replay_on_b"]["settle"]["success"], True)
+        self.assertEqual(fails(H.check_safety(M.FAULTS["chainless_domain"](), M.vectors())), {"F14a"})
+
+    def test_f14a_signature_is_real_and_chainless_domain_is_chain_independent(self):
+        # XC-123-AC03: the replayed signature is a real secp256k1 signature that recovers to the throwaway signer, and a
+        # domain without chainId has the same separator (so the same digest and signature) on every chain
+        from x402conf import eip712 as E
+        self.assertEqual(E.keccak256(b"").hex(), "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470")
+        self.assertEqual(E.key_address(1), "0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf")
+        chainless = dict(M.EVM_TOKEN_DOMAIN, verifyingContract=M.SAME_ADDRESS_TOKEN)
+        on_a = dict(chainless, chainId=M.evm_chain_id(M.EVM_NETWORK_A))
+        on_b = dict(chainless, chainId=M.evm_chain_id(M.EVM_NETWORK_B))
+        self.assertNotEqual(E.domain_separator(on_a), E.domain_separator(on_b))
+        p = self._f14a(M.Reference())["detail"]
+        self.assertEqual(p["chainless_domain"], chainless)
+        k = E.throwaway_key()
+        msg = {"from": E.key_address(k), "to": H.F14A_PAYTO, "value": "10000", "validAfter": "0",
+               "validBefore": "4102444800", "nonce": "0x" + "11" * 32}
+        sig = E.sign_digest(k, E.transfer_digest(chainless, msg))
+        self.assertEqual(E.recover(E.transfer_digest(chainless, msg), sig), msg["from"])
+        self.assertNotEqual(E.recover(E.transfer_digest(on_b, msg), sig), msg["from"])
+        self.assertIsNone(E.recover(E.transfer_digest(chainless, msg), "0x" + "00" * 65))
+
+    def test_f14a_key_is_generated_per_run(self):
+        # XC-123-AC04: each run signs with a fresh throwaway key; no key is fixed in the suite
+        a = self._f14a(M.Reference())["detail"]["signer"]
+        b = self._f14a(M.Reference())["detail"]["signer"]
+        self.assertNotEqual(a, b)
+
+    def test_f14a_reference_also_rejects_a_forged_or_rebound_signature(self):
+        # the reference's signature check is real: a bound signature replayed on B, or a signature that does not
+        # recover to `from`, is rejected
+        fac = M.Reference()
+        k = __import__("x402conf.eip712", fromlist=["x"]).throwaway_key()
+        bound_a = dict(M.EVM_TOKEN_DOMAIN, chainId=M.evm_chain_id(M.EVM_NETWORK_A),
+                       verifyingContract=M.SAME_ADDRESS_TOKEN)
+        req_b = {"scheme": "exact", "network": M.EVM_NETWORK_B, "asset": M.SAME_ADDRESS_TOKEN,
+                 "payTo": H.F14A_PAYTO, "amount": "10000"}
+        p = H._f14a_payment(k, M.EVM_NETWORK_B, bound_a, "10000", "rebound")
+        self.assertEqual(fac.verify(p, req_b)["invalidReason"], "invalid_exact_evm_payload_signature")
+        req_a = dict(req_b, network=M.EVM_NETWORK_A)
+        q = H._f14a_payment(k, M.EVM_NETWORK_A, bound_a, "10000", "forged")
+        q["authorization"] = dict(q["authorization"], message=dict(q["authorization"]["message"], value="99999"))
+        self.assertFalse(fac.verify(dict(q, amount="99999"), req_a)["isValid"])
+
     def _s5(self, fac):
         r = next((x for x in H.check_safety(fac, M.vectors()) if x["check"].startswith("S5 ")), None)
         self.assertIsNotNone(r, "check_safety gave no S5 result")
@@ -228,14 +296,19 @@ class Offline(unittest.TestCase):
     def test_s5_reference_answers_every_advertised_kind(self):
         r = self._s5(M.Reference())
         self.assertTrue(r["pass"], r)
-        self.assertEqual([k["answer"] for k in r["detail"]["kinds"]], [{"isValid": True}])
+        # The fixture's Solana kind verifies; the two EVM kinds F14a uses have no token at the fixture's Solana mint,
+        # so they answer invalid_asset, with a reason: still an answer.
+        answers = {k["kind"]["network"]: k["answer"] for k in r["detail"]["kinds"]}
+        self.assertEqual(answers, {S.SOLANA_DEVNET: {"isValid": True},
+                                   M.EVM_NETWORK_A: {"isValid": False, "invalidReason": "invalid_asset"},
+                                   M.EVM_NETWORK_B: {"isValid": False, "invalidReason": "invalid_asset"}})
         # A second advertised network with no token at the fixture's asset gets invalid with a reason: still an answer.
         fac = M.Reference()
         fac.networks.add("solana:x402confSecondNetwork")
         r = self._s5(fac)
         self.assertTrue(r["pass"], r)
         self.assertEqual(sorted(str(k["answer"].get("invalidReason")) for k in r["detail"]["kinds"]),
-                         ["None", "invalid_asset"])
+                         ["None", "invalid_asset", "invalid_asset", "invalid_asset"])
 
     def test_s5_unhandled_advertised_kind_caught(self):
         self.assertEqual(fails(H.check_safety(self._fault("advertise_unhandled"), M.vectors())), {"S5"})

@@ -1,4 +1,5 @@
-"""In-process facilitator doubles for the offline checks. Nothing here touches a network or a key."""
+"""In-process facilitator doubles for the offline checks. Nothing here touches a network. The only key is F14a's
+throwaway signer, generated per run in memory (eip712.throwaway_key) and never funded or written anywhere."""
 
 from __future__ import annotations
 
@@ -10,6 +11,7 @@ from collections.abc import Callable
 from importlib import resources
 from typing import Any
 
+from . import eip712
 from . import spec as S
 from .types import Json
 
@@ -66,6 +68,21 @@ def vectors(fixture: Json | None = None) -> Vectors:
     return lambda k: copy.deepcopy(table[k])
 
 
+# Two EVM testnets and one token deployed at the same address on both (as CREATE2 deployments are), so an EIP-3009
+# authorization whose EIP-712 domain omits chainId hashes, and verifies, identically on each. F14a signs on the first
+# and replays on the second. Testnet ids only; the address is synthetic and nothing is ever sent to either chain.
+EVM_NETWORK_A = "eip155:84532"       # Base Sepolia
+EVM_NETWORK_B = "eip155:11155111"    # Ethereum Sepolia
+SAME_ADDRESS_TOKEN = "0x402c00000000000000000000000000000000f14a"
+EVM_TOKEN_DOMAIN: Json = {"name": "USDC", "version": "2"}
+
+
+def evm_chain_id(network: str) -> int | None:
+    """The EIP-155 chain id of an eip155 CAIP-2 network, or None."""
+    m = re.fullmatch(r"eip155:([1-9][0-9]{0,18})", network)
+    return int(m.group(1)) if m else None
+
+
 def _fail(reason: str, req: Json, tx: str = "") -> Json:
     return {"success": False, "errorReason": reason, "transaction": tx, "network": req.get("network")}
 
@@ -103,6 +120,9 @@ class Reference:
         fx = load_fixture()["requirements"]
         self.networks: set[str] = {fx["network"]}              # the networks /supported advertises
         self.tokens: set[tuple[str, str]] = {(fx["network"], fx["asset"])}   # (network, asset) with token code
+        for net in (EVM_NETWORK_A, EVM_NETWORK_B):
+            self.networks.add(net)
+            self.tokens.add((net, SAME_ADDRESS_TOKEN))
 
     def supported(self) -> Json:
         """GET /supported: one exact V2 kind for each network this facilitator verifies (V2 7.3)."""
@@ -132,6 +152,43 @@ class Reference:
         if paid is None:
             return {"isValid": False, "invalidReason": "invalid_payload"}
         if paid < required:
+            return {"isValid": False, "invalidReason": "insufficient_funds"}
+        if "authorization" in p or evm_chain_id(str(req["network"])) is not None:
+            return self._evm_authorization(p, req, required)
+        return None
+
+    def _domain_bound(self, domain: Json, chain_id: int) -> bool:
+        """EIP-712 binds a signature to a chain only through the domain's chainId. A domain without one is valid on
+        every chain that has the same verifying contract, so the reference requires it, and requires it to be the
+        requirement's chain."""
+        return isinstance(domain.get("chainId"), int) and not isinstance(domain.get("chainId"), bool) \
+            and domain["chainId"] == chain_id
+
+    def _evm_authorization(self, p: Json, req: Json, required: int) -> Json | None:
+        """An EIP-3009 TransferWithAuthorization (EVM exact): the signed domain is bound to the requirement's chain
+        and token, the signature recovers to `from`, and the signed recipient and value match the requirement."""
+        bad = {"isValid": False, "invalidReason": "invalid_exact_evm_payload_signature"}
+        a = p.get("authorization")
+        chain_id = evm_chain_id(str(req["network"]))
+        if not isinstance(a, dict) or chain_id is None:
+            return {"isValid": False, "invalidReason": "invalid_payload"}
+        domain, msg, sig = a.get("domain"), a.get("message"), a.get("signature")
+        if not isinstance(domain, dict) or not isinstance(msg, dict) or not isinstance(sig, str):
+            return {"isValid": False, "invalidReason": "invalid_payload"}
+        if not self._domain_bound(domain, chain_id):
+            return bad
+        if str(domain.get("verifyingContract", "")).lower() != str(req["asset"]).lower():
+            return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
+        try:
+            signer = eip712.recover(eip712.transfer_digest(domain, msg), sig)
+        except (KeyError, TypeError, ValueError):
+            return {"isValid": False, "invalidReason": "invalid_payload"}
+        if signer is None or signer.lower() != str(msg.get("from", "")).lower():
+            return bad
+        if str(msg.get("to", "")).lower() != str(req["payTo"]).lower():
+            return {"isValid": False, "invalidReason": "invalid_payment_requirements"}
+        value = atomic_units(str(msg.get("value")))
+        if value is None or value < required:
             return {"isValid": False, "invalidReason": "insufficient_funds"}
         return None
 
@@ -204,8 +261,9 @@ class Faulty(Reference):
                  lenient_amounts: bool = False, pending_without_tx: bool = False,
                  verify_commits: bool = False, trust_kind: bool = False, advertise_unhandled: bool = False,
                  reasonless_invalid: bool = False, trust_asset: bool = False,
-                 trust_network: bool = False, http_500_non_object: bool = False,
-                 http_500_empty: bool = False, http_500_no_authorization: bool = False) -> None:
+                 trust_network: bool = False, chainless_domain: bool = False,
+                 http_500_non_object: bool = False, http_500_empty: bool = False,
+                 http_500_no_authorization: bool = False) -> None:
         super().__init__()
         self.open_on_malformed, self.accept_dust = open_on_malformed, accept_dust
         self.no_dup_cache, self.no_memo_check = no_dup_cache, no_memo_check
@@ -217,6 +275,7 @@ class Faulty(Reference):
         self.trust_kind = trust_kind
         self.advertise_unhandled, self.reasonless_invalid = advertise_unhandled, reasonless_invalid
         self.trust_asset, self.trust_network = trust_asset, trust_network
+        self.chainless_domain = chainless_domain
         self.http_500_non_object = http_500_non_object
         self.http_500_empty = http_500_empty
         self.http_500_no_authorization = http_500_no_authorization
@@ -271,6 +330,11 @@ class Faulty(Reference):
             if self.trust_network and "network" in req:
                 p = dict(p, net=req["network"])     # the fault: the authorization network is taken on trust
         return super()._payment_matches(p, req)
+
+    def _domain_bound(self, domain: Json, chain_id: int) -> bool:
+        if self.chainless_domain and "chainId" not in domain:
+            return True   # the fault: a domain with no chainId is accepted, so its signature is valid on every chain
+        return super()._domain_bound(domain, chain_id)
 
     def _kind(self, req: Json) -> Json | None:
         # the fault: the network and asset are taken from the requirements on trust
@@ -328,6 +392,7 @@ FAULTS: dict[str, Callable[[], Reference]] = {
     "trust_kind": lambda: Faulty(trust_kind=True),
     "trust_asset": lambda: Faulty(trust_asset=True),
     "trust_network": lambda: Faulty(trust_network=True),
+    "chainless_domain": lambda: Faulty(chainless_domain=True),
     "advertise_unhandled": lambda: Faulty(advertise_unhandled=True),
     "reasonless_invalid": lambda: Faulty(reasonless_invalid=True),
     "http_500_non_object": lambda: Faulty(http_500_non_object=True),

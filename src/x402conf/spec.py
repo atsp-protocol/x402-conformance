@@ -152,6 +152,13 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
                      "amount, asset and payTo match (facilitator-layer network substitution)",
             "controls": [_OFF + "test_f14_reference_rejects_network_substitution"],
             "faulty": ["fault:trust_network"]},
+    "F14a": {"profile": "security-profile",
+             "basis": "EIP-712 and EVM exact (EIP-3009): a signature is bound to a chain only by the domain's "
+                      "chainId; an authorization signed over a domain without chainId is valid on every chain with "
+                      "the same token address, so the verifier requires the domain's chainId to be the requirement's "
+                      "network and rejects a chainless domain replayed on another network",
+             "controls": [_OFF + "test_f14a_reference_rejects_chainless_domain_replay"],
+             "faulty": ["fault:chainless_domain"]},
     "F15": {"profile": "resilience",
             "basis": "V2 9: a non-object, empty-object or authorization-less payload is invalid_payload (HTTP 400, or "
                      "isValid false), never an HTTP 5xx and never an uncaught exception",

@@ -198,6 +198,18 @@
    ],
    "profile": "security-profile"
   },
+  "F14a": {
+   "caught": 1,
+   "faults": [
+    {
+     "caught": true,
+     "how": "the chainless_domain double, through check_safety: F14a fails",
+     "kind": "fault",
+     "ref": "fault:chainless_domain"
+    }
+   ],
+   "profile": "security-profile"
+  },
   "F15": {
    "caught": 3,
    "faults": [
@@ -1219,6 +1231,6 @@
    "profile": "resilience"
   }
  },
- "generated_from": "2a53c96ec05888690126c2510753249a55a096f3eeefda928779f2bfa8876292",
+ "generated_from": "98c98cf7571d83c5e719aa086dd6b3ba1f357a9b2d0b6f070bef16c41ec49134",
  "schema": "x402-conformance.mutation-matrix/1"
 }
