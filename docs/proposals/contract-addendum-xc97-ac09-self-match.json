@@ -1,0 +1,30 @@
+{
+ "about": "PROPOSED, UNSIGNED. One amendment to the signed task XC-97 (free run program): XC-97-AC09's verifier can never pass as signed, because its own pattern matches its own text. The command ends with git grep -q 'x402-conformance by Optitransfer' over the whole tree, excluding only docs/proposals/** and CHANGELOG.md, and that exact string is in proofline.json (the command itself) and in docs/VV.md (the row that quotes it). Measured on main 5470f57caaaf2ac225c654635f21122c58a3189a: those two lines are the only matches, and XC-97 is 11/12 with AC09 the only todo. The change writes the last letter as a bracket expression, Optitransfe[r], which still matches the old wording anywhere else but not the command's own text. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[XC-97].criteria[XC-97-AC09].verifier",
+ "applies_after": [
+  "XC-97"
+ ],
+ "tasks": [],
+ "changes": [
+  {
+   "task": "XC-97",
+   "field": "criteria[XC-97-AC09].verifier",
+   "from": {
+    "type": "command",
+    "cmd": "for f in DATA-LICENSE NOTICE CITATION.cff docs/BADGE.md docs/MATRIX.md; do grep -q 'Optitransfer/x402-conformance' $f || { echo $f; exit 1; }; done && ! git grep -q 'x402-conformance by Optitransfer' -- . ':!docs/proposals/**' ':!CHANGELOG.md'",
+    "expect_exit": 0,
+    "timeout_s": 120
+   },
+   "to": {
+    "type": "command",
+    "cmd": "for f in DATA-LICENSE NOTICE CITATION.cff docs/BADGE.md docs/MATRIX.md; do grep -q 'Optitransfer/x402-conformance' $f || { echo $f; exit 1; }; done && ! git grep -q 'x402-conformance by Optitransfe[r]' -- . ':!docs/proposals/**' ':!CHANGELOG.md'",
+    "expect_exit": 0,
+    "timeout_s": 120
+   },
+   "why": "as signed the grep matches its own command in proofline.json and the docs/VV.md row that quotes it, so AC09 fails on every tree. Tested on a scratch copy of 5470f57 with this verifier signed in and the docs/VV.md row updated to match: exit 0 on the tree as it is, exit 1 with 'x402-conformance by Optitransfer' planted in a new file. The signing change needs the same one-character edit in XC-97-AC09's docs/VV.md row, because that row is hand-written and quotes the command."
+  }
+ ]
+}
