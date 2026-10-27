@@ -4,6 +4,8 @@
     python3 tools/vv.py verify [TASK ...] [--receipts DIR] [--json] [--pre-merge]
     python3 tools/vv.py verify --shard I/N [--receipts DIR] [--json] [--pre-merge]
     python3 tools/vv.py merge DIR [--receipts DIR] [--json]
+    python3 tools/vv.py costs DIR [--run ID ...] [--out FILE]
+    python3 tools/vv.py costs --predict
     python3 tools/vv.py hygiene        secret and attribution scan of the tracked tree
 
 Implements the proofline/1 verifier types this contract uses: command (expect_exit, min_tests, max_skipped),
@@ -25,7 +27,18 @@ its own checkout, and `vv.py merge DIR` combines their receipts into one receipt
 in contract order and the shard receipts it merged. The merge fails closed: it exits 1, with ok false, when a shard
 is missing or duplicated, when the shards disagree on head, contract hash, mode, signature state, out-of-scope files
 or unknown claims, when a shard's tasks are not exactly its partition, when a receipt's hash does not match its
-content, or when any shard failed. Every criterion still runs, in exactly one shard."""
+content, or when any shard failed. Every criterion still runs, in exactly one shard.
+
+Cost split (XC-126). When vv/costs.json is present, --shard I/N does not split by position: it takes the tasks
+longest first (by measured seconds, then contract position) and gives each to the shard with the smallest total so
+far, ties to the lowest index; a task with no cost counts as the median known cost, and each shard runs its tasks in
+contract order. Without the file the split is the position rule above. Each shard receipt records the split it used
+and the sha256 of vv/costs.json, and the merge recomputes every shard's tasks from the checkout's file and fails
+closed when the shards disagree on either, or when a shard's hash is not the checkout's file. `vv.py costs DIR`
+writes vv/costs.json from the shard or merged receipts under DIR: the median seconds per task, rounded to 0.1, and
+the CI run ids given with --run, with no timestamp, so the same receipts give the same bytes. `vv.py costs --predict`
+prints the largest shard's predicted minutes for the vv-shard matrix size in ci.yml. The cost file only decides which
+shard runs a task; every task is still verified on every run."""
 
 from __future__ import annotations
 
@@ -42,6 +55,7 @@ from typing import Any
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT: dict[str, Any] = json.load(open(os.path.join(ROOT, "proofline.json")))
+COSTS_FILE = os.path.join(ROOT, "vv", "costs.json")
 PRE_MERGE = False  # set by main() from --pre-merge or GITHUB_EVENT_NAME=pull_request
 PENDING = "pending (pre-merge)"
 OPS = {">=": operator.ge, "<=": operator.le, "==": operator.eq, ">": operator.gt, "<": operator.lt}
@@ -182,9 +196,75 @@ def parse_shard(text: str) -> tuple[int, int]:
     return i, n
 
 
-def partition(tasks: list[dict[str, Any]], i: int, n: int) -> list[dict[str, Any]]:
-    """The tasks shard I of N verifies: those whose position in the contract is I modulo N."""
-    return [t for k, t in enumerate(tasks) if k % n == i]
+def load_costs(path: str | None = None) -> tuple[dict[str, float] | None, str | None]:
+    """The per-task seconds in vv/costs.json and the sha256 of its bytes, or (None, None) without the file."""
+    path = path or COSTS_FILE
+    try:
+        with open(path, "rb") as f:
+            raw = f.read()
+    except FileNotFoundError:
+        return None, None
+    seconds = json.loads(raw).get("seconds") or {}
+    return {str(k): float(v) for k, v in seconds.items()}, hashlib.sha256(raw).hexdigest()
+
+
+def partition(tasks: list[dict[str, Any]], i: int, n: int,
+              costs: dict[str, float] | None | bool = True) -> list[dict[str, Any]]:
+    """The tasks shard I of N verifies. With costs (the default reads vv/costs.json): longest first to the lightest
+    shard, ties to the lowest index, a task with no cost at the median known cost. Without: position I modulo N."""
+    if costs is True:
+        costs = load_costs()[0]
+    if not costs:
+        return [t for k, t in enumerate(tasks) if k % n == i]
+    known = sorted(costs.values())
+    median = known[len(known) // 2] if len(known) % 2 else (known[len(known) // 2 - 1] + known[len(known) // 2]) / 2
+    cost = [costs.get(t["id"], median) for t in tasks]
+    order = sorted(range(len(tasks)), key=lambda k: (-cost[k], k))
+    totals = [0.0] * n
+    shard_of = [0] * len(tasks)
+    for k in order:
+        j = min(range(n), key=lambda x: (totals[x], x))
+        totals[j] += cost[k]
+        shard_of[k] = j
+    return [t for k, t in enumerate(tasks) if shard_of[k] == i]
+
+
+def costs_from_receipts(paths: list[str], runs: list[str]) -> dict[str, Any]:
+    """vv/costs.json from receipts: the median seconds per task over the receipts that list it."""
+    seen: dict[str, list[float]] = {}
+    for p in paths:
+        with open(p, encoding="utf-8") as f:
+            doc = json.load(f)
+        tasks = (doc.get("receipt") or doc).get("tasks")
+        if not isinstance(tasks, list) or not tasks or any(not isinstance(t.get("seconds"), int | float) for t in tasks):
+            raise ValueError(f"{os.path.basename(p)}: no per-task seconds in the receipt")
+        for t in tasks:
+            seen.setdefault(str(t["task"]), []).append(float(t["seconds"]))
+    if not seen:
+        raise ValueError("no receipts")
+    med = {}
+    for task, v in seen.items():
+        v = sorted(v)
+        m = v[len(v) // 2] if len(v) % 2 else (v[len(v) // 2 - 1] + v[len(v) // 2]) / 2
+        med[task] = round(m, 1)
+    return {"v": "x402conf.vv-costs/1", "source_runs": sorted(set(runs)), "seconds": dict(sorted(med.items()))}
+
+
+def ci_shard_count() -> int:
+    """N from the vv-shard job's --shard ${{ matrix.shard }}/N in ci.yml."""
+    with open(os.path.join(ROOT, ".github", "workflows", "ci.yml"), encoding="utf-8") as f:
+        m = re.search(r"--shard \$\{\{ matrix\.shard \}\}/(\d+)", f.read())
+    if not m:
+        raise ValueError("ci.yml has no --shard ${{ matrix.shard }}/N")
+    return int(m.group(1))
+
+
+def predict(costs: dict[str, float], n: int) -> dict[str, Any]:
+    tasks = CONTRACT["tasks"]
+    known = sorted(costs.values())
+    median = known[len(known) // 2] if len(known) % 2 else (known[len(known) // 2 - 1] + known[len(known) // 2]) / 2
+    per = [sum(costs.get(t["id"], median) for t in partition(tasks, i, n, costs)) / 60 for i in range(n)]
+    return {"shards": n, "shard_minutes": [round(x, 1) for x in per], "max_shard_minutes": round(max(per), 1)}
 
 
 def seal(receipt: dict[str, Any]) -> dict[str, Any]:
@@ -260,6 +340,9 @@ def verify_run(want: list[str], shard: tuple[int, int] | None, rdir: str | None,
     if shard:
         receipt["shard"] = f"{shard[0]}/{shard[1]}"
         receipt["assigned"] = [t["id"] for t in tasks]
+        costs, costs_sha = load_costs()
+        receipt["partition"] = "cost" if costs else "position"
+        receipt["costs_sha256"] = costs_sha
     seal(receipt)
     write_receipt(rdir, receipt, report, f"-shard{shard[0]}of{shard[1]}" if shard else "")
     if as_json:
@@ -304,15 +387,20 @@ def merge_receipts(paths: list[str], contract: dict[str, Any]) -> tuple[dict[str
         if i not in shards:
             problems.append(f"shard {i}/{n} is missing")
     receipts = [shards[i]["receipt"] for i in sorted(shards)]
-    for field in ("head", "contract_sha256", "mode", "signature", "out_of_scope", "unknown_claims"):
+    for field in ("head", "contract_sha256", "mode", "signature", "out_of_scope", "unknown_claims", "partition",
+                  "costs_sha256"):
         values = {json.dumps(r.get(field), sort_keys=True) for r in receipts}
         if len(values) > 1:
             problems.append(f"the shards disagree on {field}")
     chash = hashlib.sha256(canon(contract).encode()).hexdigest()
     if receipts and receipts[0].get("contract_sha256") != chash:
         problems.append("the shards verified a different contract from the one checked out here")
+    costs, costs_sha = load_costs()
+    if receipts and (receipts[0].get("costs_sha256") != costs_sha
+                     or receipts[0].get("partition") != ("cost" if costs else "position")):
+        problems.append("the shards split by a different vv/costs.json from the one checked out here")
     for i, sh in sorted(shards.items()):
-        want = [t["id"] for t in partition(contract["tasks"], i, n)] if n else []
+        want = [t["id"] for t in partition(contract["tasks"], i, n, costs)] if n else []
         got = [t["task"] for t in sh["receipt"].get("tasks", [])]
         if sh["receipt"].get("assigned") != want or got != want:
             problems.append(f"shard {i}/{n} did not verify exactly its partition")
@@ -335,11 +423,60 @@ def merge_receipts(paths: list[str], contract: dict[str, Any]) -> tuple[dict[str
     return seal(merged), report, problems
 
 
+def costs_main(args: list[str]) -> int:
+    if args == ["--predict"]:
+        costs = load_costs()[0]
+        if not costs:
+            print("vv costs --predict: no vv/costs.json", file=sys.stderr)
+            return 2
+        try:
+            n = ci_shard_count()
+        except (OSError, ValueError) as e:
+            print(f"vv costs --predict: {e}", file=sys.stderr)
+            return 2
+        print(json.dumps(predict(costs, n)))
+        return 0
+    runs: list[str] = []
+    out = COSTS_FILE
+    dirs: list[str] = []
+    k = 0
+    while k < len(args):
+        if args[k] in ("--run", "--out"):
+            if k + 1 >= len(args):
+                print(f"vv costs: {args[k]} needs a value", file=sys.stderr)
+                return 2
+            if args[k] == "--run":
+                runs.append(args[k + 1])
+            else:
+                out = args[k + 1]
+            k += 2
+            continue
+        dirs.append(args[k])
+        k += 1
+    if len(dirs) != 1:
+        print("vv costs: give one directory of receipts", file=sys.stderr)
+        return 2
+    paths = sorted(os.path.join(dp, f) for dp, _, fs in os.walk(dirs[0]) for f in fs
+                   if f.startswith("vv-") and f.endswith(".json"))
+    try:
+        doc = costs_from_receipts(paths, runs)
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        print(f"vv costs: {e}", file=sys.stderr)
+        return 2
+    os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(json.dumps(doc, indent=1) + "\n")
+    print(f"wrote {len(doc['seconds'])} task costs from {len(paths)} receipts to {out}")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     if argv[1:2] == ["hygiene"]:
         h = hygiene()
         print(json.dumps({"hits": len(h), "detail": h[:50]}))
         return 0 if not h else 1
+    if argv[1:2] == ["costs"]:
+        return costs_main(argv[2:])
     if argv[1:2] not in (["verify"], ["merge"]):
         print(__doc__)
         return 2

@@ -34,7 +34,7 @@ flowchart LR
 | `src/x402conf/eip712.py` | EIP-712 typed-data signing with no dependency (Keccak-256, secp256k1 with RFC 6979 nonces, public-key recovery), so F14a can sign a real EIP-3009 authorization with a throwaway key generated per run and the doubles can check it |
 | `src/x402conf/fixtures/devnet.json` | Devnet requirements (`solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`, devnet USDC) and the test vectors |
 | `lean/` | Lean 4 models of the credit rule (`Settlement.lean`), the nonce state machine (`Nonce.lean`), timeouts, `settlement_pending` reconciliation and concurrent settles (`Pending.lean`), and n replicas with a shared atomic check-and-set versus partitioned caches (`Replicas.lean`), built by `lake build`. `tools/lean_axioms.py` runs `lean/Axioms.lean`, and CI fails on an unexpected axiom |
-| `tools/vv.py` | Verifies every Proofline criterion in `proofline.json` and writes receipts; `--shard I/N` verifies one partition of the tasks and `merge` combines the shard receipts into one verdict that fails closed |
+| `tools/vv.py` | Verifies every Proofline criterion in `proofline.json` and writes receipts; `--shard I/N` verifies one partition of the tasks, split by the measured costs in `vv/costs.json`, `merge` combines the shard receipts into one verdict that fails closed, and `costs` rebuilds the cost file from CI receipts |
 | `src/x402conf/devnet/` | The devnet runner: F1 to F6 over real `/verify` and `/settle` on Solana devnet, with a self-hosted reference facilitator (`node/`) and its fault-injected builds |
 | `ts/` | The `x402-conformance-svm` npm package: the facilitator double, the resource-server and client checks, the Node CLI and the test-framework entry points, with example servers and clients in `ts/example/` |
 | `ts/src/double.ts` | The facilitator double: `GET /supported`, `POST /verify` and `POST /settle` on loopback with one switchable fault mode, on Solana devnet and Base Sepolia. It never touches a chain or a key |
@@ -74,6 +74,7 @@ flowchart LR
 | `tools/quickstart.sh` | From a clean checkout to a first result for one framework quickstart (A4) |
 | `tools/verify-sig.mjs` | Checks the owner signature on `proofline.json` against the key pinned in `guard/owner.pub` |
 | `vv/claims.json` | The contract tasks claimed as done; `tools/vv.py` fails CI if any of them misses a mandatory criterion |
+| `vv/costs.json` | Each task's median seconds from CI shard receipts, which `tools/vv.py --shard` uses to balance the shards (XC-126) |
 | `examples/python/` | A stock x402 Python SDK FastAPI server that the pytest plugin test runs |
 | `action.yml` | The GitHub Action: live, 402, resource-server and offline checks, a job summary, SARIF and JUnit, a badge file and an opt-in sticky pull request comment (`pr-comment`). It fails closed when a requested run leaves no results, and runs the probe on a pinned Node that never goes on the caller's PATH |
 | `ts/src/binding.ts` | R11: payment-to-request binding on a real resource server (two routes, method, query, encoded path, SIWX) |
