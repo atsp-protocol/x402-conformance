@@ -29,6 +29,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "${{ matrix.python }}" }
+      - uses: actions/setup-go@v5
+        with: { go-version-file: examples/go/parity/go.mod, cache-dependency-path: examples/go/parity/go.sum }
       - run: pip install pyyaml==6.0.2
       - run: PYTHONPATH=src python -m unittest discover -s tests -v
       - name: The interdependency map is current and the docs match the code
@@ -73,6 +75,26 @@ jobs:
       - run: pip install pyyaml==6.0.2
       - name: README, CHANGELOG, architecture, spec, VV, coverage and the interdependency map are aligned
         run: python3 tools/interdeps.py --docs
+  parity:
+    # XC-56: the shared vector set against the official TypeScript, Python and Go libraries at docs/parity/pin, offline.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - uses: actions/setup-go@v5
+        with: { go-version-file: examples/go/parity/go.mod, cache-dependency-path: examples/go/parity/go.sum }
+      - name: The report, the no-network guard and the fault self-tests
+        run: PYTHONPATH=src python3 -m unittest -v tests.test_parity
+      - name: One run at the pin, validated, with the coverage and anchors of the vector set
+        run: |
+          PYTHONPATH=src python3 -m x402conf parity --sdk ts,python,go --upstream-pin "$(cat docs/parity/pin)" --offline --out parity.json
+          python3 tools/parity_report.py --validate parity.json
+          python3 tools/parity_report.py --coverage docs/parity/vectors.json --require malformed,unregistered-network,wildcard-network,override-ceiling,error-content-type,status-mapping,invalid-reason-codes
+          python3 tools/parity_report.py --anchors docs/parity/vectors.json
   interdeps-gate:
     # A PR that changes a component must touch, or acknowledge, every doc, contract and test component directly
     # downstream of it. Acks are `Interdeps-Ack: <component>[, <component>] - <reason>` in a commit message or in
@@ -452,6 +474,8 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - uses: actions/setup-go@v5
+        with: { go-version-file: examples/go/parity/go.mod, cache-dependency-path: examples/go/parity/go.sum }
       - run: pip install ruff==0.7.4 mypy==1.13.0 pytest==8.3.5 pyyaml==6.0.2
       - name: Install elan
         run: |

@@ -336,7 +336,7 @@ def parser() -> argparse.ArgumentParser:
                                         "resource and report with --fail-on-error); 2 usage or configuration error. "
                                         "Docs: https://github.com/atsp-protocol/x402-conformance")
     ap.add_argument("--version", action="version", version=f"x402conf {__version__}")
-    sub = ap.add_subparsers(dest="mode", required=True, metavar="{demo,live,resource,offline,report,pr-comment,devnet}")
+    sub = ap.add_subparsers(dest="mode", required=True, metavar="{demo,live,resource,offline,report,pr-comment,devnet,parity}")
     dm = sub.add_parser("demo", help="run S0-S4, P1-P7 and F1-F12 and S5 against a bundled mock on loopback, no wallet",
                         description="A first run with nothing to set up: a bundled mock facilitator and paid route on "
                                     "127.0.0.1, then the offline self-test. No wallet, no chain, well under a minute. "
@@ -391,6 +391,8 @@ def parser() -> argparse.ArgumentParser:
     rp.add_argument("--fail-on-error", action="store_true", help=fe)
     sub.add_parser("devnet", help="F1-F6 over real /verify and /settle on Solana devnet (self-hosted reference)",
                    add_help=False)
+    sub.add_parser("parity", help="one vector set against the TypeScript, Python and Go x402 libraries, offline "
+                                  "(from a checkout)", add_help=False)
     return ap
 
 
@@ -737,6 +739,10 @@ def main(argv: list[str] | None = None) -> int:
         from .devnet import runner
 
         return runner.main(args[1:])
+    if args[:1] == ["parity"]:
+        from .parity import runner as parity_runner
+
+        return parity_runner.main(args[1:])
     a = parser().parse_args(args)
     stamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     if a.mode == "report":

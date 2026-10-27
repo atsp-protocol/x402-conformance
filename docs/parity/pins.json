@@ -1,0 +1,32 @@
+{
+ "commit": "6b6ee91fee027b540faabcb25774e73851006c3b",
+ "repository": "https://github.com/x402-foundation/x402",
+ "note": "The release cut of 2026-09-29: x402-foundation/x402 #3628 versioned the Python package, #3627 the TypeScript packages and #3629 released Go. At this commit the tree holds the versions below; the runner reads the installed version from each harness environment and refuses a mismatch.",
+ "sdks": {
+  "ts": {
+   "package": "@x402/core",
+   "version": "2.28.0",
+   "with": [
+    "@x402/evm",
+    "@x402/express"
+   ],
+   "release": 3627
+  },
+  "python": {
+   "package": "x402",
+   "version": "2.25.0",
+   "release": 3628,
+   "extras": [
+    "evm",
+    "flask",
+    "httpx"
+   ]
+  },
+  "go": {
+   "package": "github.com/x402-foundation/x402/go/v2",
+   "version": "v2.28.0",
+   "release": 3629,
+   "tag": "go/v2.28.0"
+  }
+ }
+}

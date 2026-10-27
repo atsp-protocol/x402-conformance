@@ -1,0 +1,22 @@
+{
+  "name": "x402-conformance-parity-harness",
+  "private": true,
+  "description": "XC-56 parity harness: the official TypeScript x402 libraries at the pinned release, answering parity vectors over stdin and stdout",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "dependencies": {
+    "@x402/core": "2.28.0",
+    "@x402/evm": "2.28.0",
+    "@x402/express": "2.28.0",
+    "express": "4.22.3"
+  },
+  "devDependencies": {
+    "@types/express": "4.17.21",
+    "@types/node": "20.17.6",
+    "typescript": "5.6.3",
+    "viem": "2.57.11"
+  }
+}

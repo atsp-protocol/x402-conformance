@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- Cross-SDK parity (task XC-56). `x402conf parity` sends one vector set (`docs/parity/vectors.json`, 30 vectors) to the official TypeScript, Python and Go x402 libraries at one pinned upstream release (`docs/parity/pin`), offline: facilitator verify with a stub signer and the payment middleware on loopback, no chain, key or network. `tools/parity_report.py` checks the run and lists where each library differs from the expected outcome and from the others, with the vector id and spec anchor. [docs/PARITY.md](docs/PARITY.md) says what it does and does not show.
 - F14a, a facilitator check in the offline suite (task XC-123). A throwaway key, generated for each run and
   never funded, signs a real EIP-3009 `TransferWithAuthorization` over an EIP-712 domain with `chainId` omitted on
   `eip155:84532`; the same signature is replayed on `eip155:11155111` at the same token address, amount and recipient,
