@@ -1,0 +1,51 @@
+{
+ "about": "PROPOSED, UNSIGNED. One amendment to the signed task XC-56 (cross-SDK parity oracle): tools/interdeps.py joins its scope. XC-56 creates tools/parity_report.py and ts/parity-harness/**, and tools/interdeps.py --check fails on any tracked file no component covers. Measured on main e0fc8f5 with empty placeholder files at every path XC-56 names: 'coverage: tools/parity_report.py: no component covers it' and the same for ts/parity-harness/harness.ts and ts/parity-harness/package.json; every other XC-56 path is already covered. The component table lives in tools/interdeps.py, which no XC-56 scope entry allows, so the task cannot pass the interdeps CI job as signed. The change adds one component, 'parity', for the oracle's code. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[XC-56].scope.allow",
+ "applies_after": [
+  "XC-55"
+ ],
+ "tasks": [],
+ "changes": [
+  {
+   "task": "XC-56",
+   "field": "scope.allow",
+   "from": [
+    "src/x402conf/parity/**",
+    "src/x402conf/cli.py",
+    "ts/parity-harness/**",
+    "examples/python/parity_harness.py",
+    "examples/go/parity/**",
+    "tools/parity_report.py",
+    "tests/test_parity.py",
+    "docs/parity/**",
+    "docs/PARITY.md",
+    "evidence/parity/**",
+    ".github/workflows/ci.yml",
+    "docs/**",
+    "README.md",
+    "CHANGELOG.md"
+   ],
+   "to": [
+    "src/x402conf/parity/**",
+    "src/x402conf/cli.py",
+    "ts/parity-harness/**",
+    "examples/python/parity_harness.py",
+    "examples/go/parity/**",
+    "tools/parity_report.py",
+    "tests/test_parity.py",
+    "docs/parity/**",
+    "docs/PARITY.md",
+    "evidence/parity/**",
+    ".github/workflows/ci.yml",
+    "docs/**",
+    "README.md",
+    "CHANGELOG.md",
+    "tools/interdeps.py"
+   ],
+   "why": "tools/parity_report.py and ts/parity-harness/** need an interdeps component, or interdeps --check fails in CI; the component table is in tools/interdeps.py"
+  }
+ ]
+}

@@ -1,7 +1,7 @@
 # Roadmap
 
 **Where it stands.** 1.6.0 is the current release (2026-10-24), and it is still marked experimental. S0 to S4 check
-a facilitator's `GET /supported`; S5 and F1 to F14 run against fault-injected facilitator doubles (and F1 to F6 over
+a facilitator's `GET /supported`; S5 and F1 to F16 run against fault-injected facilitator doubles (and F1 to F6 over
 real `/verify` and `/settle` on Solana devnet); P1 to P7 check any paid URL's 402 answer with one unpaid GET; R0 to R10,
 R14 and R20 put a misbehaving facilitator in front of your own paid route on Solana devnet or Base Sepolia from the CLI
 and the Action, R11 and R11a to R11f check payment-to-request binding on that route, and R12, R13, R15 to R19, R16a and
@@ -185,6 +185,7 @@ most of this family normative.
 | F12 | `/verify` rejects an unsupported network or an asset with no token contract | security profile | XC-46, done |
 | F13 | `/verify` rejects a payment in a different asset at the quoted amount and recipient | security profile | XC-49, done in 1.6.0 |
 | F14 | `/verify` rejects a payment authorized for another network when amount, recipient and asset match | security profile | XC-50, done in 1.6.0 |
+| F14a | `/verify` and `/settle` reject an EIP-3009 signature over a domain without `chainId` replayed onto another network | security profile | XC-123, done |
 | R16a | an unpaid `HEAD` on a paid `GET` route gets the same 402 as `GET` | security profile | XC-39, done |
 | R22 | the paid response keeps the handler's 2xx status and headers | normative | XC-40, done |
 | R23 | a client abort during settle is recoverable | security profile | XC-41, done |

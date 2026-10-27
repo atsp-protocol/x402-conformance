@@ -42,8 +42,8 @@ them from the docs (see [Examples that CI runs](#examples-that-ci-runs)).
 <!-- runnable: cli subst="npx -y x402-conformance-svm=node ts/dist/src/cli.js;pipx run --spec x402-conformance x402conf=python3 -m x402conf" -->
 ```
 npx -y x402-conformance-svm demo                                     # R0-R10 against a bundled mock server
-pipx run --spec x402-conformance x402conf demo                       # S1-S4, P1-P7 against a bundled mock, then F1-F14 and S5
-pipx run --spec x402-conformance x402conf offline                    # the F1-F14 and S5 self-test on its own
+pipx run --spec x402-conformance x402conf demo                       # S1-S4, P1-P7 against a bundled mock, then F1-F16 and S5
+pipx run --spec x402-conformance x402conf offline                    # the F1-F16 and S5 self-test on its own
 npx -y x402-conformance-svm demo --fault serve_on_any_settle         # a faulty server: exits 1 with a fix link per check
 ```
 
@@ -91,6 +91,42 @@ without `--out`), and prints the issue link when a check failed.
 
 See [the README](../README.md#github-action). The Action writes the same reports, plus SARIF for code scanning and
 JUnit for test summaries.
+
+## Offline CI job: no wallet, no funds, no secrets
+
+[`docs/ci/x402-conformance-offline.yml`](ci/x402-conformance-offline.yml) is a GitHub Actions workflow you can copy
+into `.github/workflows/`. It installs the suite at the released version and runs `x402conf offline`, the offline
+self-test against the bundled reference and faulty facilitator doubles. It needs no wallet, no funds, no secret and no
+network beyond installing the package. It doesn't test your own code: it shows the suite runs in your CI and gives you
+a job to grow, with `x402conf resource` for a paid URL or `x402conf-svm probe` for a server it can start. This
+repository's CI runs the file as written (`tests/test_ci_template.py --run`), so it keeps working.
+
+<!-- runnable: actions -->
+```yaml
+# x402-conformance, offline: copy this file into .github/workflows/ of your repository.
+# It installs the pinned suite and runs its offline checks against the bundled doubles. It needs no wallet, no funds,
+# no secret and no network beyond installing the package. The suite's own CI runs this file as written.
+name: x402-conformance offline
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  x402-conformance-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install the suite (pinned)
+        run: python -m pip install x402-conformance==1.6.0
+      # exits 1 unless the reference double passes every check and every faulty double is caught
+      - name: Offline checks against the bundled doubles
+        run: x402conf offline > x402-conformance-offline.json
+```
 
 ## vitest
 

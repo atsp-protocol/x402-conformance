@@ -224,16 +224,41 @@ accepts a payment in a token the route never priced, so the resource server serv
 `isValid: false` when they differ. Do not take the asset from the requirements on trust; read it from the signed
 authorization or the on-chain transfer and require an exact match.
 
+## F15
+**What failed.** `/verify` was given a non-object body, an empty object, or a body with no authorization. It answered HTTP 5xx, or the library raised and nothing turned that into `invalid_payload`.
+**Why it matters.** A malformed payload is a client error. A 5xx says the facilitator failed, so a caller retries or treats the route as down, and the failure is not the structured reject V2 §9 names.
+**How to fix it.** On those three bodies, return HTTP 400 or HTTP 200 with `isValid: false` and `invalidReason: invalid_payload`. Catch the decode error. Do not let it become an unhandled exception.
+
+## F16
+**What failed.** The facilitator is registered for one testnet and was given a requirement for a different network in the same family. It answered `isValid: true`.
+**Why it matters.** A family prefix is not a registration. Accepting every network in the family settles a payment against a network the facilitator did not advertise.
+**How to fix it.** Compare the requirement's CAIP-2 `network` to the exact ids you registered. Answer `isValid: false` with `invalid_network` or `unsupported_scheme`. Do not treat `eip155:*` as registered.
+
 ## F14
 **What failed.** The offline check asked the facilitator to verify a payment whose authorized network differed from
 the requirement's network, at the same amount, recipient and asset. It answered `isValid: true`, or settled it.
 **Why it matters.** A verifier that binds only the amount and the recipient lets a payment authorized for one chain
 settle a route priced on another. The sharpest form is a cross-chain signature replay: an EIP-3009 authorization
 whose EIP-712 domain omits `chainId` is cryptographically valid on every chain that shares the token address. This
-check covers the facilitator-side network binding; catching a mis-bound signature itself needs a live devnet test.
+check covers the facilitator-side network binding; F14a tests the mis-bound signature itself.
 **How to fix it.** In `/verify`, reject a payment whose authorized network is not the requirement's `network`
 (`invalid_payment_requirements`), even when amount, recipient and asset match. Separately, make sure the EIP-712
 domain carries the correct `chainId` so the signature itself cannot be replayed across chains.
+
+## F14a
+**What failed.** The offline check had a throwaway key, generated for the run and never funded, sign an EIP-3009
+`TransferWithAuthorization` over an EIP-712 domain with `chainId` omitted, then replayed that signature against a
+requirement on a second network at the same token address, amount and recipient. The facilitator answered
+`isValid: true` on `/verify`, or settled it. (If the control, signed over a domain bound to the first network's
+`chainId`, did not verify and settle there, the result says so and the replay is not graded as safe.)
+**Why it matters.** EIP-712 binds a signature to a chain only through the domain's `chainId`. Without it the domain
+separator, the digest and so the signature are the same on every chain where the token has the same address, which
+is common for CREATE2 deployments. Anyone who sees the payment on one chain can settle it again on another and move
+the payer's funds there.
+**How to fix it.** In `/verify` and again in `/settle`, rebuild the EIP-712 domain the signature must cover from the
+requirement: its `chainId` from the requirement's `network` and its `verifyingContract` from `asset`. Reject a
+payload whose domain omits `chainId` or names another chain (`invalid_exact_evm_payload_signature`). Never verify
+against a domain taken from the payload as given.
 
 ## R0
 **What failed.** An unpaid request to your paid route didn't get a 402 with a decodable `PAYMENT-REQUIRED` header.
@@ -610,6 +635,11 @@ paid" lets one payment, or someone else's, unlock the resource as often as it is
 facilitator's reason, `permit2_invalid_nonce` included. If you want a resent payment to get the result it paid for,
 replay it from your own record of that grant (the same transaction in `PAYMENT-RESPONSE`), never from a failed settle.
 Settle before you serve (see `ts/example/preempt-server.ts`).
+
+## C4
+**What failed.** After a settle, the client had not stored its own record, and a resume of the same job signed a second payment.
+**Why it matters.** The job was already settled. A second signature is a second payment for the same job key.
+**How to fix it.** Key the settled result by the job key and return that result on resume. Sign only when the key is absent.
 
 ## C3
 **What failed.** The 402 offered V2 (the `PAYMENT-REQUIRED` header) and V1 (a V1 JSON body for the same offer), and the

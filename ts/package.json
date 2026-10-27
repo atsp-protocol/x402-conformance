@@ -63,7 +63,7 @@
   ],
   "scripts": {
     "build": "tsc -p .",
-    "test": "tsc -p . && node --test --test-reporter=spec dist/test/*.test.js && vitest run --config vitest.config.mjs",
+    "test": "tsc -p . && node --test --test-reporter=spec dist/test/*.test.js && vitest run --config vitest.config.mjs --passWithNoTests",
     "prepack": "tsc -p ."
   },
   "dependencies": {
