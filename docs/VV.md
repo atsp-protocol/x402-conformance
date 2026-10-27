@@ -12,7 +12,7 @@ verifies `proofline.json.sig` against `guard/owner.pub`. Anyone can repeat that 
 `node tools/verify-sig.mjs` or `npx -y @optitransfer/proofline@next contract verify-sig`.
 
 <!-- docs-aligned:summary -->
-**At a glance** (generated from `proofline.json` and `vv/claims.json`): 109 tasks and 766 acceptance criteria, 766 of them mandatory, one row each below. 49 tasks are claimed done. 60 signed tasks are open: XC-32 to XC-38, XC-47, XC-51 to XC-98, XC-110, XC-M2, XC-M5, XC-M6.
+**At a glance** (generated from `proofline.json` and `vv/claims.json`): 110 tasks and 777 acceptance criteria, 777 of them mandatory, one row each below. 49 tasks are claimed done. 61 signed tasks are open: XC-32 to XC-38, XC-47, XC-51 to XC-98, XC-110, XC-126, XC-M2, XC-M5, XC-M6.
 <!-- /docs-aligned:summary -->
 
 | task | requirement | criterion | artefact | evidence |
@@ -784,6 +784,17 @@ verifies `proofline.json.sig` against `guard/owner.pub`. Anyone can repeat that 
 | XC-125 | R-CI | XC-125-AC07: docs/VV.md explains the shards and the merge | `docs/VV.md` must be present for `--shard I/N[\s\S]*vv\.py merge` | CI `vv` receipt (proposed; binds once signed) |
 | XC-125 | R-CI | XC-125-AC08: Every changed file is inside this task's scope | changed files ⊆ scope.allow | CI `vv` receipt (proposed; binds once signed) |
 | XC-125 | R-CI | XC-125-AC09: Committed and pushed to main | HEAD on origin/main | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC01: With a cost file, --shard I/N assigns every contract task to exactly one shard, deterministically, for N from 1 to 8; each shard lists its tasks in contract order; a task with no cost counts as the median cost; and the largest shard's total is at most the mean shard total plus the largest single task | `PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.CostPartition` | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC02: Without vv/costs.json the split is exactly XC-125's position rule, task k in shard k mod N | `PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.CostFallback` | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC03: tools/vv.py costs takes the median seconds per task over the receipts it reads, writes byte-identical output for the same receipts, names the source runs, and refuses a receipt that has no per-task seconds | `PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.Costs` | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC04: The merge fails closed: shards that disagree on the split or on the costs hash, a shard whose costs hash is not the checkout's vv/costs.json, and a shard whose tasks are not its cost partition each exit 1 with ok false | `PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.CostFailsClosed` | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC05: Sharded by cost and merged, a contract gives the same per-task states and pass counts as one unsharded run on the same tree, for N of 2, 3 and 6, with one failing claimed task | `PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.CostEquivalence` | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC06: The committed vv/costs.json has a cost for every task in proofline.json and names at least one source CI run | `python3 -c "import json,sys;c=json.load(open('vv/costs.json'));t=[x['id'] for x in json.load(open('proofline.json'))['tasks']];m=[i for i in t if i not in c.get('seconds',{})];print(m);sys.exit(0 if not m and c.get('source_runs') else 1)"` | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC07: Predicted from vv/costs.json for the matrix size in ci.yml, the largest shard is 9 minutes or less | `python3 tools/vv.py costs --predict` → `max_shard_minutes <= 9` | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC08: On the pull request's CI run, every vv-shard job finished in 12 minutes or less (run id and per-shard minutes from the jobs API in evidence/XC-126.json) | `python3 -c "import json;d=json.load(open('evidence/XC-126.json'));m=[s['minutes'] for s in d['shards']];print(json.dumps({'max_shard_minutes':max(m) if len(m)>=3 and d.get('run_id') else 999}))"` → `max_shard_minutes <= 12` | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC09: docs/VV.md explains the cost-based split and how to refresh vv/costs.json | `docs/VV.md` must be present for `vv/costs\.json[\s\S]*vv\.py costs` | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC10: Every changed file is inside this task's scope | changed files ⊆ scope.allow | CI `vv` receipt (proposed; binds once signed) |
+| XC-126 | R-CI | XC-126-AC11: Committed and pushed to main | HEAD on origin/main | CI `vv` receipt (proposed; binds once signed) |
 
 Requirement ids: R-OPEN/R-GOV (open source, governance), R-S1..R-S4 and R-SAFE-GET (live checks, GET only), R-F1..R-F6 (safety checks),
 R-LEAN (proofs), R-DOCS, R-CI, R-EVID (evidence), R-HYG (hygiene), R-GRANT (the roadmap milestones M1-M6 in [ROADMAP.md](ROADMAP.md), my proposal), R-ADOPT (integrations that bring other
