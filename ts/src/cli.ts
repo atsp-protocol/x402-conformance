@@ -60,7 +60,8 @@ usage:
               it is gone, and one that starts it again in the background and returns (R14)
   --retry     also run R20 on --resource: the client times out before /settle answers and retries, with a fresh
               payment under the same idempotency key (R20a) and with the same signed payment (R20b); the request
-              must be paid once and the retry must get the earlier result
+              must be paid once and the retry must get the earlier result. R20c grades the fresh-payment retry for
+              safety only: a 409, or a 4xx naming the id, passes it as long as the retry is never settled
   --port      loopback port for the facilitator double (default 4402)
   --start     command that starts your server; it gets X402_FACILITATOR_URL and must use it as its facilitator
   --network   which offered network to pay on (default auto: the first of ${NETWORKS.join(", ")})

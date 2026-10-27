@@ -8,13 +8,13 @@ says which release added what, and [SPEC.md](SPEC.md) quotes the spec text behin
 
 <!-- generated from src/x402conf/spec.py by tools/build_coverage.py; edit RUNS there, not this block -->
 
-## Checks: 83 in the catalogue
+## Checks: 84 in the catalogue
 
 - **S**: Facilitator, `GET /supported` (S0 to S4 live; S5 offline): S0, S1, S2, S3, S4, S5 (6 checks)
 - **P**: Any paid URL's 402 answer, one unpaid GET: P1, P2, P3, P4, P5, P6, P7, P9, P10 (9 checks)
 - **F**: Facilitator safety, against doubles offline and on devnet: F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F14a, F15, F16 (17 checks)
 - **D**: A facilitator's discovery API (Bazaar), GET only: D1 (1 checks)
-- **R**: Resource server behind the facilitator double: R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R11a, R11b, R11c, R11d, R11e, R11f, R12, R13, R14, R15, R16, R16a, R17, R18, R19, R20, R20a, R20b, R21, R22, R23, R24 (34 checks)
+- **R**: Resource server behind the facilitator double: R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R11a, R11b, R11c, R11d, R11e, R11f, R12, R13, R14, R15, R16, R16a, R17, R18, R19, R20, R20a, R20b, R20c, R21, R22, R23, R24 (35 checks)
 - **G**: An A2A agent's paid skill, against the HTTP route it mirrors: G1 (1 checks)
 - **C**: Client, through a recording proxy: C1, C2, C3, C4 (4 checks)
 - **W**: Sign-in-with-x on a paid route, behind the facilitator double: W1, W2, W3 (3 checks)
@@ -22,7 +22,7 @@ says which release added what, and [SPEC.md](SPEC.md) quotes the spec text behin
 - **B**: The batch-settlement scheme on a paid route and its redemption runs, behind the scheme double: B1, B2, B3 (3 checks)
 - **X**: Paid MCP tools, over the MCP transport (JSON-RPC over Streamable HTTP): X1, X2 (2 checks)
 
-By profile: 41 normative (the spec says MUST), 27 security
+By profile: 41 normative (the spec says MUST), 28 security
 profile (a hardening rule the spec leaves open), 15 resilience (behaviour under failure).
 Every check has at least one control that passes and one faulty build it catches, and CI runs every one of them
 (`tests/test_offline.py`, `ts/test/`).
@@ -94,6 +94,7 @@ Every check has at least one control that passes and one faulty build it catches
 | R20 | security-profile | control: the route answers 402 with an exact offer the probe can pay | `x402conf-svm probe --retry`, Action `retry`; `checkClientRetry` for clients | 1 | 1 |
 | R20a | security-profile | payment-identifier: a retry with the same id and a fresh payment is not charged again | `x402conf-svm probe --retry`, Action `retry`; `checkClientRetry` for clients | 1 | 2 |
 | R20b | security-profile | a retry resending the same signed payment is settled once and gets the original result | `x402conf-svm probe --retry`, Action `retry`; `checkClientRetry` for clients | 2 | 2 |
+| R20c | security-profile | payment-identifier: a retry re-signed under an id the server has already settled is refused (409, or a 4xx naming the id) or gets the original result, and is never settled again | `x402conf-svm probe --retry`, Action `retry` (server only) | 2 | 2 |
 | R21 | security-profile | EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again | library only: `probePreempt` from `x402-conformance-svm` | 1 | 2 |
 | R22 | normative | after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15) | library only: `probeStatus` from `x402-conformance-svm` | 1 | 2 |
 | R23 | security-profile | a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again | library only: `probeAbort` from `x402-conformance-svm` | 1 | 2 |

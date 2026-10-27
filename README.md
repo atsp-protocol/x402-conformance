@@ -22,7 +22,7 @@ Release map: [RELEASES.md](RELEASES.md). What the suite covers, check by check: 
 How the project is run: [GOVERNANCE.md](GOVERNANCE.md).
 
 <!-- docs-aligned:counts -->
-The catalogue has 83 checks in 11 families: 41 normative, 27 security profile and 15 resilience ([docs/COVERAGE.md](docs/COVERAGE.md)). The contract, `proofline.json`, has 110 tasks and 777 acceptance criteria; 49 tasks are claimed done, and CI holds each of them to every criterion ([docs/VV.md](docs/VV.md)).
+The catalogue has 84 checks in 11 families: 41 normative, 28 security profile and 15 resilience ([docs/COVERAGE.md](docs/COVERAGE.md)). The contract, `proofline.json`, has 110 tasks and 777 acceptance criteria; 49 tasks are claimed done, and CI holds each of them to every criterion ([docs/VV.md](docs/VV.md)).
 <!-- /docs-aligned:counts -->
 
 ## 60-second quickstart
@@ -131,8 +131,10 @@ on loopback, points your server at it through `X402_FACILITATOR_URL` and pays yo
   server it didn't start, give `--crash-kill` and `--crash-restart`
 - **R20** with `--retry`, never charge one request twice when the client times out before `/settle` answers and
   retries: a retry with a fresh payment under the same payment-identifier id is not settled again (R20a), and a retry
-  resending the same signed payment is refused as a duplicate by `/settle`; both get the earlier result (R20b). The
-  same check grades a client's own retry (`checkClientRetry`): it must resend the payment or keep the payment id
+  resending the same signed payment is refused as a duplicate by `/settle`; both get the earlier result (R20b). R20c
+  grades the fresh-payment retry for safety only: a refusal with 409 (or a 4xx naming the id) passes it, as long as the
+  retry is never settled. The same check grades a client's own retry (`checkClientRetry`): it must resend the payment
+  or keep the payment id
 
 **Your resource server and client, from code (new in 1.5.0, R17 to R19 in 1.6.0):** these checks are functions that
 `x402-conformance-svm` exports. The CLIs, the Action, `runConformance`, the pytest plugin and the MCP server don't run

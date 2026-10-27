@@ -343,7 +343,7 @@ class Offline(unittest.TestCase):
         emitted = {r["check"].split()[0] for r in H.check_safety(M.Reference(), M.vectors())}
         emitted |= {"S0", "S1", "S2", "S3", "S4", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P9", "P10"}
         emitted |= {f"R{i}" for i in range(11)} | {"R11", "R11a", "R11b", "R11c", "R11d", "R11e", "R11f", "R14"}
-        emitted |= {"R20", "R20a", "R20b"}
+        emitted |= {"R20", "R20a", "R20b", "R20c"}
         emitted |= {"C3"}
         emitted |= {"C2"}
         emitted |= {"C1"}

@@ -563,6 +563,19 @@ paid result is lost. A client that re-signs with no key leaves a server nothing 
 logical request and append it in `onBeforePaymentCreation` (`appendPaymentIdentifierToExtensions`), or resend the
 same `PAYMENT-SIGNATURE` on retry.
 
+## R20c
+**What failed.** The client timed out before `/settle` answered and retried with a newly signed payment under the same
+payment-identifier id. The retry was settled, so the request was paid twice, or the server answered it with neither the
+original result nor a clear refusal (a 409, or another 4xx whose error names the id).
+**Why it matters.** The payment-identifier id names one purchase. A re-signed payment under an id the server has already
+settled is the same purchase, so settling it charges the buyer twice. A refusal that doesn't say why leaves the client
+unable to tell a conflict from any other error.
+**How to fix it.** Keep a record keyed by the payment-identifier id, written after settlement. When a request arrives
+with an id in the record and a different payment, return the recorded result with its original `PAYMENT-RESPONSE`, or
+refuse it with 409 and an error that names the id. Either way, do it before the payment middleware runs, so the retry
+never reaches `/settle`. R20a stays strict: a 409 refusal passes R20c and still fails R20a, because the client loses the
+result it paid for. To pass both, return the recorded result to a same-id retry from the same payer (R20a above).
+
 ## U1
 **What failed.** Your `upto` route asked the facilitator to settle more than the maximum the client signed: the
 metered charge went to `/settle` as it was, above `permit2Authorization.permitted.amount` (EVM) or `maxAmount` (Solana).

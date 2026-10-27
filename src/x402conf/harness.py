@@ -347,7 +347,7 @@ def run_resource(url: str, *, timeout: float = 15, opener: Opener | None = None,
                  operator_permission: str | None = None) -> Json:
     """One unpaid GET (P1-P7, and P9 when the 402 carries the bazaar extension). With well_known, also one GET of the
     origin's /.well-known/x402 (P10), shared through `manifests` by every target on the same origin. With
-    malformed_header, R24 (five unpaid GETs with a malformed PAYMENT-SIGNATURE); with unpaid_head, R16a (one unpaid
+    malformed_header, R24 (one unpaid GET per MALFORMED_HEADERS value); with unpaid_head, R16a (one unpaid
     HEAD), which off loopback is sent only with operator_permission and is skipped without it (external.py)."""
     try:
         r = fetch_402(url, timeout=timeout, opener=opener)

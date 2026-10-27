@@ -293,6 +293,13 @@ CATALOG: Final[dict[str, dict[str, object]]] = {
              "basis": "a retry resending the same signed payment is settled once and gets the original result",
              "controls": [_TS_RETRY, "ts:R20b client control: the stock @x402/fetch client"],
              "faulty": ["ts:R20b settle_both: with no record", "ts:R20b client resign_on_timeout"]},
+    "R20c": {"profile": "security-profile",
+             "basis": "payment-identifier: a retry re-signed under an id the server has already settled is refused "
+                      "(409, or a 4xx naming the id) or gets the original result, and is never settled again",
+             "controls": ["ts:R20c control: a server that refuses a same-id re-signed retry with 409",
+                          "ts:R20c control: the stock @x402/express server with an idempotency record"],
+             "faulty": ["ts:R20c settle_both: a server that settles the re-signed retry",
+                        "ts:R20c key_by_payment: a record keyed by the payment"]},
     "R21": {"profile": "security-profile",
             "basis": "EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding "
             "it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks "
