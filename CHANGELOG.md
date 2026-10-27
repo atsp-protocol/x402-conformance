@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- Extension checks for gas sponsoring, offer-and-receipt, builder-code, HTTP message signatures and auth hints (task XC-75). They run offline in `tests.test_offline.Extensions`. The offer and receipt EIP-712 vectors in `corpus/fixtures/offer-receipt-eip712.json` were derived outside this package. The six extension specs are vendored under the existing snapshot commit. No facilitator is called and no mainnet network id is used.
 - R24 sends seven more malformed payment header values (task XC-90): the JSON literals `null`, `true` and `false`, an
   empty object, an object whose required members are `null`, an empty value and a blank one, twelve in all. fetch trims
   the blank one, so it reaches the server empty. The values go in the header the route's unpaid 402 advertises:
