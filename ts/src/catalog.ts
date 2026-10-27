@@ -271,6 +271,10 @@ export const CATALOG: Record<string, { profile: string; basis: string }> = {
   "profile": "security-profile",
   "basis": "a retry resending the same signed payment is settled once and gets the original result"
  },
+ "R20c": {
+  "profile": "security-profile",
+  "basis": "payment-identifier: a retry re-signed under an id the server has already settled is refused (409, or a 4xx naming the id) or gets the original result, and is never settled again"
+ },
  "R21": {
   "profile": "security-profile",
   "basis": "EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again"

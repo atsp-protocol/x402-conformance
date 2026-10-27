@@ -7,8 +7,10 @@ is called, and every request goes through the run's pacer (at least 5 s apart of
   R16a  one unpaid HEAD. It passes when the HEAD is answered 402 with a PAYMENT-REQUIRED offer, like GET, or refused
         with 405 and no PAYMENT-RESPONSE. HEAD is not a GET, so off loopback it is sent only with the operator's
         permission (--operator-permission REF, the convention of the devnet runner); without it R16a is skipped.
-  R24   one unpaid GET per malformed PAYMENT-SIGNATURE value (five values). Each must get 402 or 400 with a structured
-        error, never a 5xx, a dropped connection or the content."""
+  R24   one unpaid GET per malformed PAYMENT-SIGNATURE value. The values are ts/src/header.ts MALFORMED_HEADERS,
+        in the same order, including the XC-90 additions. Each must get 402 or 400 with a structured error, never a
+        5xx, a dropped connection or the content. The tier-1 queue still budgets the original five inside eight
+        requests."""
 
 from __future__ import annotations
 
@@ -34,16 +36,25 @@ def _b64(s: str) -> str:
     return base64.b64encode(s.encode()).decode()
 
 
-# The same five values as ts/src/header.ts MALFORMED_HEADERS, in the same order.
+# ts/src/header.ts MALFORMED_HEADERS, same names, values and order. The first five are the original R24 values.
 MALFORMED_HEADERS: dict[str, str] = {
     "not_base64": "%%%not-base64%%%",
     "base64_not_json": _b64("this is not json"),
     "json_array": _b64("[1,2,3]"),
     "json_string": _b64('"payment"'),
     "json_number": _b64("42"),
+    "json_null": _b64("null"),
+    "json_true": _b64("true"),
+    "json_false": _b64("false"),
+    "json_empty_object": _b64("{}"),
+    "json_null_members": _b64(json.dumps(
+        {"x402Version": 2, "accepted": None, "payload": None}, separators=(",", ":"))),
+    "empty": "",
+    "whitespace": " ",
 }
-# Requests each check sends on top of the shared unpaid GET.
-REQUESTS: dict[str, int] = {"R16a": 1, "R24": len(MALFORMED_HEADERS)}
+# The tier-1 run budgets the original five R24 GETs plus one HEAD, inside eight requests. An uncapped probe sends
+# every MALFORMED_HEADERS value.
+REQUESTS: dict[str, int] = {"R16a": 1, "R24": 5}
 
 Opener = Callable[..., Any]
 

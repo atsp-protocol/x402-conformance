@@ -1,6 +1,24 @@
 # Changelog
 ## Unreleased
 - Spec traceability (task XC-82). `tools/traceability.py` writes `docs/traceability.json` and [docs/TRACEABILITY.md](docs/TRACEABILITY.md) from the check catalogue: every check is normative (it tests a MUST or SHOULD clause, and its row names the pinned spec lines from XC-55) or hardening (it tests safety beyond the spec, and its row gives the reason). The table gives a count per class, not a coverage percentage. `python3 tools/traceability.py --check` fails CI on an unclassified check, a check in both classes, a normative row with no anchor or one that no longer resolves, a hardening row with no reason, and a stale table.
+- The Python R24 list matches the TypeScript `MALFORMED_HEADERS` (task XC-110), twelve values in the same order. An uncapped probe sends each one. The tier-1 queue still budgets the original five inside eight requests.
+- R20c, a same-id re-signed retry (task XC-38): the client times out before `/settle` answers and retries with a newly
+  signed payment under the same payment-identifier id. R20c grades that exchange for safety. It passes when the server
+  refuses the retry with 409 (or another 4xx whose error names the id) or returns the original result, with one
+  successful `/settle` in all, and fails when the retry is settled. It runs with `--retry`, from the same requests as
+  R20a. R20a stays strict: a server that answers the retry with 409 passes R20c and still fails R20a
+  ([docs/FIXES.md](docs/FIXES.md#r20c)). R20c is registered in `docs/check-ids.json`.
+- Extension checks for gas sponsoring, offer-and-receipt, builder-code, HTTP message signatures and auth hints (task XC-75). They run offline in `tests.test_offline.Extensions`. The offer and receipt EIP-712 vectors in `corpus/fixtures/offer-receipt-eip712.json` were derived outside this package. The six extension specs are vendored under the existing snapshot commit. No facilitator is called and no mainnet network id is used.
+- R24 sends seven more malformed payment header values (task XC-90): the JSON literals `null`, `true` and `false`, an
+  empty object, an object whose required members are `null`, an empty value and a blank one, twelve in all. fetch trims
+  the blank one, so it reaches the server empty. The values go in the header the route's unpaid 402 advertises:
+  `PAYMENT-SIGNATURE` for V2, the V1 `X-PAYMENT` for a route that advertises only x402Version 1, and both for a route
+  that advertises both. A case now also fails when it reaches the facilitator's `/verify` or `/settle`, and the check
+  fails when the unpaid request stops getting 402 after the batch. Three new faulty builds pass the original five-value
+  R24 and fail the twelve-value one: `null_member_deref`, `parse_error_is_500` and `v1_header_unchecked`.
+  `probeMalformedHeader` takes `unpaid` (the unpaid answer, so it picks the header without a request of its own),
+  `values` and `headers`; given only `unpaidGetStatus: 402`, it sends its own unpaid GET. The Python
+  `x402conf resource --malformed-header` still sends the original five in `PAYMENT-SIGNATURE`.
 - F14a, a facilitator check in the offline suite (task XC-123). A throwaway key, generated for each run and
   never funded, signs a real EIP-3009 `TransferWithAuthorization` over an EIP-712 domain with `chainId` omitted on
   `eip155:84532`; the same signature is replayed on `eip155:11155111` at the same token address, amount and recipient,

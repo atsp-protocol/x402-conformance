@@ -7,7 +7,7 @@ Every check is in one of two classes. A **normative** check tests a MUST or SHOU
 | class | checks |
 |---|---|
 | normative | 41 |
-| hardening | 42 |
+| hardening | 43 |
 
 ## Checks
 
@@ -78,6 +78,7 @@ Every check is in one of two classes. A **normative** check tests a MUST or SHOU
 | R20 | hardening | security-profile: control: the route answers 402 with an exact offer the probe can pay |
 | R20a | hardening | security-profile: payment-identifier: a retry with the same id and a fresh payment is not charged again |
 | R20b | hardening | security-profile: a retry resending the same signed payment is settled once and gets the original result |
+| R20c | hardening | security-profile: payment-identifier: a retry re-signed under an id the server has already settled is refused (409, or a 4xx naming the id) or gets the original result, and is never settled again |
 | R21 | hardening | security-profile: EVM exact Permit2: the signed transfer names the x402ExactPermit2Proxy as spender, so anyone holding it can submit it first; a server grants only on a settlement it made, and a spent nonce never unlocks the resource again |
 | R22 | normative | `specs/transports-v2/http.md` lines 172-174 at `0e6e8c55d86b`: after a successful settle the client receives the handler's own 2xx status code and headers, such as Location; a 201 stays a 201 and a 202 stays a 202, never a rewritten 200; a paid 3xx is not settled (R15) |
 | R23 | hardening | security-profile: a client that disconnects while /settle is in flight is not charged, or a resend of the same payment gets the settled result and is not charged again |

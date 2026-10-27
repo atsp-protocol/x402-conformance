@@ -58,6 +58,7 @@ for _i in ("W1", "W2", "W3"):
     RUNS[_i] = "library only: `probeSiwx` from `x402-conformance-svm`"
 for _i in ("R20", "R20a", "R20b"):
     RUNS[_i] = "`x402conf-svm probe --retry`, Action `retry`; `checkClientRetry` for clients"
+RUNS["R20c"] = "`x402conf-svm probe --retry`, Action `retry` (server only)"
 LIB = {"R12": "probeParallel", "R13": "probeReplicas", "R15": "probeDelivery", "R16": "probeHead", "R16a": "probeUnpaidHead",
        "R17": "probeCacheLeak", "R18": "probePending", "R19": "probeFlows", "R21": "probePreempt",
        "R22": "probeStatus", "R23": "probeAbort", "R24": "probeMalformedHeader", "C1": "checkClientHandles402",

@@ -6,7 +6,7 @@
  ],
  "counts": {
   "normative": 41,
-  "hardening": 42
+  "hardening": 43
  },
  "rows": [
   {
@@ -696,6 +696,14 @@
    "anchor": null,
    "reason": "security-profile: a retry resending the same signed payment is settled once and gets the original result",
    "property": "a retry resending the same signed payment is settled once and gets the original result"
+  },
+  {
+   "id": "R20c",
+   "class": "hardening",
+   "profile": "security-profile",
+   "anchor": null,
+   "reason": "security-profile: payment-identifier: a retry re-signed under an id the server has already settled is refused (409, or a 4xx naming the id) or gets the original result, and is never settled again",
+   "property": "payment-identifier: a retry re-signed under an id the server has already settled is refused (409, or a 4xx naming the id) or gets the original result, and is never settled again"
   },
   {
    "id": "R21",

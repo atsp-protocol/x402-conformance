@@ -828,6 +828,24 @@
    ],
    "profile": "security-profile"
   },
+  "R20c": {
+   "caught": 2,
+   "faults": [
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R20c settle_both: a server that settles the re-signed retry' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R20c settle_both: a server that settles the re-signed retry"
+    },
+    {
+     "caught": true,
+     "how": "a TypeScript test titled 'R20c key_by_payment: a record keyed by the payment' exists under ts/test/ (run by the ts CI job)",
+     "kind": "ts",
+     "ref": "ts:R20c key_by_payment: a record keyed by the payment"
+    }
+   ],
+   "profile": "security-profile"
+  },
   "R21": {
    "caught": 2,
    "faults": [
@@ -1231,6 +1249,6 @@
    "profile": "resilience"
   }
  },
- "generated_from": "98c98cf7571d83c5e719aa086dd6b3ba1f357a9b2d0b6f070bef16c41ec49134",
+ "generated_from": "9613ff4c1e0f2d027640c9675ba513162f4541953ade6dc18e05877b7c48f00b",
  "schema": "x402-conformance.mutation-matrix/1"
 }
