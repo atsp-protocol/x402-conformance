@@ -142,7 +142,7 @@ Every check has at least one control that passes and one faulty build it catches
 
 | stack | where | checks |
 |---|---|---|
-| `@x402/express` 2.28.0 | `ts/example/express-server.ts` and the binding, retry, crash, status, delivery, head, replica, cache, pending and flow servers | R0 to R11f, R12 to R19, R20, R22 to R24, on both networks |
+| `@x402/express` 2.28.0 | `ts/example/express-server.ts` and the binding, retry, crash, status, delivery, head, replica, cache, pending, flow and header servers | R0 to R11f, R12 to R19, R20, R22 to R24, on both networks |
 | `@x402/hono` 2.28.0 | `ts/example/hono-server.ts`, the vitest quickstart | R0 to R10 |
 | `@x402/core` with `node:http` | `ts/example/crash-server.ts`, the corpus case | R14 |
 | `@x402/fetch` client | the C1, C2, C3 and R20 client checks | C1 to C3, R20b |
