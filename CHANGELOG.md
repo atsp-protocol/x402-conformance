@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- The Python R24 list matches the TypeScript `MALFORMED_HEADERS` (task XC-110), twelve values in the same order. An uncapped probe sends each one. The tier-1 queue still budgets the original five inside eight requests.
 - R20c, a same-id re-signed retry (task XC-38): the client times out before `/settle` answers and retries with a newly
   signed payment under the same payment-identifier id. R20c grades that exchange for safety. It passes when the server
   refuses the retry with 409 (or another 4xx whose error names the id) or returns the original result, with one

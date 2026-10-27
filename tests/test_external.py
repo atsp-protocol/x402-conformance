@@ -110,10 +110,12 @@ class External(unittest.TestCase):
         self.assertTrue(check(out, "R16a")["pass"], check(out, "R16a"))
         self.assertTrue(check(out, "R24")["pass"], check(out, "R24"))
         self.assertEqual(len(check(out, "R24")["detail"]["cases"]), len(X.MALFORMED_HEADERS))
-        # one shared unpaid GET, one HEAD, five malformed GETs; nothing carries a real payment
-        self.assertEqual([m for m, _ in seen], ["GET", "HEAD"] + ["GET"] * 5)
-        self.assertEqual({s for _, s in seen[2:]}, set(X.MALFORMED_HEADERS.values()))
-        self.assertEqual(len(seen), 1 + sum(X.REQUESTS.values()))
+        # one shared unpaid GET, one HEAD, then one GET per malformed value; nothing carries a real payment
+        self.assertEqual([m for m, _ in seen], ["GET", "HEAD"] + ["GET"] * len(X.MALFORMED_HEADERS))
+        # A header value of a single space is trimmed before the server reads it, the same as fetch.
+        received = [s for _, s in seen[2:]]
+        self.assertEqual(received, ["" if v == " " else v for v in X.MALFORMED_HEADERS.values()])
+        self.assertEqual(len(seen), 2 + len(X.MALFORMED_HEADERS))
 
     def test_r16a_passes_a_405_and_catches_a_head_that_reaches_the_handler(self) -> None:
         self.assertTrue(check(run("head_405", unpaid_head=True)[0], "R16a")["pass"])
