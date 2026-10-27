@@ -1,0 +1,169 @@
+{
+ "about": "PROPOSED, UNSIGNED. One new Proofline task, XC-124, and three amendments to signed tasks. XC-124: ts/test/pace.test.ts derives the number of requests x402conf-svm live sends instead of asserting 7, and reads the report from --out (the CLI cuts a piped stdout at 8192 bytes on macOS), so it passes on main (7) and after XC-90 (16) with no edit. XC-90: AC03 and AC04 get the named-test guard XC-38 already uses, because as signed they pass on main, where no test matches their pattern (node counts the file itself as one passing test); XC-90 also depends on XC-124, so XC-124 lands first. XC-38: tools/build_coverage.py, tests/test_attestation.py and tests/test_run_queue.py join its scope, because a new catalog check needs a RUNS entry and the two tests assume the catalog equals the released suite. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[] (XC-124), tasks[XC-90].criteria[XC-90-AC03,XC-90-AC04].verifier, tasks[XC-90].depends_on and tasks[XC-38].scope.allow",
+ "applies_after": [
+  "XC-88"
+ ],
+ "tasks": [
+  {
+   "id": "XC-124",
+   "title": "The live pacing test derives its request count instead of asserting 7",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-88"
+   ],
+   "requirements": [
+    "R-SAFE-GET",
+    "R-R24"
+   ],
+   "description": "ts/test/pace.test.ts asserts that x402conf-svm live sends exactly 7 requests and parses the CLI's stdout, read when the process exits. XC-90 changes how many requests R24 sends, by contract, so the literal breaks. And on macOS, where a piped stdout is written asynchronously, the CLI's report is cut at 8192 bytes: finish() in ts/src/cli.ts prints the report and main() then calls process.exit, which drops what the pipe has not taken yet, however the test waits. The test reads the report from --out instead, a synchronous file write, and waits for the process to close. It derives the expected count from the run: 2 (the shared unpaid GET and R16a's HEAD) plus R24's own requests, which are its cases plus detail.unpaid_requests when the result reports it. pacing.sent, the request log and the stderr request lines must all equal that count. The --max-requests half of the test is unchanged. The CLI's exit on a piped stdout is outside this task: it needs its own task in ts/src/cli.ts.",
+   "scope": {
+    "allow": [
+     "ts/test/pace.test.ts",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-124-AC01",
+     "mandatory": true,
+     "statement": "The live pacing test passes, with the expected request count derived from the run",
+     "verifier": {
+      "type": "command",
+      "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='pace: x402conf-svm live' dist/test/pace.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" 'pace: x402conf-svm live' 1",
+      "expect_exit": 0,
+      "timeout_s": 900,
+      "test_file": "ts/test/pace.test.ts"
+     }
+    },
+    {
+     "id": "XC-124-AC02",
+     "mandatory": true,
+     "statement": "The test asserts no literal live request count and derives it from R24's cases and unpaid_requests",
+     "verifier": {
+      "type": "command",
+      "cmd": "! grep -nE '(sent|length), 7\\)' ts/test/pace.test.ts && grep -q 'unpaid_requests' ts/test/pace.test.ts && grep -q 'cases.length' ts/test/pace.test.ts",
+      "expect_exit": 0,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-124-AC03",
+     "mandatory": true,
+     "statement": "The test reads the report from --out, a synchronous file write, and waits for the process to close, not to exit",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q -- '\"--out\"' ts/test/pace.test.ts && grep -q 'on(\"close\"' ts/test/pace.test.ts && ! grep -q 'on(\"exit\"' ts/test/pace.test.ts",
+      "expect_exit": 0,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-124-AC04",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-124-AC05",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass."
+   ]
+  }
+ ],
+ "changes": [
+  {
+   "task": "XC-90",
+   "field": "criteria[XC-90-AC03].verifier",
+   "from": {
+    "type": "command",
+    "cmd": "cd ts && node --test --test-name-pattern='R24 (null_member_deref|parse_error_is_500|v1_header_unchecked)' dist/test/malformed-header.test.js"
+   },
+   "to": {
+    "type": "command",
+    "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='R24 (null_member_deref|parse_error_is_500|v1_header_unchecked)' dist/test/malformed-header.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" 'R24 (null_member_deref|parse_error_is_500|v1_header_unchecked)' 6",
+    "expect_exit": 0,
+    "timeout_s": 900,
+    "test_file": "ts/test/malformed-header.test.ts"
+   },
+   "why": "as signed it passes when no test matches: on main the pattern matches nothing and node still reports tests 1, pass 1. The guard needs six passing tests named for the three faulty builds on both networks"
+  },
+  {
+   "task": "XC-90",
+   "field": "criteria[XC-90-AC04].verifier",
+   "from": {
+    "type": "command",
+    "cmd": "cd ts && node --test --test-name-pattern='R24 v1' dist/test/malformed-header.test.js"
+   },
+   "to": {
+    "type": "command",
+    "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && node --test --test-reporter=tap --test-name-pattern='R24 v1 (only|and v2)' dist/test/malformed-header.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" 'R24 v1 (only|and v2)' 4",
+    "expect_exit": 0,
+    "timeout_s": 900,
+    "test_file": "ts/test/malformed-header.test.ts"
+   },
+   "why": "the same vacuous pass. The guard needs four passing tests: a V1-only route and a dual route, on both networks; v1_header_unchecked is AC03's"
+  },
+  {
+   "task": "XC-90",
+   "field": "depends_on",
+   "from": [
+    "XC-42"
+   ],
+   "to": [
+    "XC-42",
+    "XC-124"
+   ],
+   "why": "XC-90 raises the live request count, so the derived pacing test has to be on main first"
+  },
+  {
+   "task": "XC-38",
+   "field": "scope.allow",
+   "from": [
+    "ts/src/retry.ts",
+    "ts/src/catalog.ts",
+    "ts/src/cli.ts",
+    "ts/src/double.ts",
+    "ts/test/retry.test.ts",
+    "src/x402conf/spec.py",
+    "src/x402conf/cli.py",
+    "tests/test_offline.py",
+    "docs/**",
+    "README.md",
+    "CHANGELOG.md",
+    "corpus/cases/**"
+   ],
+   "to": [
+    "ts/src/retry.ts",
+    "ts/src/catalog.ts",
+    "ts/src/cli.ts",
+    "ts/src/double.ts",
+    "ts/test/retry.test.ts",
+    "src/x402conf/spec.py",
+    "src/x402conf/cli.py",
+    "tests/test_offline.py",
+    "docs/**",
+    "README.md",
+    "CHANGELOG.md",
+    "corpus/cases/**",
+    "tools/build_coverage.py",
+    "tests/test_attestation.py",
+    "tests/test_run_queue.py"
+   ],
+   "why": "adding R20c to the catalog, which XC-38-AC02 requires, breaks three files outside the signed scope. tools/build_coverage.py asserts a RUNS entry for every catalog check, so the coverage generator, the docs-aligned job and tests/test_coverage_doc.py fail until R20c joins the R20 line. tests/test_attestation.py builds its attestation from spec.CATALOG while checking it against the pinned v1.6.0 suite (matrix/queue/suite.json), so any check added after a release is refused as one the pinned suite does not have; its make_attestation (also used by tests/test_matrix_rows.py) should take the pin's checks. tests/test_run_queue.py asserts '68 needs self-hosted', the catalog size minus the external checks, as a literal; it should derive it. Measured on the XC-38 branch: tests.test_coverage_doc, tests.test_interdeps, tests.test_attestation, tests.test_matrix_rows and tests.test_run_queue fail there and pass on main"
+  }
+ ]
+}
