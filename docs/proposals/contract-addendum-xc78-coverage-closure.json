@@ -1,0 +1,102 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-78, part of the 'cover ALL' decomposition (XC-54 to XC-78) drafted on 2026-10-25 from public sources. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner merges it into proofline.json and re-signs it with the owner key pinned in guard/owner.pub. Every criterion except scope, pushed and the unchanged-suite guards fails on the v1.6.0 tree. Evidence is testnet-only, loopback-only and verify-only unless the task says otherwise; hosted facilitators are never called. Estimated effort: 1 day.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "not_contract_tasks": {
+    "keys": "Throwaway testnet keys and faucet tokens are created on the owner's machine and live in X402C_KEYS outside the repository. No spend, no mainnet.",
+    "disclosure": "A failing third-party column is reported to that project privately first (SECURITY.md). Until the window clears its row says 'under disclosure' with no per-check detail."
+  },
+  "tasks": [
+    {
+      "id": "XC-78",
+      "title": "Coverage closure: every inventoried facilitator, chain, language, scheme and extension has evidence or a stated reason",
+      "phase": "release",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-54",
+        "XC-56",
+        "XC-57",
+        "XC-58",
+        "XC-59",
+        "XC-60",
+        "XC-61",
+        "XC-62",
+        "XC-63",
+        "XC-64",
+        "XC-65",
+        "XC-66",
+        "XC-67",
+        "XC-68",
+        "XC-69",
+        "XC-70",
+        "XC-71",
+        "XC-72",
+        "XC-73",
+        "XC-74",
+        "XC-75",
+        "XC-76",
+        "XC-77"
+      ],
+      "requirements": [
+        "R-RELEASE",
+        "R-MATRIX"
+      ],
+      "description": "The 'cover ALL' claim in one gate. It can only be claimed when the ledger is closed; the README may then say 'every implementation in the public inventory of <date> has evidence or a stated reason', never 'certified' or 'compliant'.",
+      "scope": {
+        "allow": [
+          "docs/coverage-ledger.json",
+          "README.md",
+          "docs/**",
+          "CHANGELOG.md"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-78-AC01",
+          "mandatory": true,
+          "statement": "The ledger has zero rows in state 'task'; every row is evidence or out-of-reach with a reason from the fixed list",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/coverage_ledger.py --check --closed",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-78-AC02",
+          "mandatory": true,
+          "statement": "Every evidence folder verifies and passes the testnet, loopback and verify-only guard (settles only where a task allowed them)",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/evidence_guard.py --all evidence",
+            "expect_exit": 0,
+            "timeout_s": 300
+          }
+        },
+        {
+          "id": "XC-78-AC03",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-78-AC04",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Testnet only: never use a mainnet CAIP-2 id, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the owner's own instance on 127.0.0.1.",
+        "A failing third-party result is not published with per-check detail until SECURITY.md's disclosure window clears; if a criterion would need that detail to pass, STOP and report."
+      ]
+    }
+  ]
+}

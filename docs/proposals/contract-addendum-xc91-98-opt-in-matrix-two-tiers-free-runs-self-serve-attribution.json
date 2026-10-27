@@ -1,0 +1,1478 @@
+{
+ "about": "PROPOSED, UNSIGNED. Eight Proofline tasks, XC-91 to XC-98, for an opt-in matrix: a .NET / C# SDK harness run locally against testnet fixtures, rows on opt-in (XC-91); a passive unpaid 402-challenge check for merchants and paid APIs that accepted (XC-92); one row format with Environment, passed/run counts, version, release alignment, date and evidence, and a compact docs/MATRIX.md (XC-93); self-serve tooling so a project can run the suite on itself and send its row (XC-94); attribution and credit: the badge, CC BY 4.0 for public results, provenance in every run, NOTICE and CITATION.cff (XC-95); and the opt-in matrix itself: the form, schema and validating workflow to a PR, the Pages table, an example row, badges and weekly freshness (XC-96); and the free run program: a free initial run and release reruns for six months, the notify hook, a run queue with caps and zero spend, and full results privately first (XC-97); and two tiers: External-verified runs of the unpaid external checks from the queue, and Full suite (self-hosted) listed from a verified, signed attestation of the project's own CI run (XC-98). Owner's go 2026-10-25T17:55Z, attribution 18:11Z, matrix rows 18:43Z, opt-in 18:53Z, freshness 18:57Z, free runs 19:11Z to 19:19Z, two tiers 20:18Z. Nothing here is binding and vv does not read this file. It becomes part of the contract only when the owner key signs it into proofline.json. Evidence is testnet-only, loopback-only or passive read-only; hosted facilitators are never called and nothing is paid. Estimated effort: 25-28 days.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[]",
+ "applies_after": [
+  "XC-12",
+  "XC-25",
+  "XC-28",
+  "XC-51",
+  "XC-53",
+  "XC-54",
+  "XC-85",
+  "XC-88",
+  "XC-M2"
+ ],
+ "not_contract_tasks": {
+  "keys": "Throwaway testnet keys are created on the owner's machine and live in X402C_KEYS outside the repository. They are never funded for these tasks. No spend, no mainnet.",
+  "disclosure": "A failing third-party row is reported to that project privately first (SECURITY.md). Until the window clears its row shows the failed count and 'under disclosure', with no per-check detail.",
+  "contact": "Outreach is private and outside these tasks: the list of projects asked is never committed. A project that accepts adds or updates its own row through the form or a pull request."
+ },
+ "tasks": [
+  {
+   "id": "XC-91",
+   "title": ".NET / C#: a harness that builds a .NET x402 SDK from source and runs server R0-R10 and client C1-C3 locally against testnet fixtures, rows on opt-in",
+   "phase": "verify",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-28",
+    "XC-54",
+    "XC-93",
+    "XC-96"
+   ],
+   "requirements": [
+    "R-MATRIX",
+    "R-ADOPT"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 4
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "C# is a gap in the coverage ledger. examples/dotnet gains a harness that builds a .NET x402 SDK from source at a pinned commit (`build.sh --repo URL --commit SHA`) with the .NET SDK, fails if the checked-out commit differs from the pin, and runs it the same way as the other stacks: a stock ASP.NET Core sample on 127.0.0.1 with X402_FACILITATOR_URL pointed at the loopback facilitator double, probed by x402conf-svm probe for R0-R10 on Solana devnet and Base Sepolia ids; and a minimal console wrapper around the SDK's HTTP client handler, run against the C1-C3 fixtures on loopback with Base Sepolia ids and a throwaway key that is never funded. No chain call, no hosted facilitator, no mainnet id. Environment is devnet (local, from source). The harness is tested with a stub project in the repository. A .NET SDK gets a row, evidence and a badge only after its maintainers accept (XC-96): the run goes through tools/row_from_evidence.py with their consent issue and appears through matrix/rows/<slug>.json. Until then the coverage ledger's C# row says 'harness ready, no accepted project yet'.",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     "examples/dotnet/**",
+     "tests/test_dotnet_harness.py",
+     ".github/workflows/impl-matrix.yml",
+     "docs/coverage-ledger.json",
+     "docs/COVERAGE.md",
+     "README.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-91-AC01",
+     "mandatory": true,
+     "statement": "examples/dotnet/build.sh builds a .NET SDK from a repository URL at a pinned commit and exits non-zero when the checked-out commit differs from the pin",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_dotnet_harness.Build",
+      "expect_exit": 0,
+      "timeout_s": 900,
+      "min_tests": 2,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-91-AC02",
+     "mandatory": true,
+     "statement": "Against the stub project the harness produces a server run.json grading R0-R10 on solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1 or eip155:84532 only, with resource and facilitator URLs on 127.0.0.1 and no chain call",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_dotnet_harness.Server",
+      "expect_exit": 0,
+      "timeout_s": 900,
+      "min_tests": 2,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-91-AC03",
+     "mandatory": true,
+     "statement": "Against the stub project the harness produces a client run.json grading C1, C2 and C3 against the loopback fixtures on eip155:84532, with no chain call and no funded key",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_dotnet_harness.Client",
+      "expect_exit": 0,
+      "timeout_s": 900,
+      "min_tests": 1,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-91-AC04",
+     "mandatory": true,
+     "statement": "The harness refuses a mainnet CAIP-2 id and a non-loopback facilitator URL before any request is sent",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_dotnet_harness.Refusals",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 2,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-91-AC05",
+     "mandatory": true,
+     "statement": "No .NET evidence is committed without an accepted row: every evidence/impl-matrix row is either the reference baseline or linked from a consented matrix/rows/*.json",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/matrix_rows.py --check && python3 tools/compat_matrix.py --check",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-91-AC06",
+     "mandatory": true,
+     "statement": "The coverage ledger's C# row names the harness and is either linked to accepted evidence or says 'no accepted project yet'",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/coverage_ledger.py --check && python3 -c \"import json,sys;d=json.load(open('docs/coverage-ledger.json'));r=[x for x in d['languages'] if x.get('language','').lower() in ('c#','csharp','.net')];print(r);sys.exit(0 if r and all(x.get('evidence') or 'no accepted project yet' in str(x.get('status','')) for x in r) else 1)\"",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-91-AC07",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-91-AC08",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-91-AC09",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Testnet only: never use a mainnet CAIP-2 id as a payment target, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the loopback double or my own instance on 127.0.0.1.",
+    "Opt-in only: nothing about a project is committed (no row, no name in a table, no evidence, no badge) until it accepts through the 'Add or update my row' form or a pull request, with the consent recorded there. The outreach list is private and never committed. If a criterion seems to need a row for a project that has not accepted, STOP and report.",
+    "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
+   ]
+  },
+  {
+   "id": "XC-92",
+   "title": "Merchant and paid-API rows on opt-in: a passive, unpaid 402-challenge check (P1-P7), testnet where offered, run only for a merchant that accepted",
+   "phase": "verify",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-54",
+    "XC-85",
+    "XC-88",
+    "XC-93",
+    "XC-96"
+   ],
+   "requirements": [
+    "R-MATRIX",
+    "R-SAFE-GET",
+    "R-ADOPT"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 3
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "A merchant or paid API that publishes an x402 endpoint can be listed once it accepts (XC-96), with a row of type merchant-paid-api. tools/merchant_rows.py --run <slug> runs only for a slug that has a consented matrix/rows/<slug>.json of that type with a testnet endpoint; it refuses any other slug. It first reads the origin's robots.txt and stops with 'not run: robots' if automated access to that path is disallowed; otherwise it runs `x402conf resource --min-interval 5 --max-requests 3` on the testnet endpoint, which sends one unpaid GET and grades the 402 challenge (P1-P7, and P9 when the bazaar extension is present) against the spec. It never sends a payment header, never signs, never POSTs, never calls /verify, /settle or /supported on any host, and never pays. Requests to any one host are at least 5 s apart. An accepted row that offers mainnet only is live-not-run ('mainnet only, not run') and nothing is fetched. The bundle goes through tools/row_from_evidence.py with the row's consent issue, so the row, its counts and its badge come from committed evidence in the XC-93 format. No list of merchants is committed: the outreach list is private.",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     "tools/merchant_rows.py",
+     "tests/test_merchant_rows.py",
+     "tools/evidence_guard.py",
+     "tests/test_evidence_guard.py",
+     "docs/MATRIX.md",
+     "docs/coverage-ledger.json",
+     "docs/COVERAGE.md",
+     "README.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-92-AC01",
+     "mandatory": true,
+     "statement": "merchant_rows.py --run refuses a slug with no matrix/rows/<slug>.json, with unticked consent, of another type, or with no testnet endpoint, before any request",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_merchant_rows.OptIn",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 4,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-92-AC02",
+     "mandatory": true,
+     "statement": "A run is passive: its pacing log shows only GET requests (robots.txt and the endpoint), at most 3 per host, at least 5 s apart, none to a /verify, /settle or /supported path and none carrying a PAYMENT-SIGNATURE or X-PAYMENT header, and the checker rejects a run that breaks any of these",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_merchant_rows.Passive",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 6,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-92-AC03",
+     "mandatory": true,
+     "statement": "A robots.txt that disallows the path stops the run with 'not run: robots', and a mainnet-only accepted row is live-not-run with no request sent",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_merchant_rows.Refusals",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 2,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-92-AC04",
+     "mandatory": true,
+     "statement": "The bundle from a run becomes the row's committed evidence through tools/row_from_evidence.py, graded on testnet or devnet ids only",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_merchant_rows.ToRow && python3 tools/matrix_rows.py --check",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-92-AC05",
+     "mandatory": true,
+     "statement": "No merchant list or outreach file is committed",
+     "verifier": {
+      "type": "command",
+      "cmd": "! git ls-files | grep -iE '(^|/)(merchants\\.json|census|outreach)'",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-92-AC06",
+     "mandatory": true,
+     "statement": "CI never fetches a merchant URL",
+     "verifier": {
+      "type": "grep",
+      "file": ".github/workflows/ci.yml",
+      "pattern": "merchant_rows\\.py --run",
+      "must": "absent"
+     }
+    },
+    {
+     "id": "XC-92-AC07",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-92-AC08",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-92-AC09",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Testnet only: never use a mainnet CAIP-2 id as a payment target, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the loopback double or my own instance on 127.0.0.1.",
+    "Opt-in only: nothing about a project is committed (no row, no name in a table, no evidence, no badge) until it accepts through the 'Add or update my row' form or a pull request, with the consent recorded there. The outreach list is private and never committed. If a criterion seems to need a row for a project that has not accepted, STOP and report.",
+    "Passive only: one unpaid GET per endpoint and one robots.txt GET per origin, at least 5 s apart, never on mainnet-only endpoints, never against a facilitator path. Never pay, sign or POST to get a result.",
+    "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
+   ]
+  },
+  {
+   "id": "XC-93",
+   "title": "Matrix rows: Environment, passed/run counts, version, release alignment, date and evidence on every listed row, a compact MATRIX.md, rerun and missing-check links",
+   "phase": "integrate",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-28",
+    "XC-53",
+    "XC-54"
+   ],
+   "requirements": [
+    "R-MATRIX",
+    "R-ADOPT"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 3
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "One row format for the matrix, generated from committed files and never typed by hand. docs/MATRIX.md is compact: a link to add or update a row at the top, a coverage summary of accepted projects (counts by type, chain, language and environment), the table of accepted projects with evidence (generated by tools/matrix_rows.py from matrix/rows/*.json, XC-96), one example row labelled 'Example (illustrative, not a real result)', and the suite's reference baseline (tools/compat_matrix.py, the stock example servers, marked as baseline and not listings). Every listed row has: Environment, one of testnet (run against a public testnet or devnet endpoint), devnet (run locally from source or fixtures, on loopback, with testnet or devnet ids), live-not-run (mainnet only, not exercised) or out-of-reach (hosted only, or nothing public to run against); the version or commit tested; the release alignment (XC-96); checks passed out of checks applicable (for example 42/48; XC-98 adds the tier and the denominator) and the failed count; the last run date linking the committed run.json; an 'add or update' link; and, in the baseline table, 'rerun / get listed' and 'missing check?' links. Failed checks appear as a count only: no check names, no narrative. There is no overall score, rank, ordering by result or 'certified' wording in the matrix's own text (headers and prose); a project's own name is not wording, so a project called, say, agent-score is listed under its name. The 'rerun / get listed' section gives the self-serve path (XC-94, XC-96). The 'missing check?' link goes to the check-proposal issue form and the governance for check proposals (XC-53). The XC-76 scoreboard can read the same fields; this task does not change its rules.",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     "tools/compat_matrix.py",
+     "tests/test_compat_matrix.py",
+     "tools/matrix_rows.py",
+     "tests/test_matrix_rows.py",
+     "docs/compat-matrix.json",
+     "docs/MATRIX.md",
+     "docs/COVERAGE.md",
+     "docs/INTERDEPENDENCY.md",
+     "GOVERNANCE.md",
+     "README.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-93-AC01",
+     "mandatory": true,
+     "statement": "Every row in the generated tables has an Environment of exactly testnet, devnet, live-not-run or out-of-reach, the version tested, N/M and the failed count, a last-run date linking its run.json, and the links",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/compat_matrix.py --check && python3 tools/matrix_rows.py --check && PYTHONPATH=src python3 -m unittest -v tests.test_compat_matrix.RowFormat.test_every_row_has_environment_counts_date_and_links tests.test_matrix_rows.MatrixRows.test_attestation_link_must_be_a_run_in_the_rows_repo",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-93-AC02",
+     "mandatory": true,
+     "statement": "N, M and the failed count are computed from the committed run.json, whose SHA256SUMS verifies; a hand-edited count is detected",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/compat_matrix.py --check && PYTHONPATH=src python3 -m unittest -v tests.test_compat_matrix.RowFormat.test_counts_come_from_the_run tests.test_compat_matrix.RowFormat.test_a_hand_edited_count_is_detected",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-93-AC03",
+     "mandatory": true,
+     "statement": "The checkers reject a hand-edited N/M, an Environment value outside the four, a run row without evidence or hashes, a stale table and a hand-edited listed-projects table",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_compat_matrix tests.test_matrix_rows",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 20,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-93-AC04",
+     "mandatory": true,
+     "statement": "docs/MATRIX.md's own text (headers and prose, not project names) has no overall score, rank, ranking, N/100 or 'certified' wording, and a project named with 'score' or 'rank' does not trip the check",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/matrix_rows.py --check && PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.MatrixRows.test_project_names_with_score_or_rank_are_not_wording tests.test_compat_matrix.RowFormat.test_the_matrix_has_no_score_rank_or_certified_wording",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-93-AC05",
+     "mandatory": true,
+     "statement": "docs/MATRIX.md is compact: the add-or-update link near the top, the coverage summary, the accepted-projects table, the labelled example row and the reference baseline, and a self-serve section linking the form and docs/RUN-IT-YOURSELF.md",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/matrix_rows.py --check && f=docs/MATRIX.md && head -5 $f | grep -q 'template=matrix-row.yml' && grep -q 'Coverage of accepted projects' $f && grep -q 'Accepted projects with evidence' $f && grep -q 'Example (illustrative, not a real result)' $f && grep -Eq '^#+ Reference baseline' $f && grep -Eq '^#+ .*([Gg]et listed|[Rr]erun)' $f && grep -q 'RUN-IT-YOURSELF.md' $f",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-93-AC06",
+     "mandatory": true,
+     "statement": "Every baseline row has a 'missing check?' link to the check-proposal issue form, and docs/MATRIX.md points to the governance for check proposals (GOVERNANCE.md once XC-53 lands, CONTRIBUTING.md until then)",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/compat_matrix.py --check && grep -q 'template=check-proposal.yml' docs/MATRIX.md && grep -Eq 'GOVERNANCE.md|CONTRIBUTING.md' docs/MATRIX.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-93-AC07",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-93-AC08",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-93-AC09",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Opt-in only: nothing about a project is committed (no row, no name in a table, no evidence, no badge) until it accepts through the 'Add or update my row' form or a pull request, with the consent recorded there. The outreach list is private and never committed. If a criterion seems to need a row for a project that has not accepted, STOP and report.",
+    "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
+   ]
+  },
+  {
+   "id": "XC-94",
+   "title": "Run it yourself: the Action's evidence mode, an 'Add or update my row' issue form, and the path from a run to a matrix-row PR",
+   "phase": "integrate",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-12",
+    "XC-25",
+    "XC-54",
+    "XC-93"
+   ],
+   "requirements": [
+    "R-ADOPT",
+    "R-MATRIX",
+    "R-SAFE-GET"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 3
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "Any facilitator, SDK, merchant or vendor can run the suite on itself and send its details without waiting for me. (1) The existing Action (action.yml, used as `uses: atsp-protocol/x402-conformance@v<version>`) gains an evidence mode: inputs `evidence: true` and `row: <slug>` write the run as an evidence bundle (run.json as the probe wrote it, a README with the stack, version or commit, network and command, and SHA256SUMS), refuse a mainnet CAIP-2 id or a non-loopback facilitator URL through tools/evidence_guard.py, and upload the bundle with actions/upload-artifact. It runs against the vendor's own testnet or devnet endpoint or a local build started with `start`. (2) A GitHub issue form, 'Add or update my row' (.github/ISSUE_TEMPLATE/matrix-row.yml, detailed in XC-96), collects the project's public details, the environments it offers, a testnet endpoint if any, the version, a public contact handle, the required consents, and optionally the run.json from an Action run. (3) tools/row_from_evidence.py turns that artifact (or a local run) into the files of one matrix row under evidence/, checks the hashes and the guard, and regenerates the row with tools/compat_matrix.py --write, so the vendor (or I) can open a PR that updates the row from committed evidence; the documented path is issue or Action run, then that PR, then CI regenerates and checks the row. A row is listed only with consent recorded in the issue or the PR. A 'live' environment is accepted as GET-only resource checks (x402conf resource) and is never a payment. (4) docs/RUN-IT-YOURSELF.md is a short quick start with the CLI (pip x402conf and npx x402conf-svm), the Action with evidence mode, and the MCP server, ending with how to get listed. Every command and workflow block in it is run by the docs-examples check (XC-27).",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     "action.yml",
+     "src/x402conf/cli.py",
+     "tests/test_offline.py",
+     "tools/row_from_evidence.py",
+     "tests/test_row_from_evidence.py",
+     "tools/evidence_guard.py",
+     "tests/test_evidence_guard.py",
+     ".github/ISSUE_TEMPLATE/matrix-row.yml",
+     ".github/ISSUE_TEMPLATE/config.yml",
+     ".github/workflows/ci.yml",
+     "docs/RUN-IT-YOURSELF.md",
+     "docs/MATRIX.md",
+     "docs/USING.md",
+     "docs/**",
+     "README.md",
+     "CONTRIBUTING.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-94-AC01",
+     "mandatory": true,
+     "statement": "action.yml has inputs evidence and row; in CI a job using the Action from this repository (uses: ./) with evidence: true against the bundled example server on loopback uploads an artifact whose SHA256SUMS verifies and whose run.json names the row",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -Eq '^  evidence:' action.yml && grep -Eq '^  row:' action.yml && grep -q 'actions/upload-artifact' action.yml && grep -Eq 'evidence: *true' .github/workflows/ci.yml",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-94-AC02",
+     "mandatory": true,
+     "statement": "In evidence mode the Action refuses a mainnet CAIP-2 id and a non-loopback facilitator URL before any request is sent, and exits non-zero",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_evidence_guard.ActionEvidenceMode",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 2,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-94-AC03",
+     "mandatory": true,
+     "statement": "The issue form 'Add or update my row' exists with required fields for project name, type, repository, languages, chain families, networks, environments offered (testnet, devnet, mainnet-only), version or commit, a public contact handle, and required consent checkboxes",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=.github/ISSUE_TEMPLATE/matrix-row.yml && grep -q 'name: Add or update my row' $f && for k in project type repo languages chains networks environments endpoint version evidence contact consent; do grep -Eq \"id: *$k\\b\" $f || { echo missing $k; exit 1; }; done && grep -A8 -E 'id: *environments' $f | grep -q testnet && grep -A8 -E 'id: *environments' $f | grep -q devnet && grep -A8 -E 'id: *environments' $f | grep -q mainnet-only && test $(grep -A16 -E 'id: *consent' $f | grep -c 'required: true') -ge 3",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-94-AC04",
+     "mandatory": true,
+     "statement": "tools/row_from_evidence.py turns an Action artifact into one row's committed evidence and regenerated tables, and rejects a bundle with a bad hash, a mainnet id, a hosted facilitator URL, a payment against a live endpoint, or no recorded consent",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_row_from_evidence",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 7,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-94-AC05",
+     "mandatory": true,
+     "statement": "docs/MATRIX.md's self-serve section and CONTRIBUTING.md describe the path issue or Action run, then a PR with committed evidence, then CI regenerating the row, and link the issue form and docs/RUN-IT-YOURSELF.md",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'template=matrix-row.yml' docs/MATRIX.md && grep -q 'RUN-IT-YOURSELF.md' docs/MATRIX.md && grep -q 'row_from_evidence.py' CONTRIBUTING.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-94-AC06",
+     "mandatory": true,
+     "statement": "docs/RUN-IT-YOURSELF.md has CLI, Action and MCP sections, a get-listed section and a keep-your-row-fresh section, and stays short (at most 160 lines)",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=docs/RUN-IT-YOURSELF.md && grep -Eq '^#+ .*CLI' $f && grep -Eq '^#+ .*Action' $f && grep -Eq '^#+ .*MCP' $f && grep -Eiq '^#+ .*(get listed|add or update)' $f && grep -Eiq '^#+ .*fresh' $f && test $(wc -l < $f) -le 160",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-94-AC07",
+     "mandatory": true,
+     "statement": "Every command and workflow block in docs/RUN-IT-YOURSELF.md runs in the docs-examples check",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/doc_examples.py --run --only docs/RUN-IT-YOURSELF.md",
+      "expect_exit": 0,
+      "timeout_s": 900
+     }
+    },
+    {
+     "id": "XC-94-AC08",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-94-AC09",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-94-AC10",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Testnet only: never use a mainnet CAIP-2 id as a payment target, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the loopback double or my own instance on 127.0.0.1.",
+    "Self-serve never widens what the suite does to third parties: a vendor runs it on its own endpoint or build; a 'live' row is GET-only and never pays, and nothing is listed without recorded consent.",
+    "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
+   ]
+  },
+  {
+   "id": "XC-95",
+   "title": "Attribution and credit: the 'Tested with x402-conformance' badge, CC BY 4.0 for public results, provenance in every run, NOTICE and CITATION.cff",
+   "phase": "integrate",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-25",
+    "XC-52",
+    "XC-93",
+    "XC-94"
+   ],
+   "requirements": [
+    "R-ADOPT",
+    "R-OPEN"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 3
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "Credit that travels with the results, without claiming more than the evidence shows. (1) Only a listed project (opt-in, XC-96) with committed evidence gets a badge, for its own README: tools/matrix_rows.py --write writes docs/site/badge/<slug>.svg, served by the Pages site, reading 'Tested with x402-conformance · Optitransfer' and the version tested, grey with 'stale' when the row is stale, and linking to the project's row on the Pages matrix. The reference baseline has no badge. docs/MATRIX.md and the Pages matrix give copy-paste Markdown and HTML for each row. The wording is descriptive only: never 'certified', 'x402 certified', 'compliant' or 'approved'. docs/BADGE.md gives the terms: only the official badge URL on the Pages site counts, the badge says a run exists and links to it, and it is not an endorsement. Embeds are counted only from the HTTP referrer in the Pages access data: no tracking pixel, no script, no cookie, no third-party analytics. (2) DATA-LICENSE puts the public matrix data and committed evidence (matrix/rows/*.json, docs/compat-matrix.json, docs/site/matrix/rows.json, docs/site/scoreboard.json and evidence/**) under CC BY 4.0 with the attribution line 'Optitransfer/x402-conformance' and a link to the repository. It covers public results only; any private research data and any future paid deep-testing output are out of its scope. docs/MATRIX.md carries the same note. (3) The code stays Apache-2.0; NOTICE credits Ryan Gillespie / Optitransfer. (4) Every results document the suite writes (Python results JSON and the TypeScript probe's run.json) has a provenance object: suite x402-conformance, the version, publisher Optitransfer, and the repository URL. The Action's job summary ends with the line 'Tested with x402-conformance vX.Y.Z' and links the repository. (5) CITATION.cff names Ryan Gillespie and Optitransfer. (6) The 'Add or update my row' form (XC-94, XC-96) has required consent checkboxes covering listing, the CC BY 4.0 data licence with the badge and attribution terms, and testnet-only probes. Nothing in the repository claims endorsement by the x402 Foundation, Coinbase or any vendor, and the x402 logo is not used.",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     "tools/compat_matrix.py",
+     "tests/test_compat_matrix.py",
+     "tools/interdeps.py",
+     "ts/src/report.ts",
+     ".github/workflows/ci.yml",
+     "tools/matrix_rows.py",
+     "tests/test_matrix_rows.py",
+     "tests/test_row_from_evidence.py",
+     "docs/site/badge/**",
+     "docs/site/**",
+     "docs/BADGE.md",
+     "DATA-LICENSE",
+     "NOTICE",
+     "CITATION.cff",
+     "src/x402conf/provenance.py",
+     "src/x402conf/cli.py",
+     "src/x402conf/harness.py",
+     "tests/test_offline.py",
+     "ts/src/provenance.ts",
+     "ts/src/cli.ts",
+     "ts/test/provenance.test.ts",
+     "action.yml",
+     ".github/ISSUE_TEMPLATE/matrix-row.yml",
+     "docs/MATRIX.md",
+     "docs/**",
+     "README.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-95-AC01",
+     "mandatory": true,
+     "statement": "docs/site/badge has a badge only for listed projects with evidence (plus the labelled example), each reading 'Tested with x402-conformance · Optitransfer' and the version tested, grey 'stale' when stale, linking to the row on the Pages matrix; the reference baseline has none; a missing, stale or orphan badge fails the check",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/matrix_rows.py --check && PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.Freshness.test_badge_shows_version_and_greys_when_stale tests.test_compat_matrix.RowFormat.test_the_reference_baseline_has_no_badge_and_is_not_a_listing",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC02",
+     "mandatory": true,
+     "statement": "No badge, page or doc uses certification or endorsement wording: no 'certified', 'x402 certified', 'compliant', 'approved by' or 'endorsed by'",
+     "verifier": {
+      "type": "command",
+      "cmd": "! grep -RIiE \"\\bcertified\\b|\\bcompliant\\b|approved by|endorsed by\" docs/site/badge docs/BADGE.md DATA-LICENSE CITATION.cff",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC03",
+     "mandatory": true,
+     "statement": "docs/BADGE.md says only the official badge URL counts, that the badge is not an endorsement, and that embeds are counted from the referrer only, with no tracking pixel, script, cookie or third-party analytics; the Pages site loads nothing from another host and has no analytics",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'official badge URL' docs/BADGE.md && grep -qi 'referrer' docs/BADGE.md && grep -qi 'not an endorsement' docs/BADGE.md && ! grep -RIiE 'googletagmanager|google-analytics|gtag\\(|plausible\\.io|segment\\.|mixpanel|<script[^>]+src=\\\"https?://' docs/site",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC04",
+     "mandatory": true,
+     "statement": "DATA-LICENSE is CC BY 4.0 with the attribution line 'Optitransfer/x402-conformance' and the repository link, and says it covers public results only, not private research data or paid deep-testing output; docs/MATRIX.md links it",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'CC BY 4.0' DATA-LICENSE && grep -q 'Optitransfer/x402-conformance' DATA-LICENSE && grep -q 'github.com/atsp-protocol/x402-conformance' DATA-LICENSE && grep -qi 'public results only' DATA-LICENSE && grep -qi 'paid' DATA-LICENSE && grep -q 'DATA-LICENSE' docs/MATRIX.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC05",
+     "mandatory": true,
+     "statement": "LICENSE is still Apache-2.0 and NOTICE credits Ryan Gillespie / Optitransfer",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'Apache License' LICENSE && grep -q 'Version 2.0' LICENSE && grep -q 'Ryan Gillespie / Optitransfer' NOTICE",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC06",
+     "mandatory": true,
+     "statement": "Every results document written by the Python CLI and the TypeScript probe has provenance with suite x402-conformance, the package version, publisher Optitransfer and the repository URL",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Provenance && cd ts && npm ci --silent && npx tsc -p . && node --test --test-name-pattern='provenance' dist/test/*.test.js",
+      "expect_exit": 0,
+      "timeout_s": 900,
+      "min_tests": 2,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-95-AC07",
+     "mandatory": true,
+     "statement": "The Action writes a job summary that ends with 'Tested with x402-conformance v' and the version, and links the repository",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Provenance.test_the_job_summary_ends_with_the_tested_with_line",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC08",
+     "mandatory": true,
+     "statement": "CITATION.cff is a cff-version 1.2.0 file naming Ryan Gillespie and Optitransfer, the title x402-conformance and the repository URL",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q '^cff-version: 1.2.0' CITATION.cff && grep -q 'Gillespie' CITATION.cff && grep -q 'Optitransfer' CITATION.cff && grep -q 'x402-conformance' CITATION.cff",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC09",
+     "mandatory": true,
+     "statement": "The 'Add or update my row' form has required consent checkboxes that cover listing and the badge and attribution terms, and names docs/BADGE.md and DATA-LICENSE",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=.github/ISSUE_TEMPLATE/matrix-row.yml && grep -A16 -E 'id: *consent' $f | grep -q 'required: true' && grep -q 'BADGE.md' $f && grep -q 'DATA-LICENSE' $f",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC10",
+     "mandatory": true,
+     "statement": "No file claims endorsement by the x402 Foundation, Coinbase or any vendor, and no x402 logo file is in the repository",
+     "verifier": {
+      "type": "command",
+      "cmd": "! git grep -IiE '(endorsed|approved|certified) by (the )?(x402 foundation|coinbase)' -- . ':!docs/proposals/**' && ! git ls-files | grep -iE 'x402[-_]?logo'",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-95-AC11",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-95-AC12",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-95-AC13",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Descriptive wording only until the trademark question is answered: if a criterion seems to need 'certified' or similar, STOP and report.",
+    "The CC BY 4.0 data licence never extends to private research data or paid deep-testing output; if a file of that kind would fall under it, STOP and report."
+   ]
+  },
+  {
+   "id": "XC-96",
+   "title": "Opt-in matrix: projects add their own details (form, schema, validating workflow to a PR), a compact MATRIX.md and a searchable Pages table, an example row, badges, and weekly freshness with release alignment",
+   "phase": "integrate",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-12",
+    "XC-25",
+    "XC-93",
+    "XC-94",
+    "XC-95"
+   ],
+   "requirements": [
+    "R-ADOPT",
+    "R-MATRIX",
+    "R-OPEN"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 4
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "The matrix is opt-in only. A project is listed, with its results and a badge for its own README, only after it accepts, through the form or a pull request; nothing about a project that has not accepted is committed, and the outreach list stays private. (1) .github/ISSUE_TEMPLATE/matrix-row.yml, 'Add or update my row', asks for public details only: project name, type (facilitator self-hosted or hosted, SDK, merchant or paid API, client or wallet, MCP tool), repository URL, docs or site URL, languages, chain families, networks as CAIP-2 ids, environments offered (testnet, devnet, mainnet-only), a testnet endpoint if any, version or commit, optional evidence JSON from the project's own run, a public contact handle (no emails), and three required consents: listing, the CC BY 4.0 licence for public results with the badge terms, and testnet-only probes. (2) matrix/schema/row.schema.json (JSON Schema 2020-12) defines matrix/rows/<slug>.json. tools/matrix_rows.py --from-issue parses the issue, validates it against the schema and the public-safe rules (all three consents, no email address, nothing that looks like a key or mnemonic, https links only, a public handle, a slug no other issue owns) and writes the row; pasted evidence goes through tools/row_from_evidence.py, so the same refusals apply. .github/workflows/matrix-row.yml runs on the issue, passes the untrusted body to the tool only as a file, labels the issue 'matrix-row: valid' or 'matrix-row: needs changes' with a comment saying what to fix, and on a valid issue opens or updates a pull request adding or updating matrix/rows/<slug>.json for maintainer review. Nothing merges automatically and no endpoint is probed from the workflow. (3) Evidence is never pasted: a row's results come from the queue's external run or from a verified attestation of a full-suite run in the project's own CI (XC-98); the form's optional evidence field takes only that run's URL in the row's own repository. (4) tools/matrix_rows.py --write generates, from matrix/rows/*.json and the committed evidence: the compact listed-projects section of docs/MATRIX.md (a coverage summary of accepted projects by type, chain, language and environment, and the accepted projects with evidence), the full searchable table on the Pages site (docs/site/matrix/index.html and rows.json, CC BY 4.0, one anchor per row for the badge link), and the badges; --check fails when any of them is stale or hand-edited, a row breaks the schema or the rules, consented evidence has no row, or the slug 'example' is used. Every row and the top of docs/MATRIX.md link the form. (5) One example row, labelled 'Example (illustrative, not a real result)', for the placeholder example-org/example-x402-server, shows the format in docs/MATRIX.md and on Pages: example counts, environment, version, release alignment, last run, the evidence link format and the badge markdown; it is never counted in the coverage summary. (6) Listed projects add the badge to their repository: it reads 'Tested with x402-conformance · Optitransfer' and the version tested, links to the project's row, and turns grey with 'stale' when the row is stale; copy-paste Markdown and HTML are given per row. No 'certified', no x402 logo, no endorsement claim. (7) Freshness: docs/templates/x402-conformance.yml is a workflow for a project's own repository (saved as .github/workflows/x402-conformance.yml) that runs the Action with evidence mode on push to the default branch, on release or tag, and weekly. .github/workflows/matrix-freshness.yml runs tools/matrix_freshness.py weekly: through the GitHub API only it records each listed project's latest release or tag and default-branch commit in the row's release field, pulls the evidence artifact from the project's newest successful x402-conformance run through tools/row_from_evidence.py, and opens a pull request for review. A release-alignment column shows 'current' (version tested is the latest release), 'behind (vX tested, vY latest)' or 'stale' (no run within 30 days of the last release check, or behind for 30 days or more), computed from committed dates only so the output is reproducible. (8) Amends where results appear: the named hosted-facilitator list and the self-hosted columns in docs/MATRIX.md are removed until each project accepts; XC-51's self-hosted runs publish the same way, through an accepted row, and docs/MATRIX.md keeps the operator-permission rule for hosted facilitators (XC-M2). Counts only, public-safe, opt-in only.",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     ".github/ISSUE_TEMPLATE/matrix-row.yml",
+     ".github/workflows/matrix-row.yml",
+     ".github/workflows/matrix-freshness.yml",
+     ".github/workflows/ci.yml",
+     "matrix/**",
+     "tools/matrix_rows.py",
+     "tools/matrix_freshness.py",
+     "tests/test_matrix_rows.py",
+     "tools/row_from_evidence.py",
+     "tests/test_row_from_evidence.py",
+     "tools/compat_matrix.py",
+     "tests/test_compat_matrix.py",
+     "tools/interdeps.py",
+     "src/x402conf/cli.py",
+     "docs/templates/**",
+     "docs/site/matrix/**",
+     "docs/site/badge/**",
+     "docs/compat-matrix.json",
+     "docs/MATRIX.md",
+     "docs/RUN-IT-YOURSELF.md",
+     "docs/BADGE.md",
+     "docs/INTERDEPENDENCY.md",
+     "docs/**",
+     "CONTRIBUTING.md",
+     "README.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-96-AC01",
+     "mandatory": true,
+     "statement": "The form has every field listed in the description, asks for a public handle and no email, and has three required consent checkboxes (listing, CC BY 4.0 public results with the badge terms, testnet-only probes)",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=.github/ISSUE_TEMPLATE/matrix-row.yml && for k in project type repo site languages chains networks environments endpoint version evidence contact consent; do grep -Eq \"id: *$k\\b\" $f || { echo missing $k; exit 1; }; done && grep -q 'labels: \\[matrix-row\\]' $f && grep -qi 'no emails' $f && test $(grep -A16 -E 'id: *consent' $f | grep -c 'required: true') -ge 3 && grep -q 'list this project' $f && grep -q 'CC BY 4.0' $f && grep -q 'testnet-only probes' $f",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC02",
+     "mandatory": true,
+     "statement": "matrix/schema/row.schema.json is a JSON Schema 2020-12 that requires the three consents as true, a CAIP-2 network list, a handle-shaped contact and an https repo, and allows no other properties",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import json,sys;d=json.load(open('matrix/schema/row.schema.json'));p=d['properties'];ok=d[chr(36)+'schema'].endswith('2020-12/schema') and d.get('additionalProperties') is False and all(p['consent']['properties'][k].get('const') is True for k in ('listing','data_license','testnet_only')) and 'contact' in d['required'] and 'networks' in d['required'];sys.exit(0 if ok else 1)\"",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC03",
+     "mandatory": true,
+     "statement": "A valid issue writes matrix/rows/<slug>.json and the generated outputs; an issue with any consent unticked, an email, a secret-looking value, a non-https link, a bad network or type, or a slug owned by another issue writes nothing; an attestation link that is not a run in the row's own repository is refused",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.MatrixRows",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 7,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-96-AC04",
+     "mandatory": true,
+     "statement": "The matrix-row workflow runs only on issues labelled matrix-row, passes the body through an environment variable to a file, labels and comments, opens the pull request with gh pr create, and never merges",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=.github/workflows/matrix-row.yml && grep -q \"contains(github.event.issue.labels.\\*.name, 'matrix-row')\" $f && grep -q 'ISSUE_BODY: \\${{ github.event.issue.body }}' $f && grep -q 'matrix_rows.py --from-issue' $f && grep -q 'matrix-row: valid' $f && grep -q 'matrix-row: needs changes' $f && grep -q 'gh pr create' $f && ! grep -Eq 'gh pr merge|--auto|--admin|push (-f|--force)' $f && ! grep -Eq 'run:.*\\${{ *github.event.issue.(body|title)' $f",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC05",
+     "mandatory": true,
+     "statement": "docs/MATRIX.md, the Pages table and the badges are generated from matrix/rows and the evidence and checked in CI; the Pages table has one anchor per row; the coverage summary counts accepted rows only",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/matrix_rows.py --check && grep -q 'tools/matrix_rows.py --check' .github/workflows/ci.yml && test -f docs/site/matrix/index.html && test -f docs/site/matrix/rows.json && grep -q 'Coverage of accepted projects' docs/MATRIX.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC06",
+     "mandatory": true,
+     "statement": "The example row is labelled 'Example (illustrative, not a real result)', uses the placeholder example-org/example-x402-server, shows counts, environment, version, release alignment, last run, the evidence link format and the badge markdown, in docs/MATRIX.md and on Pages, and is not counted",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.Freshness.test_example_row_is_labelled_and_not_counted && grep 'id=\\\"project-example\\\"' docs/MATRIX.md | grep -q 'badge/example.svg'",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC07",
+     "mandatory": true,
+     "statement": "Badges read 'Tested with x402-conformance · Optitransfer' with the version tested, turn grey 'stale' when stale, link to the row, and use no certification or endorsement wording and no logo; docs/MATRIX.md states that listed projects display the badge and gives copy-paste Markdown and HTML",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.Freshness.test_badge_shows_version_and_greys_when_stale && grep -q 'Listed projects display the badge' docs/MATRIX.md && grep -q -- '- Markdown: ' docs/MATRIX.md && grep -q -- '- HTML: ' docs/MATRIX.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC08",
+     "mandatory": true,
+     "statement": "Release alignment is current, behind (vX tested, vY latest) or stale (no run within 30 days of the release check, or behind for 30 days or more), computed from committed dates only",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.Freshness.test_alignment",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC09",
+     "mandatory": true,
+     "statement": "The weekly freshness job records each row's latest release and default-branch commit, keeps the first day a row fell behind, verifies the newest successful release run's signed attestation (unpacking only that file, XC-98), asks the run queue to rerun new releases, and opens a pull request without merging",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.Freshness.test_weekly_check_records_release_and_verifies_attestations && f=.github/workflows/matrix-freshness.yml && grep -q 'cron:' $f && grep -q 'tools/matrix_freshness.py' $f && grep -q 'gh pr create' $f && ! grep -Eq 'gh pr merge|--auto|--admin|push (-f|--force)' $f",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC10",
+     "mandatory": true,
+     "statement": "docs/templates/x402-conformance.yml runs the Action with evidence mode on push to the default branch, on release or tag, and weekly; docs/RUN-IT-YOURSELF.md links it",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=docs/templates/x402-conformance.yml && grep -q 'uses: atsp-protocol/x402-conformance@v' $f && grep -q 'evidence: true' $f && grep -q 'release:' $f && grep -q 'tags:' $f && grep -q 'cron:' $f && grep -q 'branches:' $f && grep -q 'templates/x402-conformance.yml' docs/RUN-IT-YOURSELF.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC11",
+     "mandatory": true,
+     "statement": "Opt-in only: docs/MATRIX.md has no named hosted-facilitator list or self-hosted columns for projects that have not accepted, keeps the operator-permission rule, and no outreach or census file is committed",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=docs/MATRIX.md && ! grep -Eq 'not yet requested|^## Self-hosted open-source facilitators' $f && grep -qi 'permission' $f && ! git ls-files | grep -iE '(^|/)(census|outreach)'",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-96-AC12",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-96-AC13",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-96-AC14",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Opt-in only: nothing about a project is committed (no row, no name in a table, no evidence, no badge) until it accepts through the 'Add or update my row' form or a pull request, with the consent recorded there. The outreach list is private and never committed. If a criterion seems to need a row for a project that has not accepted, STOP and report.",
+    "Testnet only: never use a mainnet CAIP-2 id as a payment target, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the loopback double or my own instance on 127.0.0.1.",
+    "No auto-merge, ever: the workflows open pull requests for review and never merge, approve or force-push. The untrusted issue body reaches the tool only as a file.",
+    "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
+   ]
+  },
+  {
+   "id": "XC-97",
+   "title": "Free run program: a free initial run and release reruns for six months, a notify hook, a run queue with caps and no spend, full results privately first",
+   "phase": "integrate",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-94",
+    "XC-95",
+    "XC-96"
+   ],
+   "requirements": [
+    "R-ADOPT",
+    "R-MATRIX",
+    "R-SAFE-GET"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 4
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "I run the suite for a project for free. Terms: one free initial run, then queued reruns on new releases only (never on every commit) for six months from consent, recorded as program_start and program_end in matrix/rows/<slug>.json. In return the project is listed with its results, displays the badge in its README with attribution to Optitransfer/x402-conformance (the copy-paste snippet is the badge plus 'Conformance tested by [Optitransfer/x402-conformance](row link)'), and installs the notify hook. Consent: the form's required checkbox 'Display the badge in our README with attribution to Optitransfer/x402-conformance', and the free-run checkbox for the hook, with the public testnet endpoint. (1) docs/templates/x402-conformance-notify.yml, for the project's repository as .github/workflows/x402-conformance-notify.yml, runs on release published only and comments `/x402-conformance run slug= repo= ref=<tag> version=` on the row's own issue; repository_dispatch with the same fields is also accepted. (2) .github/workflows/run-queue.yml and tools/run_queue.py: enqueue accepts a request only for a listed row in the program, inside its program window, on the row's own issue by its contact or the issue's author, for the row's own repository, with a release tag (a bare commit is refused); one entry per slug in matrix/queue/<slug>.json on the run-queue branch, so duplicates collapse and a ref already run is not run again; the first run is queued automatically once the row is listed. The runner works within matrix/queue/caps.json (runs per day, hours between runs of one slug, probes at least 5 s apart, testnet and devnet ids only) and refuses to run if the caps allow any spend. The queue never runs the project's code: it checks out this suite at the pinned release tag and sends unpaid, paced GETs to the project's public testnet endpoint (tier 1, XC-98), so nothing is paid, signed on chain or sent to a hosted facilitator or mainnet. That job has read-only permissions and no secrets. (3) Full results go to the project privately first: the run's evidence is sealed (age) to the maintainer's key, the project is told on its issue that the results will reach it privately, and only a maintainer's `/x402-conformance publish slug= run=` comment unseals it, passes it through tools/row_from_evidence.py and opens the row's pull request for review; a failing check follows SECURITY.md. Nothing merges automatically. (4) The weekly freshness job stays as the backstop, reads each project's public README through the API (a plain read, no referrer, nothing embedded) and flags a row whose README no longer links its row or badge, and opens a renewal heads-up issue at five months. After program_end the row stays listed with its last result, marked stale, and the badge greys out; nothing is deleted. Self-runs with the Action stay free and unlimited. docs/MATRIX.md and docs/RUN-IT-YOURSELF.md have a 'Free run program' section with these terms.",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     ".github/workflows/run-queue.yml",
+     ".github/workflows/matrix-freshness.yml",
+     ".github/ISSUE_TEMPLATE/matrix-row.yml",
+     "tools/run_queue.py",
+     "tests/test_run_queue.py",
+     "tools/matrix_rows.py",
+     "tools/matrix_freshness.py",
+     "tests/test_matrix_rows.py",
+     "matrix/**",
+     "action.yml",
+     "docs/templates/**",
+     "docs/MATRIX.md",
+     "docs/RUN-IT-YOURSELF.md",
+     "docs/BADGE.md",
+     "docs/site/**",
+     "docs/INTERDEPENDENCY.md",
+     "tools/interdeps.py",
+     "docs/**",
+     "CONTRIBUTING.md",
+     "README.md",
+     "CHANGELOG.md",
+     "NOTICE",
+     "DATA-LICENSE",
+     "CITATION.cff"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-97-AC01",
+     "mandatory": true,
+     "statement": "The notify hook template runs on release published only and comments a run request with slug, repo, release tag and version",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import yaml,sys;d=yaml.safe_load(open('docs/templates/x402-conformance-notify.yml'));on=d.get(True,d.get('on'));print(on);sys.exit(0 if list(on)==['release'] and on['release']['types']==['published'] else 1)\" && grep -q '/x402-conformance run slug=' docs/templates/x402-conformance-notify.yml && grep -q 'release.tag_name' docs/templates/x402-conformance-notify.yml",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-97-AC02",
+     "mandatory": true,
+     "statement": "enqueue accepts only a listed row in the program, inside its window, on its own issue by its contact or issue author, for its own repo, with a release tag; one entry per slug; a ref already run is not rerun; dispatch payloads are checked the same way",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_run_queue",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 9,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-97-AC03",
+     "mandatory": true,
+     "statement": "matrix/queue/caps.json allows zero spend, probes at least 5 s apart and testnet or devnet ids only, and the runner refuses caps that allow spend",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import json,sys;c=json.load(open('matrix/queue/caps.json'));ok=c['max_testnet_spend_per_run']==0 and c['max_testnet_spend_per_day']==0 and c['min_probe_interval_s']>=5 and set(c['networks'])<={'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1','eip155:84532'};sys.exit(0 if ok else 1)\" && PYTHONPATH=src python3 -m unittest -v tests.test_run_queue.RunQueue.test_caps_that_allow_spend_stop_the_runner",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-97-AC04",
+     "mandatory": true,
+     "statement": "In run-queue.yml the run job has contents: read and no secrets, checks out only this suite at the pinned tag (never the project's repository), runs only the unpaid external checks against an https testnet endpoint, and seals its evidence rather than uploading it; publishing needs a maintainer's comment and opens a pull request without merging",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import yaml,sys;d=yaml.safe_load(open('.github/workflows/run-queue.yml'));j=d['jobs']['run'];t=yaml.dump(j);co=[s for s in j['steps'] if str(s.get('uses','')).startswith('actions/checkout')];ok=j['permissions']=={'contents':'read'} and 'secrets.' not in t and len(co)==1 and 'repository' not in co[0].get('with',{}) and 'needs.pick.outputs.suite' in str(co[0]['with'].get('ref')) and 'x402conf resource' in t and 'https://*' in t and 'age -r' in t;sys.exit(0 if ok else 1)\" && grep -q 'tools/run_queue.py release' .github/workflows/run-queue.yml && grep -q 'gh pr create' .github/workflows/run-queue.yml && ! grep -Eq 'gh pr merge|--auto|--admin|push (-f|--force)' .github/workflows/run-queue.yml",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-97-AC05",
+     "mandatory": true,
+     "statement": "The free run program records program_start and program_end six months apart; reruns are refused after program_end; the initial run is queued once; after the end the row is stale and its badge grey, and nothing is deleted",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.MatrixRows.test_free_run_program_needs_hook_and_testnet_endpoint tests.test_matrix_rows.Freshness.test_alignment tests.test_run_queue.RunQueue.test_no_reruns_after_the_program_ends tests.test_run_queue.RunQueue.test_initial_free_run_is_queued_once",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-97-AC06",
+     "mandatory": true,
+     "statement": "The weekly job opens one renewal heads-up issue at five months and flags a row whose public README does not link its row or badge",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.Freshness.test_renewal_heads_up_at_five_months tests.test_matrix_rows.Freshness.test_weekly_check_records_release_and_verifies_attestations && grep -q 'gh issue create' .github/workflows/matrix-freshness.yml",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-97-AC07",
+     "mandatory": true,
+     "statement": "The form has the required checkbox 'Display the badge in our README with attribution to Optitransfer/x402-conformance' and the free-run hook checkbox, and README snippets carry the badge and 'Conformance tested by [Optitransfer/x402-conformance](row link)'",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q 'label: Display the badge in our README with attribution to Optitransfer/x402-conformance' .github/ISSUE_TEMPLATE/matrix-row.yml && grep -Eq 'id: *hook' .github/ISSUE_TEMPLATE/matrix-row.yml && PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.MatrixRows.test_readme_snippet_has_badge_and_attribution_line",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-97-AC08",
+     "mandatory": true,
+     "statement": "docs/MATRIX.md and docs/RUN-IT-YOURSELF.md have a 'Free run program' section with the six-month term, release-only reruns, private-first results, the stale-not-deleted rule and free unlimited self-runs",
+     "verifier": {
+      "type": "command",
+      "cmd": "for f in docs/MATRIX.md docs/RUN-IT-YOURSELF.md; do grep -q '^## Free run program' $f && grep -qi 'six months' $f && grep -qi 'privately first' $f && grep -qi 'free and unlimited' $f || { echo $f; exit 1; }; done && grep -qi 'nothing is deleted' docs/MATRIX.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-97-AC09",
+     "mandatory": true,
+     "statement": "The attribution line is 'Optitransfer/x402-conformance' in DATA-LICENSE, NOTICE, CITATION.cff, BADGE.md and MATRIX.md, and the old wording is gone",
+     "verifier": {
+      "type": "command",
+      "cmd": "for f in DATA-LICENSE NOTICE CITATION.cff docs/BADGE.md docs/MATRIX.md; do grep -q 'Optitransfer/x402-conformance' $f || { echo $f; exit 1; }; done && ! git grep -q 'x402-conformance by Optitransfer' -- . ':!docs/proposals/**' ':!CHANGELOG.md'",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-97-AC10",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-97-AC11",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-97-AC12",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Opt-in only: nothing about a project is committed (no row, no name in a table, no evidence, no badge) until it accepts through the 'Add or update my row' form or a pull request, with the consent recorded there. The outreach list is private and never committed. If a criterion seems to need a row for a project that has not accepted, STOP and report.",
+    "Testnet only: never use a mainnet CAIP-2 id as a payment target, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the loopback double or my own instance on 127.0.0.1.",
+    "The runner never pays: if a run would need a funded key, a testnet transaction or any spend above zero in matrix/queue/caps.json, STOP and report. The project's code never runs in a job that holds a write token or a secret.",
+    "Full results reach the project privately before anything is public; if a step would publish them first, STOP and report.",
+    "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
+   ]
+  },
+  {
+   "id": "XC-98",
+   "title": "Two tiers: External-verified runs from the queue against the public testnet endpoint, and Full suite (self-hosted) listed from a verified, signed attestation of the project's own CI run",
+   "phase": "integrate",
+   "owner": "mgillr",
+   "team": "engineering",
+   "agent": "code agent",
+   "depends_on": [
+    "XC-94",
+    "XC-96",
+    "XC-97"
+   ],
+   "requirements": [
+    "R-ADOPT",
+    "R-MATRIX",
+    "R-SAFE-GET"
+   ],
+   "deadline": {
+    "from": "signed into proofline.json and every depends_on task done",
+    "days": 4
+   },
+   "lease": {
+    "hours": 24,
+    "heartbeat_hours": 2,
+    "on_lapse": [
+     "retry by the same agent",
+     "reassign to the next free agent",
+     "raise to the owner"
+    ]
+   },
+   "description": "Every listed row has a tier. Tier 1, External-verified: the checks that work from outside the project's stack (P1-P7, P9 and P10: unpaid, paced GETs of the paid URL and its /.well-known/x402). The run queue (XC-97) runs them on each new release (notify hook or weekly release check) against the row's public testnet endpoint, with this suite checked out at the release pinned in matrix/queue/suite.json; it never checks out or runs the project's code and spends nothing. Badge: 'External-verified · x402-conformance <tag> · Optitransfer', with checks passed out of applicable and the date. Tier 2, Full suite (self-hosted): the whole suite runs only in the project's own CI, on each release, through the Action with `attest: true`. src/x402conf/tiers.py writes x402-conformance-attestation.json: format x402-conformance.attestation/1, the suite repository, ref and version, the project's repository, tag, commit, workflow and run, a timestamp, and one entry per catalogue check (pass, fail, warn, not_applicable with a reason from the `not-applicable` input, or not_run). actions/attest-build-provenance signs it with the job's GitHub OIDC identity (Sigstore) and the Action uploads it as x402-conformance-attestation-<row>. It is submitted by the notify hook's `/x402-conformance attest slug= repo= ref= run=` comment or repository_dispatch, by the form's optional run link, or found by the weekly job. The queue verifies and does not run: it downloads only that file, runs `gh attestation verify` with the row's repository, the attested commit and tag and the GitHub OIDC issuer, and tools/attestation.py checks that the signed digest is this file, the identity matches the row's repository, commit, tag and run, every check pinned in suite.json is present, and each not-applicable check has a reason. An attestation from another suite release is listed with 'rerun on current suite' and a grey badge. Verified, the attestation is committed as matrix/attestations/<slug>.json and the row becomes tier 2 with the badge 'Full suite (self-hosted) · x402-conformance <tag> · Optitransfer'. The signature proves where and on which commit the run happened, not that the results were not altered; docs/MATRIX.md says so. Rows show the tier, checks passed / applicable, the failed count, the denominator (exercised / NA / needs self-hosted), the suite tag and the date. The six-month free window (XC-97) covers tier-1 reruns and tier-2 verification and listing; a full run on hosted staging is the exception, by arrangement with written permission. Badge, snippet and attribution to Optitransfer/x402-conformance are unchanged. docs/MATRIX.md, docs/RUN-IT-YOURSELF.md, docs/BADGE.md, the row schema, the issue form and the example row (one tier-1 example) are updated. Pasted evidence is no longer accepted.",
+   "evidence_required": "The merged PR, the CI run on main where every criterion passes, and the committed evidence named in the criteria. No link, no done.",
+   "scope": {
+    "allow": [
+     "src/x402conf/tiers.py",
+     "tools/attestation.py",
+     "tests/test_attestation.py",
+     "tests/tier1_run.json",
+     "tools/run_queue.py",
+     "tests/test_run_queue.py",
+     "tools/matrix_rows.py",
+     "tools/matrix_freshness.py",
+     "tests/test_matrix_rows.py",
+     "tools/row_from_evidence.py",
+     "tools/compat_matrix.py",
+     "tools/interdeps.py",
+     ".github/workflows/run-queue.yml",
+     ".github/workflows/matrix-freshness.yml",
+     ".github/workflows/matrix-row.yml",
+     ".github/workflows/ci.yml",
+     ".github/ISSUE_TEMPLATE/matrix-row.yml",
+     "action.yml",
+     "matrix/**",
+     "docs/templates/**",
+     "docs/MATRIX.md",
+     "docs/RUN-IT-YOURSELF.md",
+     "docs/BADGE.md",
+     "docs/site/**",
+     "docs/INTERDEPENDENCY.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-98-AC01",
+     "mandatory": true,
+     "statement": "tools/attestation.py upgrades a row to tier 2 only for an attestation whose signed digest is the file, whose OIDC issuer is GitHub Actions and whose repository, commit, tag and run match the row, with every pinned check present and a reason on each not-applicable check; anything else writes nothing; an older suite is listed with 'rerun on current suite'; nothing is verified without a pinned suite or after the program ends",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_attestation",
+      "expect_exit": 0,
+      "timeout_s": 300,
+      "min_tests": 7,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-98-AC02",
+     "mandatory": true,
+     "statement": "action.yml has the inputs attest and not-applicable and the output attestation, writes the attestation through x402conf.tiers, signs it with actions/attest-build-provenance and uploads it as x402-conformance-attestation-<row>; both templates grant id-token: write and attestations: write",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -Eq '^  attest:' action.yml && grep -Eq '^  not-applicable:' action.yml && grep -Eq '^  attestation:' action.yml && grep -q 'tiers.action_attestation' action.yml && grep -q 'actions/attest-build-provenance@v' action.yml && grep -q 'x402-conformance-attestation-' action.yml && for f in docs/templates/x402-conformance.yml docs/templates/x402-conformance-notify.yml; do grep -q 'id-token: write' $f && grep -q 'attestations: write' $f || { echo $f; exit 1; }; done",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-98-AC03",
+     "mandatory": true,
+     "statement": "The run queue's tier-1 job checks out only this suite at the pinned tag and runs x402conf resource against the https testnet endpoint; its attest job verifies with gh attestation verify and tools/attestation.py and never runs the project's code or the attested results; the matrix-row and freshness workflows verify the same way",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import yaml,sys;d=yaml.safe_load(open('.github/workflows/run-queue.yml'));j=d['jobs'];r=yaml.dump(j['run']);a=yaml.dump(j['attest']);ok='x402conf resource' in r and 'repository:' not in r and 'gh attestation verify' in a and 'tools/attestation.py verify' in a and 'x402conf' not in a and 'npm ' not in a;sys.exit(0 if ok else 1)\" && grep -q 'gh attestation verify' .github/workflows/matrix-row.yml && grep -q 'tools/attestation.py' .github/workflows/matrix-row.yml && grep -q 'tools/matrix_freshness.py' .github/workflows/matrix-freshness.yml && grep -q 'gh attestation' tools/matrix_freshness.py && ! grep -Eq 'gh pr merge|--auto|--admin|push (-f|--force)' .github/workflows/run-queue.yml .github/workflows/matrix-row.yml .github/workflows/matrix-freshness.yml",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-98-AC04",
+     "mandatory": true,
+     "statement": "matrix/queue/suite.json pins the suite repository, tag, commit, version and check list (null until a release with attest is tagged), and the queue runs and verifies nothing while it is null",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import json,sys;d=json.load(open('matrix/queue/suite.json'));ok=d['schema']=='x402-conformance.suite-pin/1' and d['repository']=='atsp-protocol/x402-conformance' and all(k in d for k in ('tag','commit','version')) and len(d['checks'])>0;sys.exit(0 if ok else 1)\" && PYTHONPATH=src python3 -m unittest -v tests.test_run_queue.RunQueue.test_no_suite_pinned_runs_nothing",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-98-AC05",
+     "mandatory": true,
+     "statement": "The row schema has tier (external-verified, full-suite-self-hosted or null) and attestation (matrix/attestations/<slug>.json); the queue's external run publishes a tier-1 row; committed attestations match their rows",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import json,sys;p=json.load(open('matrix/schema/row.schema.json'))['properties'];ok=set(p['tier']['enum'])=={'external-verified','full-suite-self-hosted',None} and 'matrix/attestations' in p['attestation']['pattern'];sys.exit(0 if ok else 1)\" && python3 tools/attestation.py check && PYTHONPATH=src python3 -m unittest -v tests.test_run_queue.RunQueue.test_publish_turns_the_external_run_into_a_tier_1_row tests.test_run_queue.RunQueue.test_attest_requests_follow_the_same_rules",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-98-AC06",
+     "mandatory": true,
+     "statement": "Rows and the example show the tier, passed/applicable, the failed count, the denominator (exercised / NA / needs self-hosted), the suite tag and the date; the example row is tier 1 with its badge 'External-verified · x402-conformance <tag> · Optitransfer'",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/matrix_rows.py --check && f=docs/MATRIX.md && grep -q '| tier |' $f && grep -q 'passed/applicable' $f && grep -q '| denominator |' $f && grep 'id=\\\"project-example\\\"' $f | grep -q 'External-verified' && grep 'id=\\\"project-example\\\"' $f | grep -Eq '[0-9]+ exercised / [0-9]+ NA / [0-9]+ needs self-hosted' && grep -q 'External-verified · x402-conformance v' docs/site/badge/example.svg",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-98-AC07",
+     "mandatory": true,
+     "statement": "docs/MATRIX.md has a '## Two tiers' section with both badge texts, the verification rules, 'rerun on current suite', the statement that the signature does not prove the results were not altered, and hosted staging only by arrangement; docs/RUN-IT-YOURSELF.md shows attest: true with the permissions; docs/BADGE.md gives both tier texts and the grey states",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=docs/MATRIX.md && grep -q '^## Two tiers' $f && grep -q 'External-verified · x402-conformance <tag> · Optitransfer' $f && grep -q 'Full suite (self-hosted) · x402-conformance <tag> · Optitransfer' $f && grep -q 'gh attestation verify' $f && grep -q 'rerun on current suite' $f && grep -qi 'not that the results' $f && grep -qi 'by arrangement' $f && grep -q 'attest: true' docs/RUN-IT-YOURSELF.md && grep -q 'id-token: write' docs/RUN-IT-YOURSELF.md && grep -q 'External-verified · x402-conformance' docs/BADGE.md && grep -q 'Full suite (self-hosted) · x402-conformance' docs/BADGE.md && grep -q 'rerun on current suite' docs/BADGE.md",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-98-AC08",
+     "mandatory": true,
+     "statement": "The notify hook runs the full suite with attest only when the project opts in, and comments the attest request with slug, repo, tag and run id; the form's evidence field takes only a run in the row's own repository",
+     "verifier": {
+      "type": "command",
+      "cmd": "f=docs/templates/x402-conformance-notify.yml && grep -q 'X402_CONFORMANCE_FULL_SUITE' $f && grep -q '/x402-conformance attest slug=' $f && grep -q 'run=\\$GITHUB_RUN_ID' $f && PYTHONPATH=src python3 -m unittest -v tests.test_matrix_rows.MatrixRows.test_attestation_link_must_be_a_run_in_the_rows_repo",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-98-AC09",
+     "mandatory": true,
+     "statement": "The full offline suite passes unchanged",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-98-AC10",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-98-AC11",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Opt-in only: nothing about a project is committed (no row, no name in a table, no evidence, no badge) until it accepts through the 'Add or update my row' form or a pull request, with the consent recorded there. The outreach list is private and never committed. If a criterion seems to need a row for a project that has not accepted, STOP and report.",
+    "Testnet only: never use a mainnet CAIP-2 id as a payment target, never fund a key with anything but testnet faucet tokens, never call a hosted facilitator; every facilitator under test is the loopback double or my own instance on 127.0.0.1.",
+    "The queue never runs the project's code: tier 1 is unpaid external GETs from this suite at the pinned tag, tier 2 is verification only. If a step would check out, build or execute the project's code in the queue, or need any spend above zero, STOP and report.",
+    "Never list a tier-2 row from an attestation that fails gh attestation verify, names another repository, commit or tag, or lacks a pinned check; never present a self-attested run as more than the documented trust statement says. If a criterion seems to need either, STOP and report.",
+    "Full results reach the project privately before anything is public; if a step would publish them first, STOP and report.",
+    "A failing third-party result is reported to that project privately first (SECURITY.md); until the window clears its row shows the failed count and 'under disclosure', with no per-check detail. If a criterion would need that detail to pass, STOP and report."
+   ]
+  }
+ ]
+}

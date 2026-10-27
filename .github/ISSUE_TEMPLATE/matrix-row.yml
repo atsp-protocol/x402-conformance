@@ -1,0 +1,117 @@
+name: Add or update my row
+description: Add your facilitator, SDK, paid API, client, wallet or MCP tool to the matrix, or update its row
+title: "Matrix row: <project name>"
+labels: [matrix-row]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        A check runs on this issue as soon as you submit it. It validates your answers against
+        [matrix/schema/row.schema.json](https://github.com/atsp-protocol/x402-conformance/blob/main/matrix/schema/row.schema.json)
+        and opens a pull request with your row for review. Nothing is merged automatically and nothing is listed
+        without the consents at the end. Public details only: no emails, no keys. A row has one of two tiers.
+        **External-verified**: my run queue checks your public testnet endpoint from outside your stack, with no spend.
+        **Full suite (self-hosted)**: you run the whole suite in your own CI with the Action and `attest: true`, and the
+        queue verifies the signed attestation. Results show checks passed out of applicable checks, the denominator
+        (exercised / not applicable / needs the self-hosted run), the suite tag and the date. No score and no ranking.
+        To run it yourself first, see
+        [RUN-IT-YOURSELF.md](https://github.com/atsp-protocol/x402-conformance/blob/main/docs/RUN-IT-YOURSELF.md).
+  - type: input
+    id: project
+    attributes: { label: Project name, placeholder: "Example Pay" }
+    validations: { required: true }
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options: ["facilitator (self-hosted)", "facilitator (hosted)", "SDK", "merchant / paid API", "client / wallet", "MCP tool"]
+    validations: { required: true }
+  - type: input
+    id: repo
+    attributes: { label: Repository URL, placeholder: "https://github.com/example/example-pay" }
+    validations: { required: true }
+  - type: input
+    id: site
+    attributes: { label: Docs or site URL, placeholder: "https://docs.example.com/x402" }
+  - type: input
+    id: languages
+    attributes: { label: Languages, placeholder: "TypeScript, Go" }
+    validations: { required: true }
+  - type: input
+    id: chains
+    attributes: { label: Chain families, placeholder: "EVM, SVM" }
+    validations: { required: true }
+  - type: input
+    id: networks
+    attributes: { label: Networks (CAIP-2 ids), placeholder: "eip155:84532, solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1" }
+    validations: { required: true }
+  - type: dropdown
+    id: environments
+    attributes:
+      label: Environments you offer
+      description: "testnet: a public testnet endpoint. devnet: runs locally from source. mainnet-only: listed as 'live-not-run', never probed."
+      multiple: true
+      options: [testnet, devnet, mainnet-only]
+    validations: { required: true }
+  - type: input
+    id: endpoint
+    attributes:
+      label: Testnet endpoint URL (if any)
+      description: "A public https paid URL on testnet. Tier 1 checks it from outside: at most eight unpaid requests (GETs, and one HEAD only if you allow it below), at least 5 s apart."
+      placeholder: "https://sandbox.example.com/paid"
+  - type: input
+    id: version
+    attributes: { label: Version or commit, placeholder: "2.3.0 or f44d34c" }
+    validations: { required: true }
+  - type: input
+    id: evidence
+    attributes:
+      label: Full-suite run with an attestation (optional)
+      description: >-
+        For tier 2: the link to a run in your own repository, on a release, of the Action with `attest: true`
+        (docs/templates/x402-conformance.yml). The signed attestation is downloaded and verified (your repository,
+        the attested commit and tag, the pinned suite, every applicable check present); nothing is rerun.
+      placeholder: "https://github.com/example/example-pay/actions/runs/123456789"
+  - type: input
+    id: contact
+    attributes:
+      label: Public contact handle
+      description: "A GitHub handle such as @example. No emails. A failing check is reported privately first (SECURITY.md)."
+    validations: { required: true }
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: I'm authorised to list this project, and I agree to list this project in the public matrix.
+          required: true
+        - label: >-
+            I agree that its public results are published under CC BY 4.0 (DATA-LICENSE, attribution
+            "Optitransfer/x402-conformance") and to the badge terms in docs/BADGE.md; the badge is not an endorsement.
+          required: true
+        - label: I agree to testnet-only probes of the endpoints above (unpaid GETs, paced at least 5 s apart), never mainnet.
+          required: true
+        - label: Display the badge in our README with attribution to Optitransfer/x402-conformance
+          required: true
+  - type: markdown
+    attributes:
+      value: >-
+        **Free run program.** For six months from today, free: tier 1, one initial external run of your public
+        testnet endpoint and then a rerun for each new release (not every commit); and tier 2, verification and
+        listing of the attested full-suite run your own CI makes on each release. Tier-1 runs are unpaid GETs (and one
+        HEAD only if you tick that box) from outside your stack: never mainnet, never a hosted facilitator, nothing paid, never your code. Full tier-1
+        results go to you privately first. In return your project is listed with its results and displays the badge
+        in its README with attribution to Optitransfer/x402-conformance, and you install the notify hook
+        ([docs/templates/x402-conformance-notify.yml](https://github.com/atsp-protocol/x402-conformance/blob/main/docs/templates/x402-conformance-notify.yml)),
+        which reports each published release and submits its attestation. At five months I open a renewal heads-up issue. After six months your
+        row stays listed with its last result, marked stale, and the badge greys out; nothing is deleted. Running it
+        yourself with the Action stays free and unlimited (docs/RUN-IT-YOURSELF.md): leave this unticked for that.
+  - type: checkboxes
+    id: hook
+    attributes:
+      label: Free run program
+      options:
+        - label: Install the notify hook so each new release joins the x402-conformance run queue (free for six months; needs the testnet endpoint above)
+          required: false
+        - label: "Optional: also allow one unpaid HEAD request per tier-1 run (R16a, is HEAD paywalled like GET). Without it R16a is left to the self-hosted run"
+          required: false

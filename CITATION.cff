@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use x402-conformance or its public results, please cite it as below, with the attribution \"Optitransfer/x402-conformance\"."
+title: x402-conformance
+abstract: "Conformance and safety checks for x402 payment servers, clients and facilitators, with a public, evidence-backed matrix of results."
+type: software
+authors:
+  - family-names: Gillespie
+    given-names: Ryan
+    affiliation: Optitransfer
+  - name: Optitransfer
+repository-code: "https://github.com/atsp-protocol/x402-conformance"
+url: "https://atsp-protocol.github.io/x402-conformance/"
+license: Apache-2.0

@@ -1,0 +1,74 @@
+# XC-96 freshness, XC-98 tiers: every week, check each listed project's latest release or tag and default-branch commit
+# against the version tested; for a new release in the free program, ask the run queue for a tier-1 external rerun
+# (repository_dispatch); verify the attestation of the project's own full-suite release run if it has one (tier 2,
+# gh attestation verify, nothing is run); and open a pull request with the updated rows, release alignment and badges
+# for review. GitHub API reads only: no x402 endpoint is called from here. Nothing merges automatically.
+name: matrix-freshness
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+concurrency:
+  group: matrix-freshness
+  cancel-in-progress: false
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check releases, verify attested full-suite runs
+        run: |
+          python3 tools/matrix_freshness.py --today "$(date -u +%F)" --notices "$RUNNER_TEMP/notices.jsonl" \
+            --requests "$RUNNER_TEMP/requests.jsonl"
+      - name: Ask the run queue for tier-1 external reruns of new releases
+        run: |
+          [ -s "$RUNNER_TEMP/requests.jsonl" ] || exit 0
+          while IFS= read -r line; do
+            printf '{"event_type":"x402-conformance-run","client_payload":%s}' "$line" \
+              | gh api "repos/$GITHUB_REPOSITORY/dispatches" --input - || echo "dispatch failed: $line"
+          done < "$RUNNER_TEMP/requests.jsonl"
+      - name: Renewal heads-up for free run programs at five months
+        run: |
+          [ -s "$RUNNER_TEMP/notices.jsonl" ] || exit 0
+          while IFS= read -r line; do
+            printf '%s' "$line" > "$RUNNER_TEMP/n.json"
+            python3 - "$RUNNER_TEMP/n.json" "$RUNNER_TEMP/n.md" "$RUNNER_TEMP/n.title" <<'PY'
+          import json, sys
+          n = json.load(open(sys.argv[1]))
+          open(sys.argv[3], "w").write(f"Free run program: renewal heads-up for {n['slug']}")
+          open(sys.argv[2], "w").write(
+              f"{n['contact']}, the free run program for `{n['slug']}` ({n['issue']}) ends on {n['program_end']}. "
+              "Until then each new release gets a free external rerun and its attested full-suite run is verified and "
+              "listed. If you'd like another six months, reply here and "
+              "I'll renew it. After the end date your row stays listed with its last result, marked stale, and the "
+              "badge greys out; nothing is deleted. Running the suite yourself with the Action stays free and "
+              "unlimited.\n")
+          PY
+            gh issue create --title "$(cat "$RUNNER_TEMP/n.title")" --body-file "$RUNNER_TEMP/n.md" --label matrix-row
+          done < "$RUNNER_TEMP/notices.jsonl"
+      - name: Open a pull request for review
+        run: |
+          git add matrix/rows matrix/attestations docs/MATRIX.md docs/compat-matrix.json docs/site/badge docs/site/matrix
+          if git diff --cached --quiet; then echo "every listed row is unchanged"; exit 0; fi
+          branch="matrix-freshness/$(date -u +%F)"
+          # Commits carry the maintainer identity the repository's hygiene check requires.
+          git config user.name "mgillr"
+          git config user.email "36207807+mgillr@users.noreply.github.com"
+          git checkout -b "$branch"
+          git commit -m "Matrix freshness $(date -u +%F): release alignment and verified attestations"
+          git push origin "$branch"
+          printf 'Weekly freshness check (tools/matrix_freshness.py): latest release and default-branch commit per listed project, release alignment, badges, and verified attestations of the projects'"'"' own full-suite release runs (tools/attestation.py, after gh attestation verify). For review; nothing merges automatically. Pull requests opened by this workflow do not start CI on their own, so a maintainer runs it before merging.\n' > "$RUNNER_TEMP/pr.md"
+          gh pr create --base main --head "$branch" --title "Matrix freshness $(date -u +%F)" --body-file "$RUNNER_TEMP/pr.md"

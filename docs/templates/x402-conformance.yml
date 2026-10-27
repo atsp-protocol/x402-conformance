@@ -1,0 +1,40 @@
+# Save this in your own repository as .github/workflows/x402-conformance.yml to keep your row in the
+# x402-conformance matrix fresh (https://atsp-protocol.github.io/x402-conformance/matrix/).
+#
+# It runs the full suite on your own code, on loopback with testnet ids, on every push to your default branch, on
+# every release or tag, and weekly. On a release it also writes and signs the attestation for tier 2, Full suite
+# (self-hosted), and uploads it as the artifact x402-conformance-attestation-<your slug>. Each week the matrix picks
+# up the newest successful release run of this workflow, verifies the attestation (gh attestation verify, then
+# tools/attestation.py: your repository, the attested commit and tag, the pinned suite, every applicable check) and
+# opens a pull request updating your row, for review. Nothing is rerun on our side. Your repository must be public
+# and your row must already be accepted (the "Add or update my row" form).
+# Replace YOUR-SLUG with your row's slug and the start command with your server's.
+name: x402-conformance
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  release:
+    types: [published]
+  schedule:
+    - cron: "41 4 * * 2"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  x402:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: atsp-protocol/x402-conformance@v1
+        with:
+          resource-url: http://127.0.0.1:4020/paid
+          start: PORT=4020 npm start
+          evidence: true
+          attest: ${{ github.event_name == 'release' }}
+          not-applicable: ""
+          row: YOUR-SLUG

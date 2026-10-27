@@ -1,0 +1,66 @@
+# The notify hook for the x402-conformance free program (two tiers). Save it in your own repository as
+# .github/workflows/x402-conformance-notify.yml. It runs on each published release, only then, not on every commit.
+#
+#   Tier 1, External-verified: the notify job asks for a rerun. It comments on your own "Add or update my row" issue
+#   in atsp-protocol/x402-conformance, and the run queue there checks your public testnet endpoint from outside:
+#   unpaid GETs (and one HEAD for R16a only if your row allows it), paced at least 5 s apart, no spend, never mainnet, never a hosted facilitator. It never runs your code.
+#
+#   Tier 2, Full suite (self-hosted): set the repository variable X402_CONFORMANCE_FULL_SUITE to "true" and the
+#   full-suite job runs the whole suite here, in your CI, on your stack, with the Action and attest: true. The Action
+#   signs an attestation (GitHub artifact attestations) and the notify job submits it; the queue verifies it and
+#   never reruns it. Edit the start command and routes to match your server.
+#
+# For six months from your consent both are free (tier-1 reruns, tier-2 verification and listing). After that your
+# row stays listed with its last result, marked stale. Running the suite yourself with the Action stays free and
+# unlimited. Full tier-1 results go to you privately first.
+#
+# Set your slug and your row's issue number below, and add a secret X402_CONFORMANCE_TOKEN: a token of your row's
+# contact account that can comment on public issues (a classic token with public_repo scope). Only your row's
+# contact or the issue's author can ask for a run.
+name: x402-conformance-notify
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+env:
+  SLUG: YOUR-SLUG
+  ROW_ISSUE: "0"
+jobs:
+  full-suite:
+    if: vars.X402_CONFORMANCE_FULL_SUITE == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: atsp-protocol/x402-conformance@v1
+        with:
+          resource-url: http://127.0.0.1:4020/paid
+          start: PORT=4020 npm start
+          retry: true
+          attest: true
+          row: YOUR-SLUG
+          # The checks that do not apply to your project, each with a reason; they are published with your row.
+          not-applicable: ""
+          fail-on-error: false
+  notify:
+    needs: full-suite
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.X402_CONFORMANCE_TOKEN }}
+      TAG: ${{ github.event.release.tag_name }}
+      FULL: ${{ needs.full-suite.result }}
+    steps:
+      - name: Ask x402-conformance for a tier-1 rerun of this release
+        run: |
+          gh issue comment "$ROW_ISSUE" -R atsp-protocol/x402-conformance \
+            --body "/x402-conformance run slug=$SLUG repo=$GITHUB_REPOSITORY ref=$TAG version=${TAG#v}"
+      - name: Submit the tier-2 attestation of this release's full-suite run
+        if: needs.full-suite.result == 'success'
+        run: |
+          gh issue comment "$ROW_ISSUE" -R atsp-protocol/x402-conformance \
+            --body "/x402-conformance attest slug=$SLUG repo=$GITHUB_REPOSITORY ref=$TAG run=$GITHUB_RUN_ID"

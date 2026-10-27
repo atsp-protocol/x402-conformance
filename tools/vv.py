@@ -2,6 +2,8 @@
 """Proofline V&V: verify every acceptance criterion in proofline.json against this repository and emit receipts.
 
     python3 tools/vv.py verify [TASK ...] [--receipts DIR] [--json] [--pre-merge]
+    python3 tools/vv.py verify --shard I/N [--receipts DIR] [--json] [--pre-merge]
+    python3 tools/vv.py merge DIR [--receipts DIR] [--json]
     python3 tools/vv.py hygiene        secret and attribution scan of the tracked tree
 
 Implements the proofline/1 verifier types this contract uses: command (expect_exit, min_tests, max_skipped),
@@ -15,7 +17,15 @@ not claimed is reported as open and does not fail the run. Unsigned contracts ar
 Pre-merge mode. A pull request is checked on a merge commit that cannot be on origin/main yet, so in pre-merge mode
 (--pre-merge, or GITHUB_EVENT_NAME=pull_request) a "pushed" criterion that is not met yet is reported as
 "pending (pre-merge)" and does not fail the run. Every other criterion still does. The run on main after the merge is
-strict, and the receipt records which mode produced it."""
+strict, and the receipt records which mode produced it.
+
+Shards (XC-125). --shard I/N verifies only the tasks whose position in proofline.json is I modulo N, and the receipt
+records the shard, the task ids it was assigned and each task's seconds. CI runs N shards in parallel jobs, each with
+its own checkout, and `vv.py merge DIR` combines their receipts into one receipt in the same schema, with the tasks
+in contract order and the shard receipts it merged. The merge fails closed: it exits 1, with ok false, when a shard
+is missing or duplicated, when the shards disagree on head, contract hash, mode, signature state, out-of-scope files
+or unknown claims, when a shard's tasks are not exactly its partition, when a receipt's hash does not match its
+content, or when any shard failed. Every criterion still runs, in exactly one shard."""
 
 from __future__ import annotations
 
@@ -155,31 +165,76 @@ def hygiene() -> list[dict[str, Any]]:
     return hits
 
 
-def main(argv: list[str]) -> int:
-    if argv[1:2] == ["hygiene"]:
-        h = hygiene()
-        print(json.dumps({"hits": len(h), "detail": h[:50]}))
-        return 0 if not h else 1
-    if argv[1:2] != ["verify"]:
-        print(__doc__)
-        return 2
-    global PRE_MERGE
-    PRE_MERGE = "--pre-merge" in argv or os.environ.get("GITHUB_EVENT_NAME") == "pull_request"
-    mode = "pre-merge" if PRE_MERGE else "strict"
-    as_json = "--json" in argv
-    rdir = None
-    if "--receipts" in argv:
-        rdir = argv[argv.index("--receipts") + 1]
-    want = [a for a in argv[2:] if not a.startswith("--") and a != rdir]
+def load_claims() -> list[str]:
+    with open(os.path.join(ROOT, "vv", "claims.json"), encoding="utf-8") as f:
+        done: list[str] = json.load(f).get("done", [])
+    return done
+
+
+def parse_shard(text: str) -> tuple[int, int]:
+    """'I/N' with 0 <= I < N; anything else is refused."""
+    m = re.fullmatch(r"(\d+)/(\d+)", text or "")
+    if not m:
+        raise ValueError(f"--shard takes I/N, such as 0/4, not {text!r}")
+    i, n = int(m.group(1)), int(m.group(2))
+    if n < 1 or i >= n:
+        raise ValueError(f"--shard {text}: I must be 0 to N-1 and N at least 1")
+    return i, n
+
+
+def partition(tasks: list[dict[str, Any]], i: int, n: int) -> list[dict[str, Any]]:
+    """The tasks shard I of N verifies: those whose position in the contract is I modulo N."""
+    return [t for k, t in enumerate(tasks) if k % n == i]
+
+
+def seal(receipt: dict[str, Any]) -> dict[str, Any]:
+    receipt.pop("sha256", None)
+    receipt["sha256"] = hashlib.sha256(canon(receipt).encode()).hexdigest()
+    return receipt
+
+
+def write_receipt(rdir: str | None, receipt: dict[str, Any], report: list[dict[str, Any]], tag: str = "") -> None:
+    if rdir:
+        os.makedirs(rdir, exist_ok=True)
+        name = f"vv-{receipt['t'].replace(':', '')}-{receipt['head'][:12]}{tag}.json"
+        with open(os.path.join(rdir, name), "w") as f:
+            json.dump({"receipt": receipt, "report": report}, f, indent=1)
+
+
+def print_summary(receipt: dict[str, Any], report: list[dict[str, Any]], extra: list[str] | None = None) -> None:
+    head = f"contract {receipt['contract_sha256'][:16]}  {receipt.get('signature')}  mode={receipt['mode']}"
+    print(head + (f"  shard={receipt['shard']}" if receipt.get("shard") else ""))
+    for r in report:
+        n = sum(c["pass"] for c in r["criteria"])
+        print(f"{r['task']:7} {r['state']:16} {n}/{len(r['criteria'])}  {r['title']}")
+        claimed = r["state"] in ("done", "FAILED")
+        for c in r["criteria"]:
+            if c["pending"]:
+                print(f"         pending {c['id']}: {c['detail'][:160]}")
+            if not c["pass"]:
+                tag = "FAIL" if claimed and c["mandatory"] else "todo"
+                print(f"         {tag} {c['id']}: {c['detail'][:160]}")
+    if receipt["out_of_scope"]:
+        print("OUT OF SCOPE (no task owns these files):", ", ".join(receipt["out_of_scope"]))
+    if receipt["unknown_claims"]:
+        print("UNKNOWN CLAIMS:", ", ".join(receipt["unknown_claims"]))
+    for x in extra or []:
+        print("MERGE:", x)
+    print(f"receipt {receipt['sha256'][:16]}  {'PASS' if receipt['ok'] else 'FAIL'}")
+
+
+def verify_run(want: list[str], shard: tuple[int, int] | None, rdir: str | None,
+               as_json: bool) -> int:
     contract = CONTRACT
     chash = hashlib.sha256(canon(contract).encode()).hexdigest()
-    claims = json.load(open(os.path.join(ROOT, "vv", "claims.json"))).get("done", [])
+    claims = load_claims()
     sig_rc, sig = signature()
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    tasks = [t for t in contract["tasks"] if not want or t["id"] in want]
+    tasks = partition(contract["tasks"], *shard) if shard else [t for t in contract["tasks"] if not want or t["id"] in want]
     report, failed = [], []
     for t in tasks:
         rows = []
+        start = time.monotonic()
         for c in t["criteria"]:
             ok, detail = check(c["verifier"], t)
             rows.append({"id": c["id"], "mandatory": c.get("mandatory", True), "pass": ok, "detail": detail,
@@ -188,43 +243,154 @@ def main(argv: list[str]) -> int:
         state = ("done" if passed else "FAILED") if t["id"] in claims else ("met (unclaimed)" if passed else "open")
         if t["id"] in claims and not passed:
             failed.append(t["id"])
-        report.append({"task": t["id"], "title": t["title"], "state": state, "criteria": rows})
+        report.append({"task": t["id"], "title": t["title"], "state": state, "criteria": rows,
+                       "seconds": round(time.monotonic() - start, 1)})
     allow_all = [p for t in contract["tasks"] for p in t.get("scope", {}).get("allow", [])]
     out_of_scope = [f for f in tracked() if not in_scope(f, allow_all)]
     unknown_claims = [c for c in claims if c not in {t["id"] for t in contract["tasks"]}]
     ok = not failed and not out_of_scope and not unknown_claims and sig_rc in (0, 3)
     pending = [c["id"] for r in report for c in r["criteria"] if c["pending"]]
-    receipt = {"v": "x402conf.vv-receipt/1", "t": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "head": head,
-               "mode": mode, "pending": pending,
-               "contract_sha256": chash, "signature": sig.get("status"), "ok": ok, "claimed_failed": failed,
-               "out_of_scope": out_of_scope, "unknown_claims": unknown_claims,
-               "tasks": [{"task": r["task"], "state": r["state"],
-                          "pass": sum(c["pass"] for c in r["criteria"]), "of": len(r["criteria"])} for r in report]}
-    receipt["sha256"] = hashlib.sha256(canon(receipt).encode()).hexdigest()
-    if rdir:
-        os.makedirs(rdir, exist_ok=True)
-        with open(os.path.join(rdir, f"vv-{receipt['t'].replace(':', '')}-{head[:12]}.json"), "w") as f:
-            json.dump({"receipt": receipt, "report": report}, f, indent=1)
+    receipt: dict[str, Any] = {
+        "v": "x402conf.vv-receipt/1", "t": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "head": head,
+        "mode": "pre-merge" if PRE_MERGE else "strict", "pending": pending, "contract_sha256": chash,
+        "signature": sig.get("status"), "ok": ok, "claimed_failed": failed, "out_of_scope": out_of_scope,
+        "unknown_claims": unknown_claims,
+        "tasks": [{"task": r["task"], "state": r["state"], "pass": sum(c["pass"] for c in r["criteria"]),
+                   "of": len(r["criteria"]), "seconds": r["seconds"]} for r in report]}
+    if shard:
+        receipt["shard"] = f"{shard[0]}/{shard[1]}"
+        receipt["assigned"] = [t["id"] for t in tasks]
+    seal(receipt)
+    write_receipt(rdir, receipt, report, f"-shard{shard[0]}of{shard[1]}" if shard else "")
     if as_json:
         print(json.dumps({"receipt": receipt, "report": report}, indent=1))
     else:
-        print(f"contract {chash[:16]}  {sig.get('status')}  mode={mode}")
-        for r in report:
-            n = sum(c["pass"] for c in r["criteria"])
-            print(f"{r['task']:7} {r['state']:16} {n}/{len(r['criteria'])}  {r['title']}")
-            claimed = r["state"] in ("done", "FAILED")
-            for c in r["criteria"]:
-                if c["pending"]:
-                    print(f"         pending {c['id']}: {c['detail'][:160]}")
-                if not c["pass"]:
-                    tag = "FAIL" if claimed and c["mandatory"] else "todo"
-                    print(f"         {tag} {c['id']}: {c['detail'][:160]}")
-        if out_of_scope:
-            print("OUT OF SCOPE (no task owns these files):", ", ".join(out_of_scope))
-        if unknown_claims:
-            print("UNKNOWN CLAIMS:", ", ".join(unknown_claims))
-        print(f"receipt {receipt['sha256'][:16]}  {'PASS' if ok else 'FAIL'}")
+        print_summary(receipt, report)
     return 0 if ok else 1
+
+
+def merge_receipts(paths: list[str], contract: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]], list[str]]:
+    """One receipt from N shard receipts, and every reason it cannot stand."""
+    problems: list[str] = []
+    shards: dict[int, dict[str, Any]] = {}
+    n_seen: set[int] = set()
+    for p in paths:
+        try:
+            with open(p, encoding="utf-8") as f:
+                doc = json.load(f)
+            rc, rep = doc["receipt"], doc["report"]
+        except (OSError, ValueError, KeyError, TypeError) as e:
+            problems.append(f"{os.path.basename(p)}: not a shard receipt ({e})")
+            continue
+        body = {k: v for k, v in rc.items() if k != "sha256"}
+        if hashlib.sha256(canon(body).encode()).hexdigest() != rc.get("sha256"):
+            problems.append(f"{os.path.basename(p)}: the receipt's sha256 does not match its content")
+        try:
+            i, n = parse_shard(str(rc.get("shard") or ""))
+        except ValueError:
+            problems.append(f"{os.path.basename(p)}: no shard I/N in the receipt")
+            continue
+        n_seen.add(n)
+        if i in shards:
+            problems.append(f"shard {i}/{n} appears more than once")
+            continue
+        shards[i] = {"receipt": rc, "report": rep}
+    if len(n_seen) > 1:
+        problems.append(f"the shards disagree on N: {sorted(n_seen)}")
+    n = max(n_seen) if n_seen else 0
+    if not n:
+        problems.append("no shard receipts")
+    for i in range(n):
+        if i not in shards:
+            problems.append(f"shard {i}/{n} is missing")
+    receipts = [shards[i]["receipt"] for i in sorted(shards)]
+    for field in ("head", "contract_sha256", "mode", "signature", "out_of_scope", "unknown_claims"):
+        values = {json.dumps(r.get(field), sort_keys=True) for r in receipts}
+        if len(values) > 1:
+            problems.append(f"the shards disagree on {field}")
+    chash = hashlib.sha256(canon(contract).encode()).hexdigest()
+    if receipts and receipts[0].get("contract_sha256") != chash:
+        problems.append("the shards verified a different contract from the one checked out here")
+    for i, sh in sorted(shards.items()):
+        want = [t["id"] for t in partition(contract["tasks"], i, n)] if n else []
+        got = [t["task"] for t in sh["receipt"].get("tasks", [])]
+        if sh["receipt"].get("assigned") != want or got != want:
+            problems.append(f"shard {i}/{n} did not verify exactly its partition")
+        if not sh["receipt"].get("ok"):
+            problems.append(f"shard {i}/{n} failed")
+    order = {t["id"]: k for k, t in enumerate(contract["tasks"])}
+    report = sorted((r for sh in shards.values() for r in sh["report"]), key=lambda r: order.get(r["task"], 1 << 30))
+    tasks = sorted((t for r in receipts for t in r.get("tasks", [])), key=lambda t: order.get(t["task"], 1 << 30))
+    first = receipts[0] if receipts else {}
+    merged: dict[str, Any] = {
+        "v": "x402conf.vv-receipt/1", "t": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "head": first.get("head", ""), "mode": first.get("mode", ""),
+        "pending": [c["id"] for r in report for c in r["criteria"] if c.get("pending")],
+        "contract_sha256": first.get("contract_sha256", chash), "signature": first.get("signature"),
+        "ok": not problems,
+        "claimed_failed": [t["task"] for t in tasks if t["state"] == "FAILED"],
+        "out_of_scope": first.get("out_of_scope", []), "unknown_claims": first.get("unknown_claims", []),
+        "tasks": tasks, "shards": [{"shard": r["shard"], "sha256": r["sha256"]} for r in receipts],
+        "merge_problems": problems}
+    return seal(merged), report, problems
+
+
+def main(argv: list[str]) -> int:
+    if argv[1:2] == ["hygiene"]:
+        h = hygiene()
+        print(json.dumps({"hits": len(h), "detail": h[:50]}))
+        return 0 if not h else 1
+    if argv[1:2] not in (["verify"], ["merge"]):
+        print(__doc__)
+        return 2
+    args = argv[2:]
+    rdir = shard_arg = None
+    rest: list[str] = []
+    k = 0
+    while k < len(args):
+        a = args[k]
+        if a in ("--receipts", "--shard"):
+            if k + 1 >= len(args):
+                print(f"vv: {a} needs a value", file=sys.stderr)
+                return 2
+            if a == "--receipts":
+                rdir = args[k + 1]
+            else:
+                shard_arg = args[k + 1]
+            k += 2
+            continue
+        rest.append(a)
+        k += 1
+    as_json = "--json" in rest
+    if argv[1] == "merge":
+        dirs = [a for a in rest if not a.startswith("--")]
+        if len(dirs) != 1:
+            print("vv merge: give one directory of shard receipts", file=sys.stderr)
+            return 2
+        paths = sorted(os.path.join(dp, f) for dp, _, fs in os.walk(dirs[0]) for f in fs
+                       if f.startswith("vv-") and f.endswith(".json"))
+        receipt, report, problems = merge_receipts(paths, CONTRACT)
+        write_receipt(rdir, receipt, report, "-merged")
+        if as_json:
+            print(json.dumps({"receipt": receipt, "report": report}, indent=1))
+        else:
+            print_summary(receipt, report, problems)
+        return 0 if receipt["ok"] else 1
+    global PRE_MERGE
+    PRE_MERGE = "--pre-merge" in rest or os.environ.get("GITHUB_EVENT_NAME") == "pull_request"
+    want = [a for a in rest if not a.startswith("--")]
+    shard = None
+    if shard_arg is not None:
+        if want:
+            print("vv verify: --shard verifies a partition of the whole contract; it does not take task ids",
+                  file=sys.stderr)
+            return 2
+        try:
+            shard = parse_shard(shard_arg)
+        except ValueError as e:
+            print(f"vv verify: {e}", file=sys.stderr)
+            return 2
+    return verify_run(want, shard, rdir, as_json)
 
 
 if __name__ == "__main__":

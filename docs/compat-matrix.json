@@ -3,9 +3,13 @@
  "rows": [
   {
    "row": "express-2.27.0",
+   "environment": "devnet",
    "stack": "express",
    "version": "2.27.0",
    "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "checks_run": 11,
+   "checks_passed": 11,
+   "failed_count": 0,
    "tool": "x402-conformance-svm 1.5.0",
    "run_at": "2026-10-24T13:37:43.400Z",
    "run": "evidence/impl-matrix/express-2.27.0/run.json",
@@ -20,6 +24,7 @@
     "failed_ids": [],
     "unsupported": false
    },
+   "consent": null,
    "checks": {
     "R0": "pass",
     "R1": "pass",
@@ -36,9 +41,13 @@
   },
   {
    "row": "express-2.28.0",
+   "environment": "devnet",
    "stack": "express",
    "version": "2.28.0",
    "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "checks_run": 11,
+   "checks_passed": 11,
+   "failed_count": 0,
    "tool": "x402-conformance-svm 1.5.0",
    "run_at": "2026-10-24T13:35:39.372Z",
    "run": "evidence/impl-matrix/express-2.28.0/run.json",
@@ -53,6 +62,7 @@
     "failed_ids": [],
     "unsupported": false
    },
+   "consent": null,
    "checks": {
     "R0": "pass",
     "R1": "pass",
@@ -69,9 +79,13 @@
   },
   {
    "row": "fastapi-2.25.0",
+   "environment": "devnet",
    "stack": "fastapi",
    "version": "2.25.0",
    "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "checks_run": 11,
+   "checks_passed": 11,
+   "failed_count": 0,
    "tool": "x402-conformance-svm 1.4.0",
    "run_at": "2026-10-23T20:22:01.259Z",
    "run": "evidence/impl-matrix/fastapi-2.25.0/run.json",
@@ -86,6 +100,7 @@
     "failed_ids": [],
     "unsupported": false
    },
+   "consent": null,
    "checks": {
     "R0": "pass",
     "R1": "pass",
@@ -102,9 +117,13 @@
   },
   {
    "row": "flask-2.25.0",
+   "environment": "devnet",
    "stack": "flask",
    "version": "2.25.0",
    "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "checks_run": 11,
+   "checks_passed": 11,
+   "failed_count": 0,
    "tool": "x402-conformance-svm 1.4.0",
    "run_at": "2026-10-23T20:25:16.124Z",
    "run": "evidence/impl-matrix/flask-2.25.0/run.json",
@@ -119,6 +138,7 @@
     "failed_ids": [],
     "unsupported": false
    },
+   "consent": null,
    "checks": {
     "R0": "pass",
     "R1": "pass",
@@ -135,9 +155,13 @@
   },
   {
    "row": "hono-2.28.0",
+   "environment": "devnet",
    "stack": "hono",
    "version": "2.28.0",
    "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+   "checks_run": 11,
+   "checks_passed": 11,
+   "failed_count": 0,
    "tool": "x402-conformance-svm 1.5.0",
    "run_at": "2026-10-24T13:36:41.875Z",
    "run": "evidence/impl-matrix/hono-2.28.0/run.json",
@@ -152,6 +176,7 @@
     "failed_ids": [],
     "unsupported": false
    },
+   "consent": null,
    "checks": {
     "R0": "pass",
     "R1": "pass",

@@ -1,0 +1,24 @@
+Data licence for x402-conformance public results
+
+The public results of x402-conformance are licensed under the Creative Commons Attribution 4.0 International
+licence (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+
+What it covers (public results only):
+  - the matrix data: docs/compat-matrix.json and the result tables in docs/MATRIX.md
+  - the committed evidence under evidence/ (run.json files, their READMEs and SHA256SUMS)
+  - the badges under docs/site/badge/
+
+What it does not cover:
+  - the code, which is licensed under the Apache License 2.0 (LICENSE, NOTICE)
+  - any private research data, which is not in this repository and is not published
+  - any paid deep-testing output, now or in future, which is delivered under its own terms
+  - results held back under SECURITY.md's disclosure window until they are published here
+
+Attribution: when you share or adapt the data, credit it as
+
+    Optitransfer/x402-conformance, https://github.com/atsp-protocol/x402-conformance
+
+with a link to the licence and a note of any changes. The attribution does not mean that Optitransfer, the x402
+Foundation, Coinbase or any listed project endorses you or your use.
+
+Copyright 2026 Ryan Gillespie / Optitransfer

@@ -123,6 +123,41 @@ inputs:
     description: Token for pr-comment. The default job token is enough.
     required: false
     default: ${{ github.token }}
+  evidence:
+    description: >-
+      "true" writes the run as one matrix row's evidence bundle (run.json as the tool wrote it, a README and
+      SHA256SUMS) in <results-dir>/evidence-bundle/<row> and uploads it as an artifact, for the 'Add or update my row'
+      form or a PR (docs/RUN-IT-YOURSELF.md). Testnet and devnet only: a mainnet network is refused before any request.
+    required: false
+    default: "false"
+  row:
+    description: The matrix row name for evidence mode, e.g. myserver-1.2.0 (lower case letters, digits, '.', '_', '-').
+    required: false
+    default: ""
+  evidence-upload:
+    description: >-
+      With evidence mode, "false" keeps the bundle in the evidence-dir output without uploading it, for a caller that
+      seals it first (the x402-conformance run queue sends full results to the project privately before anything is
+      public).
+    required: false
+    default: "true"
+  attest:
+    description: >-
+      "true" writes a signed attestation of this run for the matrix's tier 2, Full suite (self-hosted): the suite's
+      repository, ref and version, your repository, tag and commit, one entry per catalogue check with its status (and
+      the reason for each check that does not apply), and the time. It is signed with GitHub artifact attestations
+      (Sigstore, this job's OIDC identity) and uploaded as the artifact x402-conformance-attestation-<row>; the
+      x402-conformance run queue verifies it and never reruns it. Run it on a release (a tag), with row set and the
+      job permissions id-token: write, attestations: write and contents: read (docs/RUN-IT-YOURSELF.md).
+    required: false
+    default: "false"
+  not-applicable:
+    description: >-
+      With attest, the checks that do not apply to your project and why, as "<check id>: <reason>" separated by ';'
+      or new lines, e.g. "U1: no upto scheme; X1: no paid MCP tools". Each is published with your row. A catalogue
+      check that neither ran nor is listed here is recorded as not run, and the attestation is not accepted for tier 2.
+    required: false
+    default: ""
 outputs:
   result:
     description: '"pass" when every requested check passed, "unsupported" when the probe found nothing it could grade, otherwise "fail".'
@@ -144,6 +179,12 @@ outputs:
   junit:
     description: JUnit XML file with one test case per check, for test-report viewers.
     value: ${{ inputs.results-dir }}/junit.xml
+  evidence-dir:
+    description: With evidence "true", the directory holding the row's evidence bundle (also uploaded as an artifact).
+    value: ${{ steps.evidence.outputs.evidence-dir }}
+  attestation:
+    description: With attest "true", the path of x402-conformance-attestation.json (signed and uploaded as an artifact).
+    value: ${{ steps.attestation.outputs.attestation }}
 runs:
   using: composite
   steps:
@@ -155,6 +196,14 @@ runs:
       run: |
         python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' \
           || { echo "::error title=x402 Conformance::python3 3.10 or newer is required on the runner"; exit 1; }
+    - name: Evidence mode, before any request (testnet and devnet only)
+      if: inputs.evidence == 'true'
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}/src
+        X402C_ROW: ${{ inputs.row }}
+        X402C_NETWORK: ${{ inputs.network }}
+      run: python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_evidence_guard())'
     - name: Live checks S0-S4 (GET /supported only)
       if: inputs.facilitators != ''
       shell: bash
@@ -269,6 +318,50 @@ runs:
         X402C_WANT_OFFLINE: ${{ inputs.offline == 'true' }}
         X402C_RESOURCE: ${{ inputs.resource-url }}
       run: python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_summary())'
+    - name: Evidence bundle for the matrix row (opt-in)
+      id: evidence
+      if: always() && inputs.evidence == 'true'
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}/src
+        X402C_DIR: ${{ inputs.results-dir }}
+        X402C_ROW: ${{ inputs.row }}
+        X402C_NETWORK: ${{ inputs.network }}
+      run: python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_evidence())'
+    - name: Upload the evidence bundle
+      if: always() && inputs.evidence == 'true' && inputs.evidence-upload != 'false' && steps.evidence.outputs.evidence-dir != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: x402-conformance-evidence-${{ inputs.row }}
+        path: ${{ steps.evidence.outputs.evidence-dir }}
+        if-no-files-found: error
+    - name: Attestation for tier 2, Full suite (self-hosted) (opt-in)
+      id: attestation
+      if: always() && inputs.attest == 'true'
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}/src
+        X402C_DIR: ${{ inputs.results-dir }}
+        X402C_ROW: ${{ inputs.row }}
+        X402C_NETWORK: ${{ inputs.network }}
+        X402C_NOT_APPLICABLE: ${{ inputs.not-applicable }}
+        X402C_SUITE_REPOSITORY: ${{ github.action_repository }}
+        X402C_SUITE_REF: ${{ github.action_ref }}
+      run: |
+        python3 -c 'import sys; from x402conf import cli; sys.exit(cli.action_evidence_guard())'
+        python3 -c 'import sys; from x402conf import tiers; sys.exit(tiers.action_attestation())'
+    - name: Sign the attestation (GitHub artifact attestations, Sigstore)
+      if: always() && inputs.attest == 'true' && steps.attestation.outputs.attestation != ''
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: ${{ steps.attestation.outputs.attestation }}
+    - name: Upload the attestation
+      if: always() && inputs.attest == 'true' && steps.attestation.outputs.attestation != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: x402-conformance-attestation-${{ inputs.row }}
+        path: ${{ steps.attestation.outputs.attestation }}
+        if-no-files-found: error
     - name: Sticky pull request comment (opt-in)
       if: always() && inputs.pr-comment == 'true' && github.event_name == 'pull_request'
       shell: bash

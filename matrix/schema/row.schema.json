@@ -1,0 +1,254 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://github.com/atsp-protocol/x402-conformance/blob/main/matrix/schema/row.schema.json",
+ "title": "x402-conformance matrix row",
+ "description": "One project's row in docs/MATRIX.md, from the 'Add or update my row' issue form. Public details only: no emails, no keys, no private data. A row exists only with all four consents.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema",
+  "slug",
+  "project",
+  "type",
+  "repo",
+  "languages",
+  "chains",
+  "networks",
+  "environments",
+  "version",
+  "contact",
+  "consent",
+  "source_issue"
+ ],
+ "properties": {
+  "schema": {
+   "const": "x402-conformance.matrix-row/1"
+  },
+  "slug": {
+   "type": "string",
+   "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+  },
+  "project": {
+   "type": "string",
+   "minLength": 1,
+   "maxLength": 80,
+   "pattern": "^[^<>|`\\n\\r]+$"
+  },
+  "type": {
+   "enum": [
+    "facilitator-self-hosted",
+    "facilitator-hosted",
+    "sdk",
+    "merchant-paid-api",
+    "client-wallet",
+    "mcp-tool"
+   ]
+  },
+  "repo": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "maxLength": 200,
+   "pattern": "^https://[A-Za-z0-9.-]+/[^\\s<>|`]*$"
+  },
+  "site": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "maxLength": 200,
+   "pattern": "^https://[A-Za-z0-9.-]+(/[^\\s<>|`]*)?$"
+  },
+  "languages": {
+   "type": "array",
+   "maxItems": 12,
+   "items": {
+    "type": "string",
+    "pattern": "^[A-Za-z0-9#+. -]{1,24}$"
+   }
+  },
+  "chains": {
+   "type": "array",
+   "maxItems": 24,
+   "items": {
+    "type": "string",
+    "pattern": "^[A-Za-z0-9 .-]{1,32}$"
+   }
+  },
+  "networks": {
+   "type": "array",
+   "maxItems": 48,
+   "items": {
+    "type": "string",
+    "pattern": "^[a-z0-9-]{3,8}:[-_a-zA-Z0-9]{1,48}$"
+   }
+  },
+  "environments": {
+   "type": "array",
+   "minItems": 1,
+   "maxItems": 3,
+   "items": {
+    "enum": [
+     "testnet",
+     "devnet",
+     "mainnet-only"
+    ]
+   }
+  },
+  "testnet_endpoint": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "maxLength": 300,
+   "pattern": "^https://[A-Za-z0-9.-]+(/[^\\s<>|`]*)?$",
+   "description": "The public testnet paid URL the run queue checks from outside (tier 1): at most eight unpaid requests (GETs, and one HEAD for R16a only with consent.unpaid_head) paced at least 5 s apart, never mainnet"
+  },
+  "version": {
+   "type": "string",
+   "pattern": "^[A-Za-z0-9._+-]{1,40}$"
+  },
+  "contact": {
+   "type": "string",
+   "pattern": "^@?[A-Za-z0-9_-]{1,39}$"
+  },
+  "consent": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "listing",
+    "data_license",
+    "testnet_only",
+    "badge"
+   ],
+   "properties": {
+    "listing": {
+     "const": true
+    },
+    "data_license": {
+     "const": true
+    },
+    "testnet_only": {
+     "const": true
+    },
+    "badge": {
+     "description": "Display the badge in our README with attribution to Optitransfer/x402-conformance",
+     "const": true
+    },
+    "hook": {
+     "description": "Free program: the project installs the notify hook so each published release gets a tier-1 external rerun and its tier-2 attestation verified, for six months",
+     "type": "boolean"
+    },
+    "unpaid_head": {
+     "description": "Optional: the operator allows one unpaid HEAD request per tier-1 run (R16a). It is the operator's permission the queue passes as --operator-permission (the row's consent issue); without it R16a is left to the self-hosted run",
+     "type": "boolean"
+    }
+   }
+  },
+  "source_issue": {
+   "type": "string",
+   "pattern": "^https://github\\.com/[\\w.-]+/[\\w.-]+/issues/[0-9]+$"
+  },
+  "evidence": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^evidence/impl-matrix/[a-z0-9][a-z0-9._-]{0,79}$",
+   "description": "Tier 1: the run queue's external run, committed by tools/row_from_evidence.py"
+  },
+  "tier": {
+   "description": "Written by the tools, never by the form: external-verified (tier 1, the run queue's external run) or full-suite-self-hosted (tier 2, a verified attestation of the project's own full-suite run)",
+   "type": [
+    "string",
+    "null"
+   ],
+   "enum": [
+    "external-verified",
+    "full-suite-self-hosted",
+    null
+   ]
+  },
+  "attestation": {
+   "description": "Tier 2: the verified attestation (tools/attestation.py), signed in the project's own CI with GitHub artifact attestations",
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^matrix/attestations/[a-z0-9][a-z0-9-]{0,62}\\.json$"
+  },
+  "release": {
+   "description": "Written by tools/matrix_freshness.py, never by the form: the project's latest release or tag and default-branch commit as of checked_at, and since when the version tested has been behind it.",
+   "type": [
+    "object",
+    "null"
+   ],
+   "additionalProperties": false,
+   "required": [
+    "checked_at",
+    "latest",
+    "default_branch_commit",
+    "behind_since"
+   ],
+   "properties": {
+    "checked_at": {
+     "type": "string",
+     "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "latest": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^[A-Za-z0-9._+-]{1,64}$"
+    },
+    "default_branch_commit": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^[0-9a-f]{7,40}$"
+    },
+    "behind_since": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "readme_badge": {
+     "description": "Whether the project's public README links its row or badge, as of checked_at; null when not checked",
+     "type": [
+      "boolean",
+      "null"
+     ]
+    }
+   }
+  },
+  "program_start": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+   "description": "Free run program: the day the project consented (the hook ticked); queued reruns on new releases run until program_end"
+  },
+  "program_end": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+   "description": "Free run program: six months after program_start. After it the row stays listed with its last result, marked stale, and the badge greys out; nothing is deleted"
+  },
+  "program_notice": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+   "description": "The day the five-month renewal heads-up issue was opened (written by tools/matrix_freshness.py)"
+  }
+ }
+}

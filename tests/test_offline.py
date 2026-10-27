@@ -669,5 +669,69 @@ class VVPreMerge(unittest.TestCase):
         self.assertFalse(ok)
 
 
+class Provenance(unittest.TestCase):
+    """XC-95: every results document names the suite, its version, the publisher and the repository, and the
+    Action's job summary ends with the 'Tested with' line."""
+
+    def test_every_results_document_carries_provenance(self):
+        from x402conf import __version__
+        d = tempfile.mkdtemp()
+        with contextlib.redirect_stdout(io.StringIO()):
+            cli.main(["demo", "--dir", d])
+        docs = [f for f in sorted(os.listdir(d)) if f.endswith(".json")]
+        self.assertTrue(docs)
+        for f in docs:
+            p = json.load(open(os.path.join(d, f))).get("provenance")
+            self.assertEqual(p, {"suite": "x402-conformance", "version": __version__, "publisher": "Optitransfer",
+                                 "repo": "https://github.com/atsp-protocol/x402-conformance"}, f)
+
+    def test_the_job_summary_ends_with_the_tested_with_line(self):
+        from x402conf import __version__
+        d = tempfile.mkdtemp()
+        summary = os.path.join(d, "summary.md")
+        with contextlib.redirect_stdout(io.StringIO()):
+            cli.main(["demo", "--dir", d])
+            cli.action_summary({"X402C_DIR": d, "X402C_WANT_402": "true", "X402C_FAIL": "false",
+                                "GITHUB_STEP_SUMMARY": summary})
+        last = open(summary).read().strip().splitlines()[-1]
+        self.assertTrue(last.startswith(f"Tested with x402-conformance v{__version__}"), last)
+        self.assertIn("https://github.com/atsp-protocol/x402-conformance", last)
+
+
+class F15(unittest.TestCase):
+    """XC-58-AC01. A structured reject for three malformed payloads. An exception is a 5xx, not a pass."""
+
+    def test_reference_rejects_three_payloads(self):
+        r = next(x for x in H.check_safety(M.Reference(), M.vectors()) if x["check"].startswith("F15 "))
+        self.assertTrue(r["pass"], r)
+        for name in ("non_object", "empty_object", "authorization_less"):
+            got = r["detail"][name]
+            self.assertIsInstance(got, dict, name)
+            self.assertIs(got.get("isValid"), False, name)
+            self.assertEqual(got.get("invalidReason"), "invalid_payload", name)
+
+    def test_three_http_500_builds_are_caught(self):
+        for name in ("http_500_non_object", "http_500_empty", "http_500_no_authorization"):
+            self.assertIn("F15", fails(H.check_safety(M.FAULTS[name](), M.vectors())), name)
+
+
+class F16(unittest.TestCase):
+    """XC-58-AC02. Registered for one testnet. Another testnet in the same family is not a wildcard accept.
+
+    The signed example names a mainnet id. The task stop rule forbids a mainnet CAIP-2 id, so the
+    requirement uses eip155:11155111. No network is dialed."""
+
+    def test_registered_testnet_rejects_other_testnet(self):
+        ok, got = H.f16_rejects_unregistered(M.RegisteredNetwork(H.F16_REGISTERED))
+        self.assertTrue(ok, got)
+        self.assertIn(got["invalidReason"], H.F16_REASONS)
+        self.assertNotEqual(H.F16_OTHER, H.F16_REGISTERED)
+
+    def test_wildcard_family_accept_is_caught(self):
+        ok, got = H.f16_rejects_unregistered(M.WildcardFamily("eip155"))
+        self.assertFalse(ok, got)
+        self.assertIs(got.get("isValid"), True)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,107 @@
+# XC-96: an "Add or update my row" issue (.github/ISSUE_TEMPLATE/matrix-row.yml) is checked against
+# matrix/schema/row.schema.json and the public-safe rules in tools/matrix_rows.py. A valid issue gets a pull request
+# that adds or updates matrix/rows/<slug>.json for a maintainer to review. XC-98: when the issue links a full-suite run
+# from the project's own repository, its signed attestation is downloaded and verified (tier 2); nothing is run. Nothing
+# here merges anything, nothing is listed without all four consents, and no endpoint is probed from this workflow.
+name: matrix-row
+on:
+  issues:
+    types: [opened, edited, labeled, reopened]
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+concurrency:
+  group: matrix-row-${{ github.event.issue.number }}
+  cancel-in-progress: false
+jobs:
+  row:
+    if: >-
+      contains(github.event.issue.labels.*.name, 'matrix-row') && github.event.issue.state == 'open' &&
+      (github.event.action != 'labeled' || github.event.label.name == 'matrix-row')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE: ${{ github.event.issue.number }}
+      ISSUE_URL: ${{ github.event.issue.html_url }}
+      ISSUE_BODY: ${{ github.event.issue.body }}
+      BRANCH: matrix-row/issue-${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check the issue
+        id: check
+        run: |
+          # The issue body is untrusted: it only ever reaches the tool as a file, never the shell.
+          printf '%s' "$ISSUE_BODY" > "$RUNNER_TEMP/issue.md"
+          for l in "matrix-row: valid" "matrix-row: needs changes"; do gh label create "$l" >/dev/null 2>&1 || true; done
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            git fetch origin "$BRANCH" && git checkout -B "$BRANCH" "origin/$BRANCH" && git merge --no-edit origin/main
+          else
+            git checkout -b "$BRANCH"
+          fi
+          set +e
+          python3 tools/matrix_rows.py --from-issue "$RUNNER_TEMP/issue.md" --issue-url "$ISSUE_URL" \
+            --github-output "$GITHUB_OUTPUT" > "$RUNNER_TEMP/result.md" 2>&1
+          rc=$?
+          set -e
+          cat "$RUNNER_TEMP/result.md"
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+      - name: Needs changes
+        if: steps.check.outputs.rc != '0'
+        run: |
+          gh issue edit "$ISSUE" --add-label "matrix-row: needs changes" --remove-label "matrix-row: valid" || true
+          { echo "Thanks. The row check found something to fix before your row can be reviewed:"; echo;
+            cat "$RUNNER_TEMP/result.md"; } > "$RUNNER_TEMP/comment.md"
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment.md"
+          exit 1
+      - name: Verify the attested full-suite run, if one is linked (tier 2; nothing is run)
+        if: steps.check.outputs.rc == '0' && steps.check.outputs.attest_run != ''
+        env:
+          SLUG: ${{ steps.check.outputs.slug }}
+          REPO: ${{ steps.check.outputs.attest_repo }}
+          RUN: ${{ steps.check.outputs.attest_run }}
+          GH_TOKEN: ${{ secrets.X402C_READ_TOKEN || secrets.GITHUB_TOKEN }}
+          PR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          d="$RUNNER_TEMP/att"; mkdir -p "$d"
+          if gh run download "$RUN" -R "$REPO" -n "x402-conformance-attestation-$SLUG" -D "$d" \
+             && [ "$(find "$d" -type f | wc -l)" -eq 1 ] && [ -f "$d/x402-conformance-attestation.json" ]; then
+            f="$d/x402-conformance-attestation.json"
+            commit=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['vendor']['commit'])" "$f")
+            gh attestation verify "$f" --repo "$REPO" --source-digest "$commit" --format json > "$d/verify.json" \
+              || echo '[]' > "$d/verify.json"
+            python3 tools/attestation.py verify --file "$f" --gh-json "$d/verify.json" --slug "$SLUG" \
+              --now "$(date -u +%FT%TZ)" --apply | tee "$RUNNER_TEMP/att.md" || true
+          else
+            echo "attestation: no artifact x402-conformance-attestation-$SLUG with only the attestation in run $RUN" | tee "$RUNNER_TEMP/att.md"
+          fi
+          { echo "Tier 2 (Full suite (self-hosted)):"; echo; sed 's/^attestation: /- /' "$RUNNER_TEMP/att.md"; } > "$RUNNER_TEMP/attc.md"
+          GH_TOKEN="$PR_TOKEN" gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/attc.md"
+      - name: Open or update the pull request for review
+        if: steps.check.outputs.rc == '0'
+        env:
+          SLUG: ${{ steps.check.outputs.slug }}
+        run: |
+          # Commits carry the maintainer identity the repository's hygiene check requires.
+          git config user.name "mgillr"
+          git config user.email "36207807+mgillr@users.noreply.github.com"
+          git add matrix/rows matrix/attestations docs/MATRIX.md docs/site/badge docs/site/matrix
+          if git diff --cached --quiet; then echo "no change to the row"; else
+            git commit -m "Add or update the matrix row $SLUG (#$ISSUE)"
+            git push origin "$BRANCH"
+          fi
+          gh issue edit "$ISSUE" --add-label "matrix-row: valid" --remove-label "matrix-row: needs changes" || true
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            printf 'Adds or updates `matrix/rows/%s.json` from #%s.\n\nThe issue passed `tools/matrix_rows.py`: the schema, all four consents and the public-safe rules (and, with a linked full-suite run, tools/attestation.py). For maintainer review; nothing merges automatically. Pull requests opened by this workflow do not start CI on their own, so a maintainer runs it (close and reopen, or push) before merging.\n\nCloses #%s\n' \
+              "$SLUG" "$ISSUE" "$ISSUE" > "$RUNNER_TEMP/pr.md"
+            gh pr create --base main --head "$BRANCH" --title "Matrix row: $SLUG" --body-file "$RUNNER_TEMP/pr.md" --label matrix-row
+            gh issue comment "$ISSUE" --body "Your row is valid. I've opened a pull request for review; it lists your project once it's merged."
+          else
+            gh issue comment "$ISSUE" --body "Your row is valid and the open pull request is updated for review."
+          fi

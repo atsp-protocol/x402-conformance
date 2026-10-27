@@ -1,7 +1,7 @@
 """The checks.
 
 Live checks (S0-S4) read a facilitator's public GET /supported and nothing else: no signing, no payment, no POST.
-Offline checks (F1-F14, F14a) drive a facilitator implementation in-process through /verify and /settle semantics and test
+Offline checks (F1-F16 and F14a) drive a facilitator implementation in-process through /verify and /settle semantics and test
 the safety properties a resource server depends on. F7 and F8 advance the double's simulated chain between retries of
 the same /settle body; F9 puts a broken transport (a 503, a non-JSON page, a truncated body) between the resource
 server and the facilitator. On devnet they run only against a facilitator its operator
@@ -343,9 +343,12 @@ def offers_of(resp: Json) -> list[Any]:
 
 
 def run_resource(url: str, *, timeout: float = 15, opener: Opener | None = None, well_known: bool = False,
-                 manifests: dict[str, Json] | None = None) -> Json:
+                 manifests: dict[str, Json] | None = None, unpaid_head: bool = False, malformed_header: bool = False,
+                 operator_permission: str | None = None) -> Json:
     """One unpaid GET (P1-P7, and P9 when the 402 carries the bazaar extension). With well_known, also one GET of the
-    origin's /.well-known/x402 (P10), shared through `manifests` by every target on the same origin."""
+    origin's /.well-known/x402 (P10), shared through `manifests` by every target on the same origin. With
+    malformed_header, R24 (five unpaid GETs with a malformed PAYMENT-SIGNATURE); with unpaid_head, R16a (one unpaid
+    HEAD), which off loopback is sent only with operator_permission and is skipped without it (external.py)."""
     try:
         r = fetch_402(url, timeout=timeout, opener=opener)
     except RequestBudgetExceeded as e:
@@ -356,6 +359,23 @@ def run_resource(url: str, *, timeout: float = 15, opener: Opener | None = None,
     out = {"target": url, "mode": "resource-GET-only", "http": r["status"], "ms": r["ms"], "checks": check_402(r)}
     if well_known and r["status"] == 402:
         out["checks"] += well_known_checks(url, offers_of(r), timeout=timeout, opener=opener, manifests=manifests)
+    if (unpaid_head or malformed_header) and r["status"] == 402:
+        from . import external as X
+        skipped: list[str] = []
+        if unpaid_head and X.head_needs_permission(url, operator_permission):
+            skipped.append("R16a: an unpaid HEAD is not a GET; off loopback it needs --operator-permission")
+            unpaid_head = False
+        try:
+            if unpaid_head:
+                out["checks"].append(X.unpaid_head(url, r["status"], timeout=timeout, opener=opener))
+            if malformed_header:
+                out["checks"].append(X.malformed_header(url, r["status"], timeout=timeout, opener=opener))
+        except RequestBudgetExceeded as e:
+            skipped.append(str(e))
+        if skipped:
+            out["skipped"] = "; ".join(skipped)
+        if operator_permission:
+            out["operator_permission"] = operator_permission
     return out
 
 
@@ -539,6 +559,66 @@ def _f14a(fac: Facilitator, mk: Vectors, req: Json) -> CheckResult:
     return result(F14a, rejected, detail)
 
 
+F15 = ("F15 a non-object, empty-object or authorization-less payload is invalid_payload "
+       "(HTTP 400, or isValid false), never an HTTP 5xx and never an uncaught exception (V2 9)")
+# Both ids are testnets. The signed example names a mainnet id, which the task stop rule forbids,
+# so the unregistered requirement is Sepolia.
+F16_REGISTERED = "eip155:84532"
+F16_OTHER = "eip155:11155111"
+F16_REASONS = frozenset({"unsupported_scheme", "invalid_network"})
+
+
+def _f15_payloads(req: Json) -> list[tuple[str, Any]]:
+    return [
+        ("non_object", "not-an-object"),
+        ("empty_object", {}),
+        ("authorization_less", {"scheme": "exact", "network": req.get("network")}),
+    ]
+
+
+def _f15_closed(v: Any) -> bool:
+    """HTTP 400, or a 200-class body with isValid false and invalid_payload. A 5xx is open."""
+    if not isinstance(v, dict):
+        return False
+    status = v.get("status")
+    if isinstance(status, int) and status >= 500:
+        return False
+    if isinstance(status, int) and status == 400:
+        return True
+    return v.get("isValid") is False and v.get("invalidReason") == "invalid_payload"
+
+
+def _f15(fac: Facilitator, _mk: Vectors, req: Json) -> CheckResult:
+    # An exception is the in-process form of an uncaught library error, which a HTTP server turns into a 5xx.
+    # F1 treats that as closed. F15 does not: the caller asked for a structured reject.
+    detail: dict[str, Any] = {}
+    ok = True
+    for name, payload in _f15_payloads(req):
+        try:
+            v: Any = fac.verify(payload, req)
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            detail[name] = {"error": f"raised {type(e).__name__}"}
+            continue
+        if not _f15_closed(v):
+            ok = False
+        detail[name] = v
+    return result(F15, ok, detail)
+
+
+def f16_rejects_unregistered(fac: Facilitator, network: str = F16_OTHER) -> tuple[bool, Any]:
+    """A requirement for `network` against a facilitator that did not register it. No network is dialed."""
+    req = {"scheme": "exact", "network": network, "amount": "1",
+           "asset": "0x0000000000000000000000000000000000000000",
+           "payTo": "0x0000000000000000000000000000000000000001", "maxTimeoutSeconds": 60}
+    try:
+        v: Any = fac.verify({"scheme": "exact", "network": network}, req)
+    except Exception as e:  # noqa: BLE001
+        return False, f"raised {type(e).__name__}"
+    ok = isinstance(v, dict) and v.get("isValid") is False and v.get("invalidReason") in F16_REASONS
+    return ok, v
+
+
 S5 = ("S5 every kind /supported advertises gets a structured /verify answer: valid, or invalid with a reason, never "
       "an error (V2 7.1, 7.3)")
 
@@ -627,6 +707,7 @@ def check_safety(fac: Facilitator, mk: Vectors,
     out.append(_f13(fac, mk, req))
     out.append(_f14(fac, mk, req))
     out.append(_f14a(fac, mk, req))
+    out.append(_f15(fac, mk, req))
     s5 = _s5(fac, mk, req)
     if s5 is not None:
         out.append(s5)

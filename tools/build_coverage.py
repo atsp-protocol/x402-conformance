@@ -45,8 +45,10 @@ for _i in ("P1", "P2", "P3", "P4", "P5", "P6", "P7"):
                 "MCP `x402_check_payment_required`")
 for _i in ("F1", "F2", "F3", "F4", "F5", "F6"):
     RUNS[_i] = "`x402conf offline`, `x402conf devnet` (real `/verify` and `/settle` on Solana devnet)"
-for _i in ("F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F14a"):
+for _i in ("F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F14a", "F15"):
     RUNS[_i] = "`x402conf offline`"
+RUNS["F16"] = "`python3 -m unittest tests.test_offline.F16`"
+RUNS["C4"] = "`node --test` on `ts/test/c4-resume.test.ts`"
 for _i in ("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10"):
     RUNS[_i] = "`x402conf-svm probe`, Action `resource-url`, `runConformance`, pytest `probe`, MCP `x402_probe_resource_server`"
 for _i in ("R11", "R11a", "R11b", "R11c", "R11d", "R11e", "R11f"):
@@ -67,8 +69,10 @@ for _i in ("U1", "U2", "U3"):
     RUNS[_i] = "library only: `probeUpto` from `x402-conformance-svm`"
 for _i in ("B1", "B2", "B3"):
     RUNS[_i] = "library only: `probeBatch` from `x402-conformance-svm`"
-for _i in ("R16a", "R24"):
-    RUNS[_i] = f"`x402conf-svm live` (unpaid, paced), and `{LIB[_i]}` from `x402-conformance-svm`"
+RUNS["R16a"] = ("`x402conf-svm live` and `x402conf resource --unpaid-head` (unpaid, paced; off loopback only with "
+                "`--operator-permission`), and `probeUnpaidHead` from `x402-conformance-svm`")
+RUNS["R24"] = ("`x402conf-svm live` and `x402conf resource --malformed-header` (unpaid, paced), and `probeMalformedHeader` "
+               "from `x402-conformance-svm`")
 RUNS["X1"] = "`x402conf-svm mcp` (one unpaid tools/call, paced), and `checkMcpPaymentRequired` from `x402-conformance-svm`"
 RUNS["P9"] = "`x402conf resource`, when the 402 carries the bazaar extension"
 RUNS["P10"] = "`x402conf resource --well-known`"

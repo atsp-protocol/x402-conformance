@@ -1,0 +1,48 @@
+{
+ "schema": "x402-conformance.matrix-pages/2",
+ "license": "CC BY 4.0",
+ "attribution": "Optitransfer/x402-conformance, https://github.com/atsp-protocol/x402-conformance",
+ "catalogue": 83,
+ "example": {
+  "slug": "example",
+  "project": "example-org/example-x402-server",
+  "type": "merchant-paid-api",
+  "repo": null,
+  "site": null,
+  "languages": [
+   "TypeScript"
+  ],
+  "chains": [
+   "EVM"
+  ],
+  "networks": [
+   "eip155:84532"
+  ],
+  "environment": "testnet",
+  "tier": "external-verified",
+  "tier_label": "External-verified",
+  "version": "1.4.0",
+  "contact": "@example-org",
+  "suite_tag": "v1.7.0",
+  "suite_status": "current",
+  "checks_passed": 8,
+  "checks_applicable": 9,
+  "failed_count": 1,
+  "exercised": 9,
+  "not_applicable": 2,
+  "needs_self_hosted": 68,
+  "na_reasons": {
+   "P9": "the 402 carries no bazaar extension",
+   "P10": "the origin serves no /.well-known/x402"
+  },
+  "last_run": "2026-10-20",
+  "release_alignment": "behind (v1.4.0 tested, v1.5.0 latest)",
+  "stale": false,
+  "readme_badge": "shown",
+  "free_run": true,
+  "program_end": "2027-04-20",
+  "evidence": "evidence/impl-matrix/<slug>/run.json",
+  "example": true
+ },
+ "rows": []
+}

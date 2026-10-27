@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { startDouble } from "../src/double.js";
-import { probeUnpaidHead } from "../src/head-unpaid.js";
+import { headNeedsPermission, probeUnpaidHead } from "../src/head-unpaid.js";
 import { BASE_SEPOLIA, DEVNET, startUnpaidHeadServer, type UnpaidHeadFault } from "../example/head-unpaid-server.js";
 
 const NETS = [["Solana devnet", DEVNET], ["Base Sepolia", BASE_SEPOLIA]] as const;
@@ -50,3 +50,12 @@ for (const [name, net] of NETS) {
     } finally { await s.close(); await double.close(); }
   });
 }
+
+test("R16a off loopback: the unpaid HEAD is not a GET, so it needs the operator's permission (XC-110)", () => {
+  assert.equal(headNeedsPermission("https://testnet.example.com/paid"), true);
+  assert.equal(headNeedsPermission("https://testnet.example.com/paid", "  "), true);
+  assert.equal(headNeedsPermission("https://testnet.example.com/paid",
+    "https://github.com/atsp-protocol/x402-conformance/issues/1"), false);
+  assert.equal(headNeedsPermission("http://127.0.0.1:4020/paid"), false);
+  assert.equal(headNeedsPermission("http://localhost:4020/paid"), false);
+});

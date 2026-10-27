@@ -1,71 +1,176 @@
-# Facilitator matrix
+# x402-conformance matrix
 
-Devnet results for x402 V2 facilitators on Solana: F1 to F6 over real `/verify` and `/settle`, run by
-`x402conf devnet`. I run it against a third-party facilitator only with that operator's written **permission**,
-and only on devnet. Each third-party report will sit in `evidence/matrix/<operator>.json` with its permission record linked below.
+**[Add or update your row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml)**: one issue form, checked against `matrix/schema/row.schema.json`, opens a pull request with your row for review. See [Rerun or get listed](#rerun-or-get-listed).
 
-Disclosure: a failing check in someone else's facilitator goes to that operator privately first. I publish it only
-after a fix or 90 days after the report, whichever is first (SECURITY.md). Until then the row says "under disclosure".
+The matrix is opt-in only. A project is listed, with its results and a badge for its own README, only after it
+accepts: through the form above or a pull request, with the consent recorded in the issue or the PR. Nothing is
+committed about a project that has not accepted. To be listed, join the free program below, or run the full suite
+yourself in your CI and submit its attestation ([RUN-IT-YOURSELF.md](RUN-IT-YOURSELF.md)).
 
-| facilitator | operator permission | devnet run | F1 | F2 | F3 | F4 | F5 | F6 | disclosure status |
-|---|---|---|---|---|---|---|---|---|---|
-| self-hosted reference (@x402/core + @x402/svm 2.28.0) | mine, not needed | [2026-10-20](../evidence/devnet) | pass | pass | pass | **fail** | pass | pass | n/a: my own instance of open-source code |
-| facilitator.payai.network | not yet requested | none | | | | | | | n/a |
-| facilitator.x402.rs | not yet requested | none | | | | | | | n/a |
-| x402.dexter.cash | not yet requested | none | | | | | | | n/a |
-| x402.org/facilitator | not yet requested | none | | | | | | | n/a |
-| facilitator.daydreams.systems | not yet requested | none | | | | | | | n/a |
-| facilitator.goplausible.xyz | not yet requested | none | | | | | | | n/a |
-| facilitator.ultravioletadao.xyz | not yet requested | none | | | | | | | n/a |
+Every row has an environment: **testnet** (run against a public testnet or devnet endpoint), **devnet** (run locally,
+from source or fixtures, on loopback with testnet ids), **live-not-run** (mainnet only, not exercised) or
+**out-of-reach** (hosted only, or nothing public to run against). Results are checks passed out of applicable
+checks, and failed checks are a count only. Rows are listed by name, never by result, and carry no composite number.
 
-In the live run of 2026-10-20 ([evidence/2026-10-20-v1.3.0](../evidence/2026-10-20-v1.3.0)), seven named facilitators advertise a V2 `exact` kind on Solana devnet in `GET /supported`: the seven above. One more is withheld in that run. XC-M2 is done when at least
-three facilitators have a report here, each with its permission recorded. No third-party report exists yet.
+## Two tiers
 
-The F4 failure on the reference is explained in [evidence/devnet](../evidence/devnet): it deduplicates by
-transaction, not by memo, so two different transactions with the same memo both settle.
-
-Want your facilitator in the matrix? Open an issue and say so. The issue is the permission record.
-
-## Self-hosted open-source facilitators
-
-Seventeen facilitators publish their source and can run on my own machine. I build each one at a pinned commit, start it
-on 127.0.0.1 against public testnets with throwaway keys, and run the suite against that loopback instance: `x402conf live`
-(S0 to S4) today, and the verify-only F checks on Base Sepolia once XC-51 lands. No hosted instance is called and no operator
-permission is needed, because the instance is mine (the same footing as the self-hosted reference above). A failing check
-still goes to the project privately first (SECURITY.md); until then its row says "under disclosure".
-
-| facilitator | source @ pin | networks | suite today | status |
+| tier | what runs | where | who runs it | badge |
 |---|---|---|---|---|
-| x402 TypeScript example | x402-foundation/x402 @ 2cf50eb | Base Sepolia, Solana devnet | S0-S4 on loopback | run on loopback 2026-10-24; F checks with XC-51 |
-| x402 Python example | x402-foundation/x402 @ 2cf50eb | Base Sepolia, Solana devnet | S0-S4 on loopback | as above |
-| x402 Go example | x402-foundation/x402 @ 2cf50eb | Base Sepolia, Solana devnet | S0-S4 on loopback | as above |
-| x402-rs | x402-rs/x402-rs @ e75adda | Base Sepolia | S0-S4 on loopback | as above |
-| qntx facilitator | qntx/facilitator @ df75698 | Base Sepolia | S0-S4 on loopback | as above |
-| faremeter | faremeter/faremeter @ 68e024e | Base Sepolia, SKALE and Monad testnets | S0-S4 on loopback | as above |
-| daydreams | daydreamsai/facilitator @ 9d99d61 | Base Sepolia | S0-S4 on loopback (bearer token) | as above |
-| mogami | mogami-tech/x402-facilitator @ 8e76b2d | Base Sepolia | S0-S4 on loopback | as above |
-| raid-guild | raid-guild/x402-facilitator-go @ 83744bf | Base Sepolia | S0-S4 on loopback | as above |
-| agent-guide go-x402-facilitator | agent-guide/go-x402-facilitator @ 164747c | Base Sepolia (V1) | S0-S4 on loopback | V1 only |
-| Stellar x402 | stellar/x402-stellar @ 953caa5 | Stellar testnet | S0-S4 on loopback | F checks need a Stellar `exact` client |
-| Accensa Stellar | accensa/x402-facilitator-stellar @ 016c16b | Stellar testnet | S0-S4 on loopback | as above |
-| Casper x402 | make-software/casper-x402 @ 3ee705e | Casper testnet | S0-S4 on loopback | F checks need a Casper client |
-| Fireblocks | fireblocks/x402-facilitator @ ca7dd59 | Base Sepolia | not yet | a payments API, not the facilitator API; needs a custody key |
-| OpenZeppelin relayer plugin | OpenZeppelin/relayer-plugin-x402-facilitator @ 831fb05 | Stellar testnet | not yet | runs only inside an OpenZeppelin Relayer |
-| TRDEFI Arc | TRDEFI/arc-x402-facilitator @ efbe999 | Arc | not yet | no testnet configuration at this pin |
-| PipRail | piprail/piprail @ a8d7c35 | none | n/a | a facilitator client, no server |
+| **External-verified** | the checks that work from outside the project's stack, 11 of the catalogue: P1 to P7, P9 and P10 (unpaid GETs of the paid URL and its `/.well-known/x402`), R24 (five unpaid GETs with a malformed `PAYMENT-SIGNATURE`) and R16a (one unpaid `HEAD`, only if the project allows it on the form) | the project's public testnet endpoint | the run queue, on each new release (the notify hook, or the weekly release check) | "External-verified · x402-conformance <tag> · Optitransfer" |
+| **Full suite (self-hosted)** | every check in the catalogue, including the facilitator, fault-injection, crash, retry and binding checks that only work inside the stack | the project's own CI, on each release | the project, with the Action and `attest: true`; the queue verifies the signed attestation and never reruns it | "Full suite (self-hosted) · x402-conformance <tag> · Optitransfer" |
 
-## Implementation matrix
+Each row shows its tier, checks passed out of applicable checks, and the denominator: how many catalogue checks were
+exercised, how many don't apply (each with its reason on the Pages matrix), and how many need the self-hosted run.
+A tier-1 row says plainly that most of the catalogue needs the self-hosted run; it is not a full-suite result. The
+row also shows the suite tag and the date. The badge carries the tier, the tag, the count and the date.
+
+Tier 2 is verified, not trusted on sight. The Action writes one entry per catalogue check (pass, fail, warn or not
+applicable with a reason), the suite's ref and version, the project's repository, tag and commit, and the time, and
+signs it with GitHub artifact attestations (Sigstore, the job's OIDC identity). `tools/attestation.py` accepts it only
+when `gh attestation verify` shows it was signed by a workflow in the row's own repository at the attested commit,
+tag and run, over that exact file, and every check of the pinned suite (`matrix/queue/suite.json`) is present. A
+check that neither ran nor was declared not applicable counts as missing, and the attestation is refused. An
+attestation from an older suite release is listed and marked "rerun on current suite", with a grey badge. The
+attestation says what the project's CI ran and reported; the signature proves where and on which commit it ran,
+not that the results were not altered on the way. Read a tier-2 row as the project's own signed report.
+
+A hosted-staging full run is the exception path, for a project that can't add a CI step: it exposes a testnet
+staging stack with its facilitator reachable and fault injection allowed, and the full suite runs against it
+by arrangement, with written permission. It is not part of the queue.
+
+A hosted facilitator is run only with its operator's written **permission**, and only on devnet or testnet; the
+add-row issue or the PR is the permission record. Disclosure: a failing check in someone else's project goes to that
+project privately first. I publish it only after a fix or 90 days after the report, whichever is first (SECURITY.md).
+Until then the row says "under disclosure".
+
+## Listed projects
+
+<!-- matrix-rows:start -->
+
+Opt-in only: a project appears here after it accepts, through the [Add or update my row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml) form or a pull request. Generated by `python3 tools/matrix_rows.py --write` from `matrix/rows/*.json`; CI fails when it is stale. The full searchable table of accepted projects is on the [Pages matrix](https://atsp-protocol.github.io/x402-conformance/matrix/).
+
+Two tiers. **External-verified**: the run queue runs the checks that work from outside a project's stack against its public testnet endpoint, with no spend, on each new release. **Full suite (self-hosted)**: the project runs the whole suite in its own CI with the Action on each release, and the queue verifies the signed attestation; it never runs it. Each row shows its tier, checks passed out of applicable checks, the denominator (exercised / not applicable / needs the self-hosted run, out of 83 in the catalogue), the suite tag and the date.
+
+Listed projects display the badge in their README with the line "Conformance tested by Optitransfer/x402-conformance", both linking to their row. The badge reads "External-verified · x402-conformance <tag> · Optitransfer" or "Full suite (self-hosted) · x402-conformance <tag> · Optitransfer", with checks passed out of applicable and the date, and turns grey when the row is stale or needs a rerun on the current suite. It is not a certification and not an endorsement, and carries no x402 logo. The weekly check reads each project's public README and flags a row whose README no longer links it. The example row's badge reads "External-verified · x402-conformance v1.7.0 · Optitransfer" | "8/9 checks · 2026-10-20". Copy-paste README snippet, per row (each row below has its own):
+
+- Markdown: `[![Tested with x402-conformance · Optitransfer](https://atsp-protocol.github.io/x402-conformance/badge/<slug>.svg)](https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>) Conformance tested by [Optitransfer/x402-conformance](https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>)`
+- HTML: `<a href="https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>"><img src="https://atsp-protocol.github.io/x402-conformance/badge/<slug>.svg" alt="Tested with x402-conformance · Optitransfer"></a> Conformance tested by <a href="https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>">Optitransfer/x402-conformance</a>`
+
+**Coverage of accepted projects**
+
+| by | accepted projects |
+|---|---|
+| total | 0 accepted, 0 with results |
+| tier | none yet |
+| type | none yet |
+| chain | none yet |
+| language | none yet |
+| environment | none yet |
+
+**Accepted projects with evidence**
+
+Release alignment: current (the version tested is the latest release), behind (vX tested, vY latest), or stale (no run within 30 days of the last release check, or behind for 30 days or more). tools/matrix_freshness.py checks each project's latest release and default-branch commit every week.
+
+| project | type | tier | environment | version tested | release alignment | passed/applicable | failed | denominator | suite | last run | badge in README | README snippet | add or update |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| <a id="project-example"></a>**Example (illustrative, not a real result):** example-org/example-x402-server | merchant-paid-api | External-verified | testnet | 1.4.0 | behind (v1.4.0 tested, v1.5.0 latest) | 8/9 | 1 | 9 exercised / 2 NA / 68 needs self-hosted | v1.7.0 | 2026-10-20: `evidence/impl-matrix/<slug>/run.json` | shown | `[![Tested with x402-conformance · Optitransfer](https://atsp-protocol.github.io/x402-conformance/badge/example.svg)](https://atsp-protocol.github.io/x402-conformance/matrix/#example) Conformance tested by [Optitransfer/x402-conformance](https://atsp-protocol.github.io/x402-conformance/matrix/#example)` | [add or update](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml) |
+| no accepted project yet | | | | | | | | | | | | | [add your row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml) |
+
+<!-- matrix-rows:end -->
+
+## Reference baseline
+
+The suite's own runs against the protocol's reference code, to keep the checks honest. These are not listings and
+carry no badge. The reference facilitator (@x402/core + @x402/svm 2.28.0, my own devnet instance) passed 5 of 6 F
+checks with 1 failed on 2026-10-20 ([evidence/devnet](../evidence/devnet)).
 
 <!-- compat-matrix:start -->
 
-Stock example servers at pinned SDK versions, probed on loopback behind the facilitator double (R0 to R10). Generated by `python3 tools/compat_matrix.py --write` from `evidence/impl-matrix/*/run.json`; CI fails when this table or `docs/compat-matrix.json` is stale, a row has no hashes, or a hash does not match its file. Each row links the run it was built from and the `SHA256SUMS` that pins it.
+The suite's own reference baseline, not listings: stock example servers at pinned SDK versions, probed on loopback behind the facilitator double (R0 to R10), so the environment is devnet: local, from source, with testnet ids. Generated by `python3 tools/compat_matrix.py --write` from `evidence/impl-matrix/*/run.json`; CI fails when this table or `docs/compat-matrix.json` is stale, a row has no hashes, or a hash does not match its file. Each row links the run it was built from and the `SHA256SUMS` that pins it. Passed/run counts the checks that ran; failed is a count only. A row marked listed is a project's own evidence, with its consent in its README.
 
-| row | stack | version | network | checks | failed | run | hashes |
-|---|---|---|---|---|---|---|---|
-| express-2.27.0 | express | 2.27.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11 | none | [run.json](../evidence/impl-matrix/express-2.27.0/run.json) | [`4cb84a761d1f`](../evidence/impl-matrix/express-2.27.0/SHA256SUMS) |
-| express-2.28.0 | express | 2.28.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11 | none | [run.json](../evidence/impl-matrix/express-2.28.0/run.json) | [`dc7730d56b44`](../evidence/impl-matrix/express-2.28.0/SHA256SUMS) |
-| fastapi-2.25.0 | fastapi | 2.25.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11 | none | [run.json](../evidence/impl-matrix/fastapi-2.25.0/run.json) | [`de0969cd88e4`](../evidence/impl-matrix/fastapi-2.25.0/SHA256SUMS) |
-| flask-2.25.0 | flask | 2.25.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11 | none | [run.json](../evidence/impl-matrix/flask-2.25.0/run.json) | [`eae4e6e5f705`](../evidence/impl-matrix/flask-2.25.0/SHA256SUMS) |
-| hono-2.28.0 | hono | 2.28.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11 | none | [run.json](../evidence/impl-matrix/hono-2.28.0/run.json) | [`892b9a4a29d0`](../evidence/impl-matrix/hono-2.28.0/SHA256SUMS) |
+| row | environment | stack | version tested | network | passed/run | failed | last run | hashes | listing | rerun / get listed | missing check? |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| <a id="row-express-2.27.0"></a>express-2.27.0 | devnet | express | 2.27.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11/11 | 0 | [2026-10-24](../evidence/impl-matrix/express-2.27.0/run.json) | [`4cb84a761d1f`](../evidence/impl-matrix/express-2.27.0/SHA256SUMS) | baseline | [rerun](#rerun-or-get-listed) | [propose a check](https://github.com/atsp-protocol/x402-conformance/issues/new?template=check-proposal.yml) |
+| <a id="row-express-2.28.0"></a>express-2.28.0 | devnet | express | 2.28.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11/11 | 0 | [2026-10-24](../evidence/impl-matrix/express-2.28.0/run.json) | [`dc7730d56b44`](../evidence/impl-matrix/express-2.28.0/SHA256SUMS) | baseline | [rerun](#rerun-or-get-listed) | [propose a check](https://github.com/atsp-protocol/x402-conformance/issues/new?template=check-proposal.yml) |
+| <a id="row-fastapi-2.25.0"></a>fastapi-2.25.0 | devnet | fastapi | 2.25.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11/11 | 0 | [2026-10-23](../evidence/impl-matrix/fastapi-2.25.0/run.json) | [`de0969cd88e4`](../evidence/impl-matrix/fastapi-2.25.0/SHA256SUMS) | baseline | [rerun](#rerun-or-get-listed) | [propose a check](https://github.com/atsp-protocol/x402-conformance/issues/new?template=check-proposal.yml) |
+| <a id="row-flask-2.25.0"></a>flask-2.25.0 | devnet | flask | 2.25.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11/11 | 0 | [2026-10-23](../evidence/impl-matrix/flask-2.25.0/run.json) | [`eae4e6e5f705`](../evidence/impl-matrix/flask-2.25.0/SHA256SUMS) | baseline | [rerun](#rerun-or-get-listed) | [propose a check](https://github.com/atsp-protocol/x402-conformance/issues/new?template=check-proposal.yml) |
+| <a id="row-hono-2.28.0"></a>hono-2.28.0 | devnet | hono | 2.28.0 | `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` | 11/11 | 0 | [2026-10-24](../evidence/impl-matrix/hono-2.28.0/run.json) | [`892b9a4a29d0`](../evidence/impl-matrix/hono-2.28.0/SHA256SUMS) | baseline | [rerun](#rerun-or-get-listed) | [propose a check](https://github.com/atsp-protocol/x402-conformance/issues/new?template=check-proposal.yml) |
 
 <!-- compat-matrix:end -->
+
+## Rerun or get listed
+
+Every row can be added or refreshed by the project itself, without waiting for me. You need no permission to test
+your own code or your own testnet endpoint.
+
+1. Run the suite on your own testnet or devnet endpoint, or on a local build: the CLI, the GitHub Action or the MCP
+   server, as in [RUN-IT-YOURSELF.md](RUN-IT-YOURSELF.md). Never point it at mainnet or at someone else's facilitator.
+2. Open the [Add or update my row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml)
+   issue form with your details and the four consents. For tier 1, give your public testnet endpoint and tick the
+   notify hook. For tier 2, link a release run of the Action with `attest: true` in your own repository. The
+   `matrix-row` workflow checks the issue against `matrix/schema/row.schema.json` and the public-safe rules, verifies
+   a linked attestation with `tools/attestation.py`, labels the issue (`matrix-row: valid` or
+   `matrix-row: needs changes`, with a comment saying what to fix) and opens a pull request that adds or updates
+   `matrix/rows/<slug>.json` and the table above. I review and merge it by hand; nothing merges automatically.
+3. Tier-1 results come only from the run queue (`tools/row_from_evidence.py` checks each run's bundle and writes
+   `evidence/impl-matrix/<slug>/` with its `run.json`, a README and `SHA256SUMS`); tier-2 results come only from a
+   verified attestation in `matrix/attestations/<slug>.json`. CI rebuilds every row from those files and fails if
+   anything was edited by hand.
+
+A row is listed only with consent recorded in the issue or the PR. A failing check in a third-party project goes to that
+project privately first (SECURITY.md); until then the row shows the failed count and "under disclosure".
+
+Missing a check? Propose one with the [check proposal](https://github.com/atsp-protocol/x402-conformance/issues/new?template=check-proposal.yml)
+form (see [GOVERNANCE.md](../GOVERNANCE.md) and CONTRIBUTING.md). Proposals follow the project's governance: spec text first, a failing faulty build and a
+passing control.
+
+## Free run program
+
+For six months from your consent (`program_start` to `program_end` in your row), free:
+
+- **tier 1**: one initial external run of your public testnet endpoint, then a rerun for each new release (not every
+  commit), with the pinned suite release;
+- **tier 2**: verification and listing of the attested full-suite run your own CI makes on each release.
+
+In return your project:
+
+1. is listed in this matrix with its results (counts only, from committed evidence);
+2. displays the badge in its README with attribution to Optitransfer/x402-conformance. The copy-paste snippet is on
+   your row. The weekly check reads your public README and flags the row if the badge link is missing;
+3. installs the notify hook, [templates/x402-conformance-notify.yml](templates/x402-conformance-notify.yml), saved as
+   `.github/workflows/x402-conformance-notify.yml`. It runs on each published release and nothing else: it asks for
+   the tier-1 rerun and, when its full-suite job is on, runs the suite in your CI and submits the attestation.
+
+Tick the matching boxes in the [Add or update my row](https://github.com/atsp-protocol/x402-conformance/issues/new?template=matrix-row.yml)
+form and give your public testnet endpoint.
+
+Requests go into the run queue (`matrix/queue/`, the `run-queue` workflow). It drops duplicates, takes release tags
+only, and runs within its caps (`matrix/queue/caps.json`):
+
+- unpaid requests only, at least 5 s apart, at most eight per run: seven GETs, and one HEAD (R16a) only if you
+  allowed it on the form. Without that, R16a is left to the self-hosted run;
+- testnet ids only; no hosted facilitator, no mainnet, zero spend;
+- the queue never checks out or runs your code, and refuses to run at all if the caps allow spend or no suite
+  release is pinned.
+
+The full tier-1 results go to you privately first: they're sealed to my key, and your row is updated by a pull
+request for review only after you've had them. A failing check follows SECURITY.md. Tier 2 is never rerun on our
+side: the queue downloads your signed attestation and verifies it. At five months I open a renewal heads-up issue.
+After six months your row stays listed with its last result, marked stale, and the badge greys out;
+nothing is deleted. Running the suite yourself with the Action ([RUN-IT-YOURSELF.md](RUN-IT-YOURSELF.md))
+stays free and unlimited.
+
+## Badge and data licence
+
+A listed project with results gets a badge for its tier, "External-verified · x402-conformance <tag> ·
+Optitransfer" or "Full suite (self-hosted) · x402-conformance <tag> · Optitransfer", with checks passed out of
+applicable checks and the date, at `https://atsp-protocol.github.io/x402-conformance/badge/<slug>.svg`, linking to
+its row on the
+[Pages matrix](https://atsp-protocol.github.io/x402-conformance/matrix/). Next to it goes the line
+"Conformance tested by [Optitransfer/x402-conformance](https://atsp-protocol.github.io/x402-conformance/matrix/#<slug>)".
+The terms are in [BADGE.md](BADGE.md). The badge says a run exists. It doesn't certify anything and it isn't an
+endorsement.
+
+The public matrix data and committed evidence are licensed CC BY 4.0 ([DATA-LICENSE](../DATA-LICENSE)). Attribution:
+"Optitransfer/x402-conformance", https://github.com/atsp-protocol/x402-conformance. The code is Apache-2.0
+([LICENSE](../LICENSE), [NOTICE](../NOTICE)).

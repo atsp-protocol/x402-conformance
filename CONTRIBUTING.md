@@ -11,7 +11,14 @@ Thanks for helping. This project is experimental. Review happens in the open, th
 - **A failing run worth keeping?** Run it with `--share` to write an anonymised corpus case, then submit it with the
   "Share a corpus case" issue form. [corpus/README.md](corpus/README.md) explains the format.
 
-- **New checks.** Open an issue with the "check proposal" template. Quote the exact x402 spec text and its section. Every check needs a test that fails against a faulty build (a double, a server or a client) and passes against a stock control.
+- **Your own row in the matrix.** Run the suite on your own testnet or devnet endpoint or a local build
+  ([docs/RUN-IT-YOURSELF.md](docs/RUN-IT-YOURSELF.md)) and open the "Add or update my row" issue
+  (`.github/ISSUE_TEMPLATE/matrix-row.yml`), pasting your run.json if you have one. The `matrix-row` workflow checks it
+  against `matrix/schema/row.schema.json` and opens a PR with `matrix/rows/<slug>.json` for review; or make the PR
+  yourself with `python3 tools/row_from_evidence.py <bundle> --row <row> --consent <issue URL>`. CI rebuilds the row
+  and its badge. Nothing is listed without the consents in the form. Or join the free run program
+  (docs/MATRIX.md, Free run program): I run it for you, and your notify hook queues reruns.
+- **New checks.** Open an issue with the "check proposal" template. Quote the exact x402 spec text and its section. Every check needs a test that fails against a faulty build (a double, a server or a client) and passes against a stock control. Who maintains the project, how a check is admitted, and the check-id rules: [GOVERNANCE.md](GOVERNANCE.md).
 - **[Proofline](https://github.com/Optitransfer/proofline).** Scope and acceptance criteria live in `proofline.json`. A pull request that adds work outside every task's scope fails the `vv` job. Contract changes are proposed in a PR, and the owner re-signs them.
 - **Downstream docs, contracts and tests.** On a pull request CI runs `python3 tools/interdeps.py --gate --base origin/<base>`. It fails when your change leaves a doc, contract or test component directly downstream neither touched nor acknowledged, and lists the rest for review. If you checked one and it needs no change, add a line `Interdeps-Ack: <component>[, <component>] - <reason>` to a commit message or the pull request body.
 - **Before you push,** run the local checks:
@@ -22,6 +29,7 @@ Thanks for helping. This project is experimental. Review happens in the open, th
       (cd ts/mcp && npm ci && npm test)
       (cd lean && lake build) && python3 tools/lean_axioms.py
       python3 tools/interdeps.py && python3 tools/interdeps.py --drift   # regenerate docs/INTERDEPENDENCY.md, then check the docs match the code
+      python3 tools/interdeps.py --docs --fix   # regenerate every derived count, table and block in the docs, then list what is left to fix by hand
       python3 tools/vv.py verify --pre-merge     # on a branch; plain `verify` is the strict run on main
       python3 tools/interdeps.py --gate --base origin/main   # the downstream docs, contracts and tests your change needs
 

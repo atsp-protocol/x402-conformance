@@ -19,6 +19,11 @@ complements x402 and its facilitators and doesn't replace them.
 
 Project page with the checks and the latest results: https://atsp-protocol.github.io/x402-conformance/
 Release map: [RELEASES.md](RELEASES.md). What the suite covers, check by check: [docs/COVERAGE.md](docs/COVERAGE.md).
+How the project is run: [GOVERNANCE.md](GOVERNANCE.md).
+
+<!-- docs-aligned:counts -->
+The catalogue has 83 checks in 11 families: 41 normative, 27 security profile and 15 resilience ([docs/COVERAGE.md](docs/COVERAGE.md)). The contract, `proofline.json`, has 109 tasks and 766 acceptance criteria; 46 tasks are claimed done, and CI holds each of them to every criterion ([docs/VV.md](docs/VV.md)).
+<!-- /docs-aligned:counts -->
 
 ## 60-second quickstart
 
@@ -26,7 +31,7 @@ See it work first, with nothing to set up: no project, no wallet, no chain, a fe
 
 ```
 npx -y x402-conformance-svm demo                       # R0-R10 against a bundled mock server behind a facilitator double
-pipx run --spec x402-conformance x402conf demo         # S1-S4, P1-P7 against a bundled mock, then the F1-F14 and S5 self-test
+pipx run --spec x402-conformance x402conf demo         # S1-S4, P1-P7 against a bundled mock, then the F1-F16 and S5 self-test
 npx -y x402-conformance-svm demo --fault serve_on_any_settle   # what a failure looks like, with a fix link per check
 ```
 
@@ -97,7 +102,9 @@ report everywhere. Failures you choose to share build the public
 
 Live targets are paced: at least 5 s between requests to a non-loopback host (`--min-interval`), an optional cap on the
 whole run (`--max-requests`), and one line per request on stderr. `x402conf-svm live --url <paid-url>` adds R16a and
-R24 to P1-P7 against a server you may test, unpaid, in 7 requests. `x402conf-svm mcp --url <mcp-endpoint> --tool <name>`
+R24 to P1-P7 against a server you may test, unpaid, in 7 requests; `x402conf resource --malformed-header --unpaid-head`
+does the same in Python. HEAD is not a GET, so off loopback R16a runs only with `--operator-permission <ref>` (the
+operator's written permission) and is skipped without it. `x402conf-svm mcp --url <mcp-endpoint> --tool <name>`
 calls a paid MCP tool once, unpaid, and grades X1 and P3-P5 and P7 on the offer in its result (`--no-initialize` for a
 server that needs no session: one request).
 
@@ -200,7 +207,7 @@ Every result carries its **profile** (`normative`: the spec says MUST; `security
 leaves open; `resilience`: behaviour under failure), its spec **basis** and a **fix** link (results format
 `x402-conformance-evidence/2`).
 
-**Safety suite (`x402conf offline` and `devnet`, F1-F14, F14a and S5):** a malformed payment accepted (F1), an underpayment
+**Safety suite (`x402conf offline` and `devnet`, F1-F16, F14a and S5):** a malformed payment accepted (F1), an underpayment
 accepted (F2), a payment settled twice (F3), a memo or nonce replayed (F4), success before confirmation, or
 `settlement_pending` without a transaction and network (F5), a timeout or garbage answer credited (F6), a pending
 payment never finalised or credited twice (F7), a failure stuck pending (F8), a broken `/settle` transport credited
@@ -231,9 +238,11 @@ every check, what failed, why it matters and how to fix it.
 
 Packages: [x402-conformance on PyPI](https://pypi.org/project/x402-conformance/) (command `x402conf`) and
 [x402-conformance-svm on npm](https://www.npmjs.com/package/x402-conformance-svm) (command `x402conf-svm`; the name is
-historical, it grades Base Sepolia too). `x402conf --version` and `x402conf-svm --version` print the version. Pin
-`x402-conformance==1.6.0`, `x402-conformance-svm@1.6.0` or the Action at `@v1.6.0` if you want a fixed version; `@v1`
-follows the latest 1.x release.
+historical, it grades Base Sepolia too). `x402conf --version` and `x402conf-svm --version` print the version.
+
+<!-- docs-aligned:pins -->
+Pin `x402-conformance==1.6.0`, `x402-conformance-svm@1.6.0` or the Action at `@v1.6.0` if you want a fixed version; `@v1` follows the latest 1.x release.
+<!-- /docs-aligned:pins -->
 
 ## CLI
 
@@ -241,7 +250,7 @@ follows the latest 1.x release.
 x402conf demo [--fault no_fee_payer|no_402] [--dir DIR] # a bundled mock on loopback, then the self-test
 x402conf live https://x402.org/facilitator             # S0-S4, GET /supported only
 x402conf resource https://api.example.com/paid         # P1-P7, one unpaid GET
-x402conf offline                                       # F1-F14, F14a and S5 self-test against the built-in doubles
+x402conf offline                                       # F1-F16, F14a and S5 self-test against the built-in doubles
 x402conf report --dir DIR --sarif out.sarif --junit junit.xml --badge badge.json
 x402conf pr-comment DIR/pr-comment.md                  # sticky PR comment (GITHUB_TOKEN, in a pull_request run)
 x402conf devnet --faults --keys DIR                    # F1-F6 over real /verify and /settle on Solana devnet
@@ -301,11 +310,16 @@ The [quickstart](#60-second-quickstart) workflow runs as is. Inputs:
 | `start` | empty | Command that starts your server; it receives `X402_FACILITATOR_URL` |
 | `network` | `auto` | Which offered network the probe pays on: `auto`, `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` or `eip155:84532` |
 | `port` | `4402` | Loopback port for the facilitator double |
-| `offline` | `true` | Also run the F1-F14 and S5 self-test of the suite (it tests the suite, not your code; set `false` to skip) |
+| `offline` | `true` | Also run the F1-F16 and S5 self-test of the suite (it tests the suite, not your code; set `false` to skip) |
 | `results-dir` | `x402-conformance` | Where `live.json`, `resource-402.json`, `resource-server.json` and `offline.json` are written |
 | `fail-on-error` | `true` | Fail the job when a check fails, a requested run left no results, or the probe found nothing to grade |
 | `pr-comment` | `false` | `true` posts one sticky pull request comment with the result and a fix link per failed check (needs `permissions: { pull-requests: write }`) |
 | `github-token` | the job token | Token used for `pr-comment`; the default job token is enough |
+| `evidence` | `false` | `true` writes the run as one matrix row's evidence bundle (`run.json`, a README and `SHA256SUMS`) in `<results-dir>/evidence-bundle/<row>` and uploads it as an artifact; testnet and devnet only, a mainnet network is refused before any request ([docs/RUN-IT-YOURSELF.md](docs/RUN-IT-YOURSELF.md)) |
+| `row` | empty | The matrix row name for `evidence` and `attest`, for example `myserver-1.2.0` |
+| `evidence-upload` | `true` | `false` keeps the evidence bundle in the `evidence-dir` output without uploading it |
+| `attest` | `false` | `true` writes and signs (GitHub artifact attestations) an attestation of a full run for the matrix's tier 2, Full suite (self-hosted); run it on a tag, with `row` set and `permissions: { id-token: write, attestations: write, contents: read }` |
+| `not-applicable` | empty | With `attest`, the checks that don't apply to your project and why, as `<check id>: <reason>` separated by `;` or new lines |
 
 | output | value |
 |---|---|
@@ -315,6 +329,8 @@ The [quickstart](#60-second-quickstart) workflow runs as is. Inputs:
 | `pr-comment` | `<results-dir>/pr-comment.md`, the sticky comment body |
 | `sarif` | `<results-dir>/x402-conformance.sarif`, SARIF 2.1.0 of the failed checks |
 | `junit` | `<results-dir>/junit.xml`, one test case per check |
+| `evidence-dir` | with `evidence: true`, the directory holding the row's evidence bundle |
+| `attestation` | with `attest: true`, the path of `x402-conformance-attestation.json` (signed and uploaded as an artifact) |
 
 **It fails closed.** If the probe can't run (its port is taken, your server exits or never answers, the build fails),
 the job fails with the reason; a run that left no results is never reported as a pass. **It leaves your toolchain
@@ -396,10 +412,9 @@ F4 fails because the reference facilitator deduplicates by transaction but not b
 transactions with the same memo both settled. The payer paid twice, so the seller lost nothing, but a resource server
 that ties one purchase to one memo has to enforce that itself. Every fault-injected build was caught by the check
 it targets. Transaction links, the full `run.json` and its hash are in [evidence/devnet](evidence/devnet). Results for
-other facilitators go in the [facilitator matrix](docs/MATRIX.md), and I run them against a third party only with the
-operator's permission. Open-source facilitators I can build myself are listed there as
-[self-hosted columns](docs/MATRIX.md#self-hosted-open-source-facilitators): each runs at a pinned commit on loopback as my
-own instance, S0 to S4 run against them today, and the verify-only F checks follow with XC-51.
+other facilitators go in the [matrix](docs/MATRIX.md), which is opt-in: a project is listed only after it accepts, and I
+run the suite against a third party only with the operator's permission. Verify-only F checks against open-source
+facilitators built at a pinned commit and run on loopback as my own instance are signed as XC-51 and not built yet.
 
 ## Roadmap
 
@@ -412,9 +427,10 @@ three client checks (C1-C3), and a `/verify` answer for every advertised kind (S
 asset (F12), with the n-replica Lean models (`Replicas.lean`) and the R20 corpus case. 1.6.0 (2026-10-24) adds caches
 and late settlement (R17, R18), `upfront` and `escrow` flows (R19), asset and network substitution at the facilitator
 (F13, F14), and the adoption track: framework quickstarts, docs examples run by CI, the implementation and compatibility
-matrices and the published mutation matrix. Next: the release gate for dropping the experimental label, the MCP
-transport, settlement preemption, the `upto` and `batch-settlement` schemes, A2A and discovery, and SIWX normative
-checks (XC-32 to XC-37). Every check is labelled normative, security profile or resilience, and every check ships with a
+matrices and the published mutation matrix. On `main` since 1.6.0, not released yet: the MCP transport (X1, X2) and
+`x402conf-svm mcp`, settlement preemption (R21), the `upto` and `batch-settlement` schemes (U1 to U3, B1 to B3), A2A and
+discovery (D1, G1), SIWX normative checks (W1 to W3), P9 and P10, paced live targets, and the opt-in two-tier matrix.
+Next: the release gate for dropping the experimental label (XC-32). Every check is labelled normative, security profile or resilience, and every check ships with a
 passing control and a faulty build it catches. The plan and the release gate for dropping the experimental label are in
 [docs/ROADMAP.md](docs/ROADMAP.md); every release and what it added is in [docs/RELEASES.md](docs/RELEASES.md).
 

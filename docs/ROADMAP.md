@@ -1,7 +1,7 @@
 # Roadmap
 
 **Where it stands.** 1.6.0 is the current release (2026-10-24), and it is still marked experimental. S0 to S4 check
-a facilitator's `GET /supported`; S5 and F1 to F14 run against fault-injected facilitator doubles (and F1 to F6 over
+a facilitator's `GET /supported`; S5 and F1 to F16 run against fault-injected facilitator doubles (and F1 to F6 over
 real `/verify` and `/settle` on Solana devnet); P1 to P7 check any paid URL's 402 answer with one unpaid GET; R0 to R10,
 R14 and R20 put a misbehaving facilitator in front of your own paid route on Solana devnet or Base Sepolia from the CLI
 and the Action, R11 and R11a to R11f check payment-to-request binding on that route, and R12, R13, R15 to R19, R16a and
@@ -181,11 +181,11 @@ most of this family normative.
 
 | check | what | profile | contract task |
 |---|---|---|---|
-| S5 | every kind `/supported` advertises gets a structured `/verify` answer | normative | XC-47, proposed |
+| S5 | every kind `/supported` advertises gets a structured `/verify` answer | normative | XC-47, signed |
 | F12 | `/verify` rejects an unsupported network or an asset with no token contract | security profile | XC-46, done |
 | F13 | `/verify` rejects a payment in a different asset at the quoted amount and recipient | security profile | XC-49, done in 1.6.0 |
 | F14 | `/verify` rejects a payment authorized for another network when amount, recipient and asset match | security profile | XC-50, done in 1.6.0 |
-| F14a | `/verify` and `/settle` reject an EIP-3009 signature over a domain without `chainId` replayed onto another network | security profile | XC-123, proposed |
+| F14a | `/verify` and `/settle` reject an EIP-3009 signature over a domain without `chainId` replayed onto another network | security profile | XC-123, signed |
 | R16a | an unpaid `HEAD` on a paid `GET` route gets the same 402 as `GET` | security profile | XC-39, done |
 | R22 | the paid response keeps the handler's 2xx status and headers | normative | XC-40, done |
 | R23 | a client abort during settle is recoverable | security profile | XC-41, done |
@@ -209,11 +209,67 @@ as a pass or a security failure.
 at least five stack-and-version rows with pinned, hashed evidence, regenerated in CI (A7), and the FastAPI, Flask and
 Go quickstarts (A4) are green.
 
-## XC-51: self-hosted open-source facilitators as matrix columns (proposed)
+## XC-51: self-hosted open-source facilitators as matrix columns (signed, not built)
 
 | task | acceptance |
 |---|---|
-| XC-51 `x402conf devnet --facilitator http://127.0.0.1:<port>` on Base Sepolia (`eip155:84532`): the F checks that need only `/verify`, over real `/verify` against any loopback facilitator, with throwaway keys and no `/settle` | each launchable self-hosted facilitator in [MATRIX.md](MATRIX.md#self-hosted-open-source-facilitators) has an evidence folder with `run.json` and `SHA256SUMS`; a failing row says "under disclosure" until SECURITY.md's window clears; nothing off loopback is called |
+| XC-51 `x402conf devnet --facilitator http://127.0.0.1:<port>` on Base Sepolia (`eip155:84532`): the F checks that need only `/verify`, over real `/verify` against any loopback facilitator, with throwaway keys and no `/settle` | each launchable self-hosted facilitator in [MATRIX.md](MATRIX.md) has an evidence folder with `run.json` and `SHA256SUMS`; a failing row says "under disclosure" until SECURITY.md's window clears; nothing off loopback is called |
+
+## After XC-51 to XC-53: a parity oracle first, then coverage (XC-54 to XC-78, signed)
+
+The 25 tasks were drafted in [proposals/](proposals/) as `contract-addendum-xc54-*.json` to
+`contract-addendum-xc78-*.json`, with their order, dependencies and effort in
+[proposals/coverage/index.json](proposals/coverage/index.json) and the inventory they work from in
+[proposals/coverage/coverage-inventory.json](proposals/coverage/coverage-inventory.json). They are now signed into
+`proofline.json` and binding; none is built yet. XC-51, XC-52 and XC-53 come first, because most of these depend on
+them. Every acceptance criterion passes only on committed evidence: a test, a hashed evidence folder or
+a generated file that CI checks, never a statement that something was done.
+
+**The lead feature: a cross-SDK parity oracle.** The x402 SDKs are maintained in parallel, and the same fix keeps
+landing in TypeScript, Python and Go one at a time (error bodies, the price override ceiling, malformed CAIP-2 ids,
+route matching). Drift between the libraries is found today by reading diffs. The oracle checks behaviour instead: one
+vector set, each vector pinned to a spec clause, run against the TypeScript, Python and Go libraries offline, with no
+keys, no RPC and no chain, so it can run on a fork's pull request.
+
+| id | what | depends on |
+|---|---|---|
+| XC-55 | Spec-clause anchors pinned to upstream commits, a spec-drift report, and a crosswalk from the check ids to the eight facilitator rules of the USENIX Security 2026 study | XC-53 |
+| XC-56 | The parity oracle: one vector set, every official SDK library, offline, each vector with its anchor and profile | XC-55 |
+| XC-57 | A backtest on historical paired upstream fixes (a divergence before each fix and parity after), plus a nightly read-only run against upstream main | XC-56 |
+
+**Second: the rule checks the suite does not have yet.** XC-59 adds F17 to F19 from the USENIX study's rules on
+sponsor-cost bounds, re-verifying at settle, and an execution-template allow-list, each with a passing control and a
+faulty build, then verify-only loopback runs on Base Sepolia and Solana devnet. XC-58 turns three public findings into
+checks: F15 (malformed input is a 4xx or a rejection, never a 5xx), F16 (no wildcard network accept) and C4 (a client
+resuming after a crash never pays twice).
+
+**Coverage, one family at a time.** XC-54 is the coverage ledger that defines what "all" means: every facilitator,
+chain family, language, scheme, transport and extension gets committed evidence, a task, or a stated out-of-reach
+reason. The slices below fill it in. Depth still comes first: no slice starts before the ledger and the work it
+depends on are done, and each family is covered with the same checks, controls and faulty builds as `exact` on Solana
+and Base Sepolia today.
+
+| slice | tasks |
+|---|---|
+| Chain families (testnet, loopback, verify-only) | XC-60 EVM on every SDK-default testnet, XC-61 Solana, XC-62 Stellar, XC-63 Aptos and Sui, XC-64 NEAR, Hedera, Algorand, Concordium, Keeta and Casper, XC-65 XRPL, TON and Cardano, XC-66 the spec-only families (offline), XC-67 the `auth-capture` scheme on EVM |
+| SDK languages | XC-68 TypeScript, XC-69 Go, XC-70 Python, XC-71 Java (V1 rules only), XC-72 the third-party SDKs listed on docs.x402.org |
+| Open-source facilitators | XC-73 a second batch on EVM, XC-74 a third batch off EVM, each built from source and run on loopback |
+| Extensions | XC-75 one anchored check per extension, with a control and a faulty build |
+| Servers and clients on every family | XC-77 R0 to R10 and C1 to C3 per chain family, behind the facilitator double |
+| Industry matrix v2 | XC-76, below |
+| Closure | XC-78 passes only when no ledger row is left at "task" and every evidence folder passes the testnet, loopback and verify-only guard |
+
+**XC-76, industry matrix v2.** It extends XC-52's static scoreboard with facets (role, language, project, deployment,
+chain family, network, scheme, transfer method, x402 version, transport, profile and the USENIX crosswalk) and two more
+views: parity, with the SDKs side by side, and coverage, with rows per family and language. It shows evidence only.
+There is no score, rank, grade or "certified" anywhere, and an acceptance criterion fails if one appears. A failing
+cell for a third-party implementation says "under disclosure", with no per-check detail, until 2027-01-21; after that
+date a row shows per-check detail only once SECURITY.md's window for its report has cleared.
+
+**What stays out.** Hosted facilitators are never called; a hosted service is covered only where its code is open
+and I can build and run it on loopback, and the rest are listed in the ledger as out of reach. No mainnet: chains whose
+SDK default is mainnet-only get a testnet twin only where one exists with a compatible token. Settles happen only where
+a task says so and I have allowed it (XC-67), in test tokens. The total estimate is 93 to 129 working days.
 
 ## Later: breadth, once the depth is there
 
@@ -271,7 +327,7 @@ compatibility matrix, the Lean models and every result I publish. All of it runs
 - **Certification.** A pass is evidence about one property on one day. The badge says "tested with", and I won't
   offer a certification scheme without agreed criteria and independent governance.
 - **Hosted services or live dashboards.** The suite is code you run; results stay in your repo and your CI. The one
-  exception is the static scoreboard on the Pages site (proposed XC-52), generated only from committed, hashed evidence,
+  exception is the static scoreboard on the Pages site (XC-52, signed), generated only from committed, hashed evidence,
   with no overall score and no certification wording.
 - **Shallow checks** added to raise the count. Each check has to meet the bar above.
 - **Mainnet probes** or anything else that submits a real payment or creates financial risk.
@@ -299,8 +355,10 @@ I count a user, a team or a repo only when it's public or they've said so public
 These were my original proposal for taking the suite from a working tool to a standard people rely on. Every milestone
 is a Proofline task in `proofline.json` (XC-M1 to XC-M6), with acceptance criteria that CI verifies. The v1.4 and v1.5
 work above, the checks built beyond the plan and the 1.5.0 and 1.6.0 release tasks are signed into `proofline.json` as
-XC-08 to XC-46 and XC-48 (XC-38 was never used). XC-47 (S5) is proposed in
-[proposals/contract-addendum-s5.json](proposals/contract-addendum-s5.json) and becomes binding only once I sign it.
+XC-08 to XC-46 and XC-48. XC-47 (S5, drafted in [proposals/contract-addendum-s5.json](proposals/contract-addendum-s5.json)),
+XC-38 (R20c), XC-51 to XC-98 and XC-110 are signed into `proofline.json` too (see
+[the coverage plan](#after-xc-51-to-xc-53-a-parity-oracle-first-then-coverage-xc-54-to-xc-78-signed)); which of them are
+built is in [VV.md](VV.md) and [INTERDEPENDENCY.md](INTERDEPENDENCY.md).
 
 | id | deliverable | acceptance (summary) | status |
 |---|---|---|---|

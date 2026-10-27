@@ -1,0 +1,231 @@
+{
+ "evidence": "x402-conformance-evidence/2",
+ "links": {
+  "badge": "[![Tested with x402-conformance](https://img.shields.io/badge/tested%20with-x402--conformance-2ea44f)](https://github.com/atsp-protocol/x402-conformance)",
+  "contribute": "https://github.com/atsp-protocol/x402-conformance/issues/new?template=corpus-case.yml",
+  "corpus": "https://github.com/atsp-protocol/x402-conformance/tree/main/corpus",
+  "fixes": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/FIXES.md",
+  "repo": "https://github.com/atsp-protocol/x402-conformance",
+  "using": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/USING.md"
+ },
+ "mode": "resource-unpaid",
+ "pacing": {
+  "max_requests": 8,
+  "min_interval_s": 5.0,
+  "requests": [
+   {
+    "at": "2026-10-20T12:00:00Z",
+    "method": "GET",
+    "n": 1,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 0.0
+   },
+   {
+    "at": "2026-10-20T12:00:05Z",
+    "method": "GET",
+    "n": 2,
+    "url": "https://sandbox.example.com/.well-known/x402",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:10Z",
+    "method": "HEAD",
+    "n": 3,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:15Z",
+    "method": "GET",
+    "n": 4,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:20Z",
+    "method": "GET",
+    "n": 5,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:25Z",
+    "method": "GET",
+    "n": 6,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:30Z",
+    "method": "GET",
+    "n": 7,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   },
+   {
+    "at": "2026-10-20T12:00:35Z",
+    "method": "GET",
+    "n": 8,
+    "url": "https://sandbox.example.com/paid",
+    "waited_s": 5.0
+   }
+  ],
+  "sent": 8
+ },
+ "provenance": {
+  "publisher": "Optitransfer",
+  "repo": "https://github.com/atsp-protocol/x402-conformance",
+  "suite": "x402-conformance",
+  "version": "1.6.0"
+ },
+ "results": [
+  {
+   "checks": [
+    {
+     "basis": "V2 HTTP transport: payment required is signalled with HTTP 402",
+     "check": "P1 an unpaid GET answers HTTP 402 (V2 HTTP transport)",
+     "detail": {
+      "http": 402
+     },
+     "pass": true,
+     "profile": "normative",
+     "severity": "error"
+    },
+    {
+     "basis": "V2 HTTP transport: PAYMENT-REQUIRED carries base64 JSON; V1 5.1 body",
+     "check": "P2 the PaymentRequired object is present and decodes (V2: base64 JSON in PAYMENT-REQUIRED; V1: JSON body)",
+     "detail": {
+      "error": null,
+      "found_in": "PAYMENT-REQUIRED header"
+     },
+     "pass": true,
+     "profile": "normative",
+     "severity": "error"
+    },
+    {
+     "basis": "The spec sets no header budget; Node fetch fails above 16 KB of headers and aiohttp near 8 KB",
+     "check": "P6 the PAYMENT-REQUIRED header fits common client limits (warning above 8 KB, error above 16 KB)",
+     "detail": {
+      "bytes": 652,
+      "error_above": 16384,
+      "warn_above": 8192
+     },
+     "pass": true,
+     "profile": "resilience",
+     "severity": "warning"
+    },
+    {
+     "basis": "V2 5.1.2: x402Version, resource and accepts are required",
+     "check": "P3 PaymentRequired has x402Version, resource and a non-empty accepts[] (V2 5.1.2; V1 5.1)",
+     "detail": {
+      "problems": [],
+      "x402Version": 2
+     },
+     "pass": true,
+     "profile": "normative",
+     "severity": "error"
+    },
+    {
+     "basis": "V2 5.1.2: required accepts fields; amount in atomic token units",
+     "check": "P4 every accepts[] entry has the required fields with valid types (V2 5.1.2; V1 5.1)",
+     "detail": {
+      "accepts": 1,
+      "problems": []
+     },
+     "pass": true,
+     "profile": "normative",
+     "severity": "error"
+    },
+    {
+     "basis": "EVM exact: extra.name and extra.version; SVM exact: extra.feePayer",
+     "check": "P5 scheme-specific extra fields are present (EVM exact: name and version; SVM exact: feePayer)",
+     "detail": {
+      "problems": [
+       "extra.name is missing"
+      ]
+     },
+     "pass": false,
+     "profile": "normative",
+     "severity": "error"
+    },
+    {
+     "basis": "V2 6.1: extra.paymentFlow MUST be present when the resolved flow is not authorization (a warning: the upto SVM scheme spec allows omitting it)",
+     "check": "P7 an accepts[] entry whose payment flow is not authorization declares extra.paymentFlow (V2 6.1)",
+     "detail": {
+      "problems": []
+     },
+     "pass": true,
+     "profile": "normative",
+     "severity": "warning"
+    },
+    {
+     "basis": "the paywall covers every method that reaches the protected handler: RFC 9110 9.3.2 HEAD is GET without the content, so an unpaid HEAD is answered 402",
+     "check": "R16a an unpaid HEAD on a paid route never reaches the handler: 402 with PAYMENT-REQUIRED like GET, or refused with 405",
+     "detail": {
+      "get_status": 402,
+      "head_offers": 1,
+      "head_payment_required": true,
+      "head_status": 402
+     },
+     "pass": true,
+     "profile": "security-profile",
+     "severity": "error"
+    },
+    {
+     "basis": "V2 HTTP transport, Error Handling: Invalid Payment (a malformed payment payload) is 400, Payment Required and Payment Failed are 402, and Server Error (500) is for the server's own failures",
+     "check": "R24 a malformed, non-base64 or non-object payment header gets 402 or 400 with a structured error, never a 5xx or an unhandled exception",
+     "detail": {
+      "cases": [
+       {
+        "header": "not_base64",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       },
+       {
+        "header": "base64_not_json",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       },
+       {
+        "header": "json_array",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       },
+       {
+        "header": "json_string",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       },
+       {
+        "header": "json_number",
+        "pass": true,
+        "status": 402,
+        "structured_error": true
+       }
+      ],
+      "facilitator_calls": null
+     },
+     "pass": true,
+     "profile": "resilience",
+     "severity": "error"
+    }
+   ],
+   "http": 402,
+   "mode": "resource-GET-only",
+   "ms": 11,
+   "operator_permission": "https://github.com/atsp-protocol/x402-conformance/issues/1",
+   "target": "https://sandbox.example.com/paid"
+  }
+ ],
+ "run_at": "2026-10-20T12:00:00Z",
+ "tool": "x402-conformance 1.6.0",
+ "versions": {
+  "python": "3.13.5",
+  "x402-conformance": "1.6.0"
+ },
+ "via": "cli-py"
+}

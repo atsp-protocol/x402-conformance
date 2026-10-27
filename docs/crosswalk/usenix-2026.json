@@ -1,0 +1,52 @@
+{
+  "paper": "Wang et al., USENIX Security 2026",
+  "note": "The public rule text is not copied into this repo. Each rule is a gap until the task that owns it maps the rule from that text.",
+  "mappings": {
+    "F1": [],
+    "F2": [],
+    "F3": [],
+    "F4": [],
+    "F5": [],
+    "F6": [],
+    "F7": [],
+    "F8": [],
+    "F9": [],
+    "F10": [],
+    "F11": [],
+    "F12": [],
+    "F13": [],
+    "F14": []
+  },
+  "rules": {
+    "SR1": {
+      "gap": "XC-59"
+    },
+    "SR2": {
+      "gap": "XC-59"
+    },
+    "SR3": {
+      "gap": "XC-59"
+    },
+    "SR4": {
+      "gap": "XC-59"
+    },
+    "SR5": {
+      "gap": "XC-59"
+    },
+    "SR6": {
+      "gap": "XC-59"
+    },
+    "SR7": {
+      "gap": "XC-59"
+    },
+    "SR8": {
+      "gap": "XC-59"
+    },
+    "Server-SR1": {
+      "gap": "XC-59"
+    },
+    "Server-SR2": {
+      "gap": "XC-59"
+    }
+  }
+}

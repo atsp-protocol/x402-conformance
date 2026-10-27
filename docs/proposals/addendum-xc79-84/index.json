@@ -1,0 +1,82 @@
+{
+  "about": "PROPOSED, UNSIGNED. Ordering, dependencies and effort (working days) for XC-79 to XC-84, an addendum to the cover-all plan (XC-54 to XC-78, pull request #80). Nothing here is binding; each task becomes part of the contract only when the owner merges it into proofline.json and re-signs it. XC-51 to XC-53 and XC-54 to XC-78 are signed first.",
+  "status": "proposed",
+  "prerequisites": [
+    "XC-51",
+    "XC-52",
+    "XC-53",
+    "XC-54",
+    "XC-55"
+  ],
+  "order": [
+    "XC-84",
+    "XC-81",
+    "XC-80",
+    "XC-83",
+    "XC-79",
+    "XC-82"
+  ],
+  "tasks": [
+    {
+      "id": "XC-79",
+      "title": "Dexter: the open-source build of a hosted facilitator as a self-hosted column",
+      "deps": [
+        "XC-51",
+        "XC-54",
+        "XC-61"
+      ],
+      "effort": "2-3",
+      "file": "contract-addendum-xc79-dexter-source-build.json",
+      "criteria": 6
+    },
+    {
+      "id": "XC-80",
+      "title": "Hosted-only facilitators: documented out-of-reach rows and an operator-permission track",
+      "deps": [
+        "XC-54"
+      ],
+      "effort": "1-2",
+      "file": "contract-addendum-xc80-hosted-only-rows.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-81",
+      "title": "Coverage decisions recorded by the owner: no exclusions; live settle on Solana devnet and Base Sepolia, fixtures for Canton, Lightning and mainnet-only defaults, a Starknet Sepolia path",
+      "deps": [
+        "XC-54"
+      ],
+      "effort": "1",
+      "file": "contract-addendum-xc81-coverage-exclusions-decision.json",
+      "criteria": 9
+    },
+    {
+      "id": "XC-82",
+      "title": "Spec traceability: every check classified as normative (a spec clause) or hardening (beyond the spec)",
+      "deps": [
+        "XC-53",
+        "XC-55"
+      ],
+      "effort": "2-3",
+      "file": "contract-addendum-xc82-spec-traceability.json",
+      "criteria": 8
+    },
+    {
+      "id": "XC-83",
+      "title": "An offline CI job template another repo can paste in: no wallet, no funds, no secrets",
+      "deps": [
+        "XC-26"
+      ],
+      "effort": "1-2",
+      "file": "contract-addendum-xc83-offline-ci-template.json",
+      "criteria": 7
+    },
+    {
+      "id": "XC-84",
+      "title": "Yank x402-conformance 1.3.0 and 1.3.1 on PyPI, with a reason pointing to 1.4.0",
+      "deps": [],
+      "effort": "1",
+      "file": "contract-addendum-xc84-pypi-yank-1.3.json",
+      "criteria": 5
+    }
+  ]
+}

@@ -25,7 +25,8 @@ covers today, check by check, in [docs/COVERAGE.md](docs/COVERAGE.md). Each GitH
 
 | release | contract task | carries |
 |---|---|---|
-| later | XC-32 to XC-37 | dropping the experimental label (the release gate in [docs/ROADMAP.md](docs/ROADMAP.md)); the MCP transport; settlement preemption; the `upto` and `batch-settlement` schemes; A2A and discovery; SIWX normative checks |
+| next (on `main`, not released) | XC-33 to XC-37, XC-85 to XC-89, XC-93 to XC-98, XC-110 | the MCP transport (X1, X2) and `x402conf-svm mcp`; settlement preemption (R21); the `upto` and `batch-settlement` schemes (U1 to U3, B1 to B3); A2A and discovery (D1, G1); SIWX normative checks (W1 to W3); P9 and P10; R16a graded on a 405; C2 and C3 not applicable to a client that doesn't sign; paced live targets; the opt-in two-tier matrix and the free run program. See the Unreleased section of [CHANGELOG.md](CHANGELOG.md) |
+| later | XC-32 | dropping the experimental label (the release gate in [docs/ROADMAP.md](docs/ROADMAP.md)) |
 
 ## Checks by release
 
