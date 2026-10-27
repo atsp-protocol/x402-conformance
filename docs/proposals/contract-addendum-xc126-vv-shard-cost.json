@@ -1,0 +1,175 @@
+{
+ "about": "PROPOSED, UNSIGNED. One new Proofline task, XC-126: balance the vv shards by each task's measured seconds instead of its position in the contract, because the position split put XC-26 (7.3 minutes) and XC-02 in one shard, which reached 15.6 minutes against XC-125's 15 and a job limit of 20. Nothing here is binding and CI does not read this file; it becomes part of the contract only when the owner key signs it into proofline.json.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[] (XC-126)",
+ "applies_after": [
+  "XC-125"
+ ],
+ "tasks": [
+  {
+   "id": "XC-126",
+   "title": "vv shards are balanced by measured task cost instead of contract position",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-125"
+   ],
+   "requirements": [
+    "R-CI"
+   ],
+   "description": "XC-125 split vv into six shards by contract position (task k runs in shard k mod 6), and the shard receipts already record each task's seconds. Measured on 27 Oct 2026 from the six shard receipts of each of CI runs 40524709931, 40527561807 and 40530600132: the 109 tasks take 47.3 minutes in total (median per task), and XC-26 alone takes 439 seconds, 7.3 minutes. Position puts XC-26 and XC-02 (86 s) in shard 2, so shard 2 summed 11.4, 12.5 and 15.0 minutes while shard 1 summed 5.5, 4.0 and 4.5. On run 40530600132 the shard 2 job took 15.6 minutes, over the 15 that XC-125-AC06 states, against a job limit of 20; on that run every task in shard 2 slowed by about the same factor (the 20-second tasks took 29), so runner speed moves the total and the position split leaves no room for it. Simulated on the median costs, position mod 6 gives a largest shard of 12.5 minutes and position mod 8 gives 13.6; a cost-based split gives 7.9 on six shards, which is the ideal of 47.3/6, and 7.3 on eight, where XC-26 alone is the floor. So the fix is the split, not more shards, and no timeout changes. tools/vv.py costs DIR reads the shard (or merged) receipts under DIR and writes vv/costs.json: the median seconds per task over those receipts, rounded to 0.1, the source run ids given with --run, sorted keys and no timestamp, so the same receipts give the same bytes. When vv/costs.json is present, --shard I/N assigns tasks longest first (by cost, then contract position) to the shard with the smallest running total (ties to the lowest index); a task with no cost entry counts as the median known cost; each shard runs its tasks in contract order. Without the file, the split is exactly XC-125's position rule. Each shard receipt records the split it used (cost or position) and the sha256 of vv/costs.json, and tools/vv.py merge recomputes every shard's tasks from the checkout's file and fails closed when the shards disagree on the split or the costs hash, when a shard's hash is not the checkout's file, or when a shard's tasks are not its cost partition. tools/vv.py costs --predict prints the largest shard's predicted minutes for the vv-shard matrix size in ci.yml. vv/costs.json joins the vv component in tools/interdeps.py so every tracked file stays covered. The cost file is refreshed by hand from a recent main run when the split drifts; it only changes which shard runs a task, and every task is still verified on every run.",
+   "scope": {
+    "allow": [
+     "tools/vv.py",
+     "tests/test_vv_shard.py",
+     "vv/costs.json",
+     "tools/interdeps.py",
+     "docs/VV.md",
+     "docs/ARCHITECTURE.md",
+     "docs/INTERDEPENDENCY.md",
+     "CHANGELOG.md",
+     "evidence/XC-126.json"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-126-AC01",
+     "mandatory": true,
+     "statement": "With a cost file, --shard I/N assigns every contract task to exactly one shard, deterministically, for N from 1 to 8; each shard lists its tasks in contract order; a task with no cost counts as the median cost; and the largest shard's total is at most the mean shard total plus the largest single task",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.CostPartition",
+      "expect_exit": 0,
+      "min_tests": 4,
+      "max_skipped": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-126-AC02",
+     "mandatory": true,
+     "statement": "Without vv/costs.json the split is exactly XC-125's position rule, task k in shard k mod N",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.CostFallback",
+      "expect_exit": 0,
+      "min_tests": 1,
+      "max_skipped": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-126-AC03",
+     "mandatory": true,
+     "statement": "tools/vv.py costs takes the median seconds per task over the receipts it reads, writes byte-identical output for the same receipts, names the source runs, and refuses a receipt that has no per-task seconds",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.Costs",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-126-AC04",
+     "mandatory": true,
+     "statement": "The merge fails closed: shards that disagree on the split or on the costs hash, a shard whose costs hash is not the checkout's vv/costs.json, and a shard whose tasks are not its cost partition each exit 1 with ok false",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.CostFailsClosed",
+      "expect_exit": 0,
+      "min_tests": 3,
+      "max_skipped": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-126-AC05",
+     "mandatory": true,
+     "statement": "Sharded by cost and merged, a contract gives the same per-task states and pass counts as one unsharded run on the same tree, for N of 2, 3 and 6, with one failing claimed task",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_vv_shard.CostEquivalence",
+      "expect_exit": 0,
+      "min_tests": 1,
+      "max_skipped": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-126-AC06",
+     "mandatory": true,
+     "statement": "The committed vv/costs.json has a cost for every task in proofline.json and names at least one source CI run",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 -c \"import json,sys;c=json.load(open('vv/costs.json'));t=[x['id'] for x in json.load(open('proofline.json'))['tasks']];m=[i for i in t if i not in c.get('seconds',{})];print(m);sys.exit(0 if not m and c.get('source_runs') else 1)\"",
+      "expect_exit": 0,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-126-AC07",
+     "mandatory": true,
+     "statement": "Predicted from vv/costs.json for the matrix size in ci.yml, the largest shard is 9 minutes or less",
+     "verifier": {
+      "type": "metric",
+      "cmd": "python3 tools/vv.py costs --predict",
+      "key": "max_shard_minutes",
+      "op": "<=",
+      "value": 9,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-126-AC08",
+     "mandatory": true,
+     "statement": "On the pull request's CI run, every vv-shard job finished in 12 minutes or less (run id and per-shard minutes from the jobs API in evidence/XC-126.json)",
+     "verifier": {
+      "type": "metric",
+      "cmd": "python3 -c \"import json;d=json.load(open('evidence/XC-126.json'));m=[s['minutes'] for s in d['shards']];print(json.dumps({'max_shard_minutes':max(m) if len(m)>=3 and d.get('run_id') else 999}))\"",
+      "key": "max_shard_minutes",
+      "op": "<=",
+      "value": 12,
+      "timeout_s": 30
+     }
+    },
+    {
+     "id": "XC-126-AC09",
+     "mandatory": true,
+     "statement": "docs/VV.md explains the cost-based split and how to refresh vv/costs.json",
+     "verifier": {
+      "type": "grep",
+      "file": "docs/VV.md",
+      "pattern": "vv/costs\\.json[\\s\\S]*vv\\.py costs",
+      "must": "present"
+     }
+    },
+    {
+     "id": "XC-126-AC10",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-126-AC11",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Every verifier runs as written on every run; the cost file only decides which shard runs a task, and no task is skipped, cached or dropped because of its cost.",
+    "The vv-shard matrix size and every timeout-minutes in ci.yml stay as they are; if 12 minutes per shard cannot be met by the split alone, STOP and report the measured shard minutes."
+   ]
+  }
+ ],
+ "changes": []
+}

@@ -111,6 +111,7 @@ graph LR
   XC_123["XC-123<br/>F14a: an EIP-3009 signature over a domain withou..."]
   XC_124["XC-124<br/>The live pacing test derives its request count i..."]
   XC_125["XC-125<br/>The vv job is sharded by task across a matrix an..."]
+  XC_126["XC-126<br/>vv shards are balanced by measured task cost ins..."]
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -362,6 +363,7 @@ graph LR
   XC_50 --> XC_123
   XC_88 --> XC_124
   XC_05 --> XC_125
+  XC_125 --> XC_126
   XC_05 --> XC_M1
   XC_05 --> XC_M2
   XC_05 --> XC_M3
@@ -481,7 +483,8 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-110 External modes for R16a and R24 in the tier-1 queue: one unpaid HEAD with the operator's permission and five malformed-header GETs against the public testnet endpoint | integrate | signed | XC-42, XC-86, XC-88, XC-98 | - | R-SAFE-GET, R-R24, R-DELIV, R-MATRIX | 10 (command 8, pushed 1, scope 1) | `src/x402conf/external.py`; `src/x402conf/harness.py`; `src/x402conf/cli.py`; `src/x402conf/tiers.py`; `ts/src/head-unpaid.ts`; `ts/src/cli.ts`; `ts/test/head-unpaid.test.ts`; `ts/README.md`; `tests/test_external.py`; `tests/tier1_run.json`; `tests/test_attestation.py`; `tests/test_matrix_rows.py`; `tests/test_run_queue.py`; `tools/matrix_rows.py`; `tools/run_queue.py`; `tools/row_from_evidence.py`; `tools/compat_matrix.py`; `.github/workflows/run-queue.yml`; `.github/ISSUE_TEMPLATE/matrix-row.yml`; `matrix/schema/row.schema.json`; `docs/MATRIX.md`; `docs/RUN-IT-YOURSELF.md`; `docs/BADGE.md`; `docs/USING.md`; `docs/templates/**`; `docs/site/**`; `docs/INTERDEPENDENCY.md`; `README.md`; `CHANGELOG.md` |
 | XC-123 F14a: an EIP-3009 signature over a domain without chainId, replayed from one network onto another, is rejected | implement | done | XC-50 | - | R-F10 | 10 (command 8, pushed 1, scope 1) | `src/x402conf/eip712.py`; `src/x402conf/mock.py`; `src/x402conf/harness.py`; `src/x402conf/spec.py`; `tests/test_offline.py`; `ts/src/catalog.ts`; `tools/build_coverage.py`; `docs/**`; `README.md`; `CHANGELOG.md` |
 | XC-124 The live pacing test derives its request count instead of asserting 7 | implement | done | XC-88 | XC-90 | R-SAFE-GET, R-R24 | 5 (command 3, pushed 1, scope 1) | `ts/test/pace.test.ts`; `CHANGELOG.md` |
-| XC-125 The vv job is sharded by task across a matrix and the shard receipts merge into one strict verdict | implement | done | XC-05 | - | R-CI | 9 (command 5, grep 1, metric 1, pushed 1, scope 1) | `tools/vv.py`; `tests/test_vv_shard.py`; `.github/workflows/ci.yml`; `docs/VV.md`; `docs/ARCHITECTURE.md`; `docs/INTERDEPENDENCY.md`; `CHANGELOG.md`; `evidence/XC-125.json` |
+| XC-125 The vv job is sharded by task across a matrix and the shard receipts merge into one strict verdict | implement | done | XC-05 | XC-126 | R-CI | 9 (command 5, grep 1, metric 1, pushed 1, scope 1) | `tools/vv.py`; `tests/test_vv_shard.py`; `.github/workflows/ci.yml`; `docs/VV.md`; `docs/ARCHITECTURE.md`; `docs/INTERDEPENDENCY.md`; `CHANGELOG.md`; `evidence/XC-125.json` |
+| XC-126 vv shards are balanced by measured task cost instead of contract position | implement | signed | XC-125 | - | R-CI | 11 (command 6, grep 1, metric 2, pushed 1, scope 1) | `tools/vv.py`; `tests/test_vv_shard.py`; `vv/costs.json`; `tools/interdeps.py`; `docs/VV.md`; `docs/ARCHITECTURE.md`; `docs/INTERDEPENDENCY.md`; `CHANGELOG.md`; `evidence/XC-126.json` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | done | XC-05 | XC-51 | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |
