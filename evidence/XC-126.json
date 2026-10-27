@@ -1,0 +1,52 @@
+{
+ "task": "XC-126",
+ "about": "Per-shard job times of this pull request's first CI run, from the GitHub Actions jobs API, with the shards split by the measured costs in vv/costs.json. Every vv-shard job and the merge job named vv passed. On the position split the slowest shard took 15.6 and 15.4 minutes on runs 40530600132 and 40543212182.",
+ "run_id": 40558133418,
+ "run_url": "https://github.com/atsp-protocol/x402-conformance/actions/runs/40558133418",
+ "head_sha": "1cac69461d2bead0761549f38a310f863603ed7b",
+ "event": "pull_request",
+ "shards": [
+  {
+   "job": "vv-shard (0)",
+   "conclusion": "success",
+   "started_at": "2026-10-27T18:19:16Z",
+   "completed_at": "2026-10-27T18:28:30Z",
+   "minutes": 9.2
+  },
+  {
+   "job": "vv-shard (1)",
+   "conclusion": "success",
+   "started_at": "2026-10-27T18:19:16Z",
+   "completed_at": "2026-10-27T18:29:23Z",
+   "minutes": 10.1
+  },
+  {
+   "job": "vv-shard (2)",
+   "conclusion": "success",
+   "started_at": "2026-10-27T18:19:16Z",
+   "completed_at": "2026-10-27T18:27:49Z",
+   "minutes": 8.6
+  },
+  {
+   "job": "vv-shard (3)",
+   "conclusion": "success",
+   "started_at": "2026-10-27T18:19:16Z",
+   "completed_at": "2026-10-27T18:28:22Z",
+   "minutes": 9.1
+  },
+  {
+   "job": "vv-shard (4)",
+   "conclusion": "success",
+   "started_at": "2026-10-27T18:19:16Z",
+   "completed_at": "2026-10-27T18:29:34Z",
+   "minutes": 10.3
+  },
+  {
+   "job": "vv-shard (5)",
+   "conclusion": "success",
+   "started_at": "2026-10-27T18:19:16Z",
+   "completed_at": "2026-10-27T18:27:26Z",
+   "minutes": 8.2
+  }
+ ]
+}
