@@ -1,0 +1,155 @@
+{
+ "about": "PROPOSED, UNSIGNED. One Proofline task, XC-123: F14a, an offline facilitator check that closes the gap F14 (XC-50) left open. A throwaway key generated per run signs a real EIP-3009 TransferWithAuthorization over an EIP-712 domain with chainId omitted, on network A; the same signature is replayed on network B in the facilitator doubles, and a conforming facilitator must reject it on both /verify and /settle. No live signature, no funded key and no network call is needed. Owner's go, 2026-10-25. Nothing here is binding and CI does not read this file; the task becomes part of the contract only when the owner key signs it into proofline.json.",
+ "schema": "proofline/1",
+ "status": "proposed",
+ "proposed_by": "mgillr",
+ "target": "proofline.json tasks[]",
+ "applies_after": [
+  "XC-50"
+ ],
+ "tasks": [
+  {
+   "id": "XC-123",
+   "title": "F14a: an EIP-3009 signature over a domain without chainId, replayed from one network onto another, is rejected",
+   "phase": "implement",
+   "owner": "mgillr",
+   "depends_on": [
+    "XC-50"
+   ],
+   "requirements": [
+    "R-F10"
+   ],
+   "description": "F14 binds the payment's authorized network field to the requirement, but its own comment and docs/FIXES.md say the deeper case, an EIP-3009 authorization whose EIP-712 domain omits chainId, needs a live signature and is out of the offline doubles' reach. It does not: EIP-712 signing is a key plus the domain, so a throwaway key can sign it offline. A domain without chainId hashes to the same separator on every chain, so where the token has the same address on two networks (as CREATE2 deployments do) one signature is valid on both. F14a: a throwaway secp256k1 key, generated per run from the OS CSPRNG, never funded and never written anywhere, signs two authorizations for network A (eip155:84532). The control is signed over a domain bound to A's chainId and must verify and settle on A, so a facilitator that rejects every EVM payment cannot pass. The second is signed over the same domain with chainId omitted and is replayed on network B (eip155:11155111) at the same token address, amount and recipient, with the payment's network field set to B so F14's binding does not fire. A conforming facilitator answers isValid false with a reason on /verify and does not settle it on /settle. The reference double requires the domain's chainId to equal the requirement's network; the new faulty double chainless_domain accepts a domain with no chainId and is caught by F14a and by no other check. Signing is plain Python in src/x402conf/eip712.py (Keccak-256, secp256k1 with RFC 6979 nonces and low s, public-key recovery), so the package keeps no dependencies. Testnet CAIP-2 ids only, a synthetic token address, and nothing is sent to a facilitator or a chain.",
+   "scope": {
+    "allow": [
+     "src/x402conf/eip712.py",
+     "src/x402conf/mock.py",
+     "src/x402conf/harness.py",
+     "src/x402conf/spec.py",
+     "tests/test_offline.py",
+     "ts/src/catalog.ts",
+     "tools/build_coverage.py",
+     "docs/**",
+     "README.md",
+     "CHANGELOG.md"
+    ]
+   },
+   "criteria": [
+    {
+     "id": "XC-123-AC01",
+     "mandatory": true,
+     "statement": "The reference facilitator verifies and settles the control signed over a domain bound to network A's chainId, and rejects the chainless-domain signature replayed on network B on both /verify (isValid false, with a reason) and /settle (no success)",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f14a_reference_rejects_chainless_domain_replay",
+      "expect_exit": 0,
+      "timeout_s": 120,
+      "min_tests": 1,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-123-AC02",
+     "mandatory": true,
+     "statement": "F14a catches a facilitator (chainless_domain) that accepts an EIP-712 domain with no chainId, which verifies and settles the replay on network B, and that facilitator fails F14a and no other check",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f14a_chainless_domain_caught",
+      "expect_exit": 0,
+      "timeout_s": 120,
+      "min_tests": 1,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-123-AC03",
+     "mandatory": true,
+     "statement": "The replayed signature is a real secp256k1 signature that recovers to the throwaway signer's address; the same signature does not recover under a domain bound to network B's chainId; a domain without chainId has one separator on every chain; and Keccak-256 and address derivation match their published vectors",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f14a_signature_is_real_and_chainless_domain_is_chain_independent tests.test_offline.Offline.test_f14a_reference_also_rejects_a_forged_or_rebound_signature",
+      "expect_exit": 0,
+      "timeout_s": 120,
+      "min_tests": 2,
+      "max_skipped": 0
+     }
+    },
+    {
+     "id": "XC-123-AC04",
+     "mandatory": true,
+     "statement": "Each run signs with a freshly generated throwaway key: two runs report different signer addresses, and no private key is committed in the suite",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest -v tests.test_offline.Offline.test_f14a_key_is_generated_per_run && ! grep -rniE 'private_?key *= *(0x)?[0-9a-f]{64}' src/x402conf",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-123-AC05",
+     "mandatory": true,
+     "statement": "The full offline suite, including every F1-F14 and S5 case, passes, and the reference facilitator fails no check",
+     "verifier": {
+      "type": "command",
+      "cmd": "PYTHONPATH=src python3 -m unittest tests.test_offline",
+      "expect_exit": 0,
+      "timeout_s": 600
+     }
+    },
+    {
+     "id": "XC-123-AC06",
+     "mandatory": true,
+     "statement": "F14a is in the check catalogue with its profile, spec basis, control and faulty build, the TypeScript catalogue matches, docs/COVERAGE.md has its row and is current, the mutation matrix lists it as caught, and docs/FIXES.md has its fix section",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/build_coverage.py --check && grep -q '^| F14a | security-profile |' docs/COVERAGE.md && PYTHONPATH=src python3 tools/mutation_matrix.py --check && grep -q '^## F14a$' docs/FIXES.md",
+      "expect_exit": 0,
+      "timeout_s": 300
+     }
+    },
+    {
+     "id": "XC-123-AC07",
+     "mandatory": true,
+     "statement": "The signing code adds no dependency and makes no network call: pyproject.toml still declares no dependencies and src/x402conf/eip712.py imports nothing that opens a connection",
+     "verifier": {
+      "type": "command",
+      "cmd": "grep -q '^dependencies = \\[\\]$' pyproject.toml && ! grep -nE '^(import|from) +(socket|ssl|http|urllib|requests|asyncio)' src/x402conf/eip712.py",
+      "expect_exit": 0,
+      "timeout_s": 60
+     }
+    },
+    {
+     "id": "XC-123-AC08",
+     "mandatory": true,
+     "statement": "The docs name F14a and no check that does not exist (no drift)",
+     "verifier": {
+      "type": "command",
+      "cmd": "python3 tools/interdeps.py --drift",
+      "expect_exit": 0,
+      "timeout_s": 120
+     }
+    },
+    {
+     "id": "XC-123-AC09",
+     "mandatory": true,
+     "statement": "Every changed file is inside this task's scope",
+     "verifier": {
+      "type": "scope"
+     }
+    },
+    {
+     "id": "XC-123-AC10",
+     "mandatory": true,
+     "statement": "Committed and pushed to main",
+     "verifier": {
+      "type": "pushed"
+     }
+    }
+   ],
+   "stop_rules": [
+    "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+    "Never fix a private key in the suite, fund the throwaway key, or send the signed payload to a real facilitator, a mainnet id or any network."
+   ]
+  }
+ ]
+}
