@@ -15,8 +15,8 @@ import json
 import os
 import re
 import urllib.parse
-from collections.abc import Mapping
-from typing import Any, Callable
+from collections.abc import Callable, Mapping
+from typing import Any
 
 from . import eip712
 
@@ -55,7 +55,7 @@ def anchor_text(anchor: Mapping[str, Any]) -> str:
 
 def anchor_holds(anchor: Mapping[str, Any]) -> bool:
     got = hashlib.sha256(anchor_text(anchor).encode()).hexdigest()
-    return got == anchor["quoted_text_sha256"]
+    return got == str(anchor["quoted_text_sha256"])
 
 
 def _same(addr: object, other: object) -> bool:
@@ -218,7 +218,10 @@ def grade_auth(resolver: Callable[[int, list[Mapping[str, Any]]], set[int]],
 def vectors() -> dict[str, Any]:
     path = os.path.join(_root(), "corpus", "fixtures", "offer-receipt-eip712.json")
     with open(path, encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+    if not isinstance(data, dict):
+        raise ValueError("offer-receipt fixture is not an object")
+    return data
 
 
 def offer_control() -> bool:
