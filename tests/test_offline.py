@@ -733,5 +733,62 @@ class F16(unittest.TestCase):
         self.assertIs(got.get("isValid"), True)
 
 
+class Extensions(unittest.TestCase):
+    """XC-75. One normative check per extension, offline. No facilitator and no mainnet id."""
+
+    REQUIRED = {
+        "eip2612GasSponsoring", "erc20ApprovalGasSponsoring", "offer-and-receipt",
+        "builder-code", "http-message-signatures", "auth-hints",
+    }
+
+    def test_each_extension_has_anchor_control_and_faulty(self):
+        from x402conf import extensions as X
+        self.assertEqual(set(X.EXTENSIONS), self.REQUIRED)
+        for name, entry in X.EXTENSIONS.items():
+            with self.subTest(extension=name):
+                self.assertEqual(entry["profile"], "normative")
+                self.assertTrue(entry["basis"])
+                self.assertTrue(X.anchor_holds(entry["anchor"]), name)
+                self.assertTrue(entry["control"](), name)
+                self.assertTrue(entry["faulty"](), name)
+
+    def test_receipt_vectors_independent(self):
+        """The offer and receipt digests come from the fixture, not from this package's signer."""
+        from x402conf import eip712
+        from x402conf import extensions as X
+        doc = X.vectors()
+        self.assertIn("outside x402conf.eip712", doc["derived_by"])
+        self.assertNotIn("sign_digest", doc["derived_by"])
+        for kind, digest_of in (("offer", X.offer_digest), ("receipt", X.receipt_digest)):
+            row = doc[kind]
+            payload = row["payload"]
+            got = digest_of(payload)
+            self.assertEqual(got.hex(), row["digest"][2:], kind)
+            with open(X.__file__, encoding="utf-8") as src:
+                self.assertNotIn(row["digest"][2:], src.read(), kind)
+            recovered = eip712.recover(bytes.fromhex(row["digest"][2:]), row["signature"])
+            self.assertEqual(recovered, row["signer"], kind)
+            forged = dict(payload)
+            forged["amount" if kind == "offer" else "issuedAt"] = "1" if kind == "offer" else 1
+            self.assertNotEqual(digest_of(forged).hex(), row["digest"][2:], kind)
+        offer = doc["offer"]
+        self.assertEqual(X.check_offer({"payload": offer["payload"], "signature": offer["signature"]}), [])
+        self.assertEqual(offer["payload"]["payTo"], offer["signer"])
+        self.assertEqual(offer["payload"]["network"], "eip155:84532")
+        receipt = doc["receipt"]
+        self.assertEqual(
+            X.check_receipt({"payload": receipt["payload"], "signature": receipt["signature"]}, {receipt["signer"]}),
+            [])
+        self.assertEqual(receipt["payload"]["network"], "eip155:84532")
+        self.assertNotEqual(receipt["payload"]["payer"].lower(), receipt["signer"].lower())
+        self.assertTrue(X.anchor_holds({
+            "spec_file": "specs/extensions/extension-offer-and-receipt.md",
+            "upstream_commit": X.SNAPSHOT,
+            "line_start": 371,
+            "line_end": 371,
+            "quoted_text_sha256": "ce6b6e0c403b119770434cfb7d8947f9537087d25ebbb54a360499ababf82bed",
+        }))
+
+
 if __name__ == "__main__":
     unittest.main()
