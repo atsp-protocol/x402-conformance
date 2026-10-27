@@ -1,6 +1,7 @@
 # Changelog
 ## Unreleased
 - The vv shards are balanced by measured cost (task XC-126). `vv/costs.json` holds each task's median seconds from the shard receipts of six CI runs, and `--shard I/N` gives the tasks, longest first, to the shard with the smallest total. On those costs the six shards come to 8.3 to 8.4 minutes each, where the position split gave 6.0 to 13.7 (XC-26 alone is 7.6). The merge checks that every shard used the checkout's cost file; `tools/vv.py costs DIR --run ID` rebuilds it and `--predict` prints the largest shard's minutes. Without the file the split is by position, as before. No timeout and no matrix size changes.
+- Extension checks for gas sponsoring, offer-and-receipt, builder-code, HTTP message signatures and auth hints (task XC-75). They run offline in `tests.test_offline.Extensions`. The offer and receipt EIP-712 vectors in `corpus/fixtures/offer-receipt-eip712.json` were derived outside this package. The six extension specs are vendored under the existing snapshot commit. No facilitator is called and no mainnet network id is used.
 - R24 sends seven more malformed payment header values (task XC-90): the JSON literals `null`, `true` and `false`, an
   empty object, an object whose required members are `null`, an empty value and a blank one, twelve in all. fetch trims
   the blank one, so it reaches the server empty. The values go in the header the route's unpaid 402 advertises:

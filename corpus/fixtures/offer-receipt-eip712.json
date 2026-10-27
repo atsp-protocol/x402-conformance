@@ -1,0 +1,41 @@
+{
+  "derived_by": "@noble/hashes keccak_256 and @noble/secp256k1, outside x402conf.eip712",
+  "offer": {
+    "domain": {
+      "name": "x402 offer",
+      "version": "1",
+      "chainId": 1
+    },
+    "payload": {
+      "version": 1,
+      "resourceUrl": "https://api.example.com/premium-data",
+      "scheme": "exact",
+      "network": "eip155:84532",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "payTo": "0xA59eBC7E84c658913EA7F0d27046008d589fbFb7",
+      "amount": "10000",
+      "validUntil": 1703123516
+    },
+    "digest": "0x2eefee3b7189980cb73c2f1288b3caba0194ca509795f15dafed57c0e2b334d1",
+    "signature": "0x8286a4b69d998d2a42690ca73de294d510cb3d4869f09ef833a89c83e06da7f027af696195d410972123b7a07d06f62fa6eed1b931f5d5411f28c83fc2517f921c",
+    "signer": "0xA59eBC7E84c658913EA7F0d27046008d589fbFb7"
+  },
+  "receipt": {
+    "domain": {
+      "name": "x402 receipt",
+      "version": "1",
+      "chainId": 1
+    },
+    "payload": {
+      "version": 1,
+      "network": "eip155:84532",
+      "resourceUrl": "https://api.example.com/premium-data",
+      "payer": "0x857b06519E91e3A54538791bDbb0E22373e36b66",
+      "issuedAt": 1703123456,
+      "transaction": ""
+    },
+    "digest": "0xa6182809a01e1fd293b0ed20e946f48aa69d70e609373896e4ac4879877231d0",
+    "signature": "0xa7c45f19b49e40b726fa27072b238727a3a9e3da6bf3266899649350b8c02b0b123cbadc5e4ba7470c03ae3d9a4986acdf18c5149dd8aeaff9e3176d539d140a1b",
+    "signer": "0xA59eBC7E84c658913EA7F0d27046008d589fbFb7"
+  }
+}
