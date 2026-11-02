@@ -215,6 +215,8 @@ export async function probeCrash(url: string, double: Double, control: ServerCon
   const o: Required<CrashOptions> = { via: opts.via ?? "library", network: opts.network ?? "auto", deadlineMs: opts.deadlineMs ?? 30_000,
     upMs: opts.upMs ?? 60_000 };
   const want: readonly string[] = o.network === "auto" ? NETWORKS : [o.network];
+  // Do not inherit a fault mode from a preceding probe when negotiating the unpaid 402.
+  double.mode = "reference";
   const unpaid = await request(url, {}, o.deadlineMs);
   let required: any = null;
   try { required = unpaid.headers["payment-required"] ? decodePaymentRequiredHeader(unpaid.headers["payment-required"]) : null; }
