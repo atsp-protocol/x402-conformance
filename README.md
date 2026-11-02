@@ -7,6 +7,7 @@
 [![PyPI](https://img.shields.io/pypi/v/x402-conformance?label=PyPI&cacheSeconds=3600)](https://pypi.org/project/x402-conformance/)
 [![npm](https://img.shields.io/npm/v/x402-conformance-svm?label=npm&cacheSeconds=3600)](https://www.npmjs.com/package/x402-conformance-svm)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-x402%20Conformance-blue?logo=github)](https://github.com/marketplace/actions/x402-conformance)
+[![x402 Conformance MCP on mcprush](https://mcprush.com/badge/x402-conformance-mcp/score.svg)](https://mcprush.com/to/x402-conformance-mcp?ref=badge)
 [![licence](https://img.shields.io/github/license/atsp-protocol/x402-conformance)](LICENSE)
 [![Tested with x402-conformance](https://img.shields.io/badge/tested%20with-x402--conformance-2ea44f)](https://github.com/atsp-protocol/x402-conformance)
 
