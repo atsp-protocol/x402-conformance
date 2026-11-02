@@ -15,10 +15,18 @@ const CLI = new URL("../src/cli.js", import.meta.url).pathname;
 const SERVER = new URL("../example/crash-server.js", import.meta.url).pathname;
 
 async function up(url: string): Promise<void> {
+  let last = "no response";
   for (let i = 0; i < 100; i++) {
-    try { await fetch(url, { signal: AbortSignal.timeout(1000) }); return; } catch { await new Promise((ok) => setTimeout(ok, 100)); }
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(1000) });
+      last = `HTTP ${r.status}${r.headers.has("payment-required") ? " with PAYMENT-REQUIRED" : ""}`;
+      // The example server binds its port before facilitator discovery has necessarily completed.
+      // A listening socket (or its temporary 503) is not readiness: wait for the actual unpaid 402 offer.
+      if (r.status === 402 && r.headers.has("payment-required")) return;
+    } catch (e) { last = String(e); }
+    await new Promise((ok) => setTimeout(ok, 100));
   }
-  throw new Error(`no answer from ${url}`);
+  throw new Error(`crash server did not become payment-ready at ${url}; last response: ${last}`);
 }
 
 /** Starts the crash server under a SpawnedServer, runs R0-R10 and R14 against it, and returns both. */
