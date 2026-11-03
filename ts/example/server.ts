@@ -35,7 +35,7 @@ export async function startExample(facilitatorUrl: string, fault = "", port = 0,
   });
   await app.initialize();
   const server = http.createServer(async (rq, res) => {
-    const url = new URL(rq.url ?? "/", "http://127.0.0.1");
+    const url = new URL(rq.url ?? "/", `http://${rq.headers.host ?? "127.0.0.1"}`);
     const adapter: HTTPAdapter = {
       getHeader: (n) => { const v = rq.headers[n.toLowerCase()]; return Array.isArray(v) ? v[0] : v; },
       getMethod: () => rq.method ?? "GET",
