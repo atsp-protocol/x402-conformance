@@ -112,6 +112,7 @@ graph LR
   XC_124["XC-124<br/>The live pacing test derives its request count i..."]
   XC_125["XC-125<br/>The vv job is sharded by task across a matrix an..."]
   XC_126["XC-126<br/>vv shards are balanced by measured task cost ins..."]
+  XC_127("XC-127<br/>x402-conformance-mcp: a registry can serve every...")
   XC_M1["XC-M1<br/>M1 Devnet runner: F1-F6 over real x402 V2 /verif..."]
   XC_M2["XC-M2<br/>M2 Facilitator matrix: >= 3 devnet facilitator r..."]
   XC_M3["XC-M3<br/>M3 Lean models: timeouts, settlement_pending rec..."]
@@ -364,6 +365,7 @@ graph LR
   XC_88 --> XC_124
   XC_05 --> XC_125
   XC_125 --> XC_126
+  XC_12 --> XC_127
   XC_05 --> XC_M1
   XC_05 --> XC_M2
   XC_05 --> XC_M3
@@ -373,6 +375,7 @@ graph LR
   classDef done fill:#e6f4ea,stroke:#2e7d32
   classDef proposed stroke-dasharray: 4 3
   class XC_00,XC_01,XC_02,XC_03,XC_04,XC_05,XC_06,XC_07,XC_08,XC_09,XC_10,XC_11,XC_12,XC_13,XC_14,XC_15,XC_16,XC_17,XC_18,XC_19,XC_20,XC_21,XC_22,XC_23,XC_24,XC_25,XC_26,XC_27,XC_28,XC_29,XC_30,XC_31,XC_39,XC_40,XC_41,XC_42,XC_43,XC_44,XC_45,XC_46,XC_48,XC_49,XC_50,XC_123,XC_124,XC_125,XC_M1,XC_M3,XC_M4 done
+  class XC_127 proposed
 ```
 
 Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
@@ -393,7 +396,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-09 Oracle hardening: strict atomic-unit parsing, fail closed | implement | done | XC-02, XC-08 | XC-16, XC-30 | R-ORACLE | 5 (command 3, pushed 1, scope 1) | `src/x402conf/mock.py`; `src/x402conf/harness.py`; `tests/test_offline.py`; `ts/src/**`; `ts/test/**` |
 | XC-10 R11 payment-to-request binding on a real resource server | implement | done | XC-M4, XC-08 | XC-16, XC-17, XC-18, XC-19, XC-20, XC-30, XC-37, XC-42 | R-R11 | 9 (command 6, grep 1, pushed 1, scope 1) | `ts/**`; `src/x402conf/harness.py`; `docs/SPEC.md`; `docs/FIXES.md`; `README.md` |
 | XC-11 One report, test-framework entry points and opt-in corpus sharing | implement | done | XC-M4 | XC-12, XC-13, XC-14, XC-30, XC-87, XC-88 | R-ADOPT | 7 (command 3, grep 2, pushed 1, scope 1) | `ts/**`; `docs/USING.md`; `corpus/**`; `.github/ISSUE_TEMPLATE/corpus-case.yml` |
-| XC-12 MCP server and agent-framework tools (Vercel AI SDK, LangChain) | implement | done | XC-11 | XC-13, XC-30, XC-33, XC-94, XC-96 | R-ADOPT | 5 (command 1, grep 2, pushed 1, scope 1) | `ts/mcp/**`; `docs/USING.md`; `.github/workflows/ci.yml` |
+| XC-12 MCP server and agent-framework tools (Vercel AI SDK, LangChain) | implement | done | XC-11 | XC-13, XC-30, XC-33, XC-94, XC-96, XC-127 | R-ADOPT | 5 (command 1, grep 2, pushed 1, scope 1) | `ts/mcp/**`; `docs/USING.md`; `.github/workflows/ci.yml` |
 | XC-13 Python entry-point tag and corpus case, Docker image and GitLab CI template | implement | done | XC-11, XC-12 | XC-14, XC-30 | R-ADOPT | 5 (command 1, grep 2, pushed 1, scope 1) | `src/x402conf/cli.py`; `src/x402conf/harness.py`; `tests/test_live.py`; `corpus/fixtures/**`; `ts/docker/**`; `ts/ci/**`; `.github/workflows/ci.yml`; `docs/USING.md` |
 | XC-14 pytest plugin and the Python server examples | implement | done | XC-11, XC-13 | XC-26, XC-30 | R-ADOPT | 5 (command 1, grep 2, pushed 1, scope 1) | `src/x402conf/pytest_plugin.py`; `tests/check_pytest_plugin.py`; `examples/**`; `pyproject.toml`; `.github/workflows/ci.yml`; `docs/USING.md` |
 | XC-15 Normative additions: F5 extended, F11, P6, P7 | implement | done | XC-02, XC-01 | XC-16, XC-30, XC-46 | R-F5X, R-F11, R-P6, R-P7 | 6 (command 4, pushed 1, scope 1) | `src/x402conf/**`; `tests/**`; `ts/**`; `docs/SPEC.md`; `docs/FIXES.md`; `README.md` |
@@ -485,6 +488,7 @@ Green boxes are done, plain boxes signed and open, round dashed boxes proposed.
 | XC-124 The live pacing test derives its request count instead of asserting 7 | implement | done | XC-88 | XC-90 | R-SAFE-GET, R-R24 | 5 (command 3, pushed 1, scope 1) | `ts/test/pace.test.ts`; `CHANGELOG.md` |
 | XC-125 The vv job is sharded by task across a matrix and the shard receipts merge into one strict verdict | implement | done | XC-05 | XC-126 | R-CI | 9 (command 5, grep 1, metric 1, pushed 1, scope 1) | `tools/vv.py`; `tests/test_vv_shard.py`; `.github/workflows/ci.yml`; `docs/VV.md`; `docs/ARCHITECTURE.md`; `docs/INTERDEPENDENCY.md`; `CHANGELOG.md`; `evidence/XC-125.json` |
 | XC-126 vv shards are balanced by measured task cost instead of contract position | implement | signed | XC-125 | - | R-CI | 11 (command 6, grep 1, metric 2, pushed 1, scope 1) | `tools/vv.py`; `tests/test_vv_shard.py`; `vv/costs.json`; `tools/interdeps.py`; `docs/VV.md`; `docs/ARCHITECTURE.md`; `docs/INTERDEPENDENCY.md`; `CHANGELOG.md`; `evidence/XC-126.json` |
+| XC-127 x402-conformance-mcp: a registry can serve every dependency of the published package | implement | proposed | XC-12 | - | R-ADOPT, R-RELEASE | 9 (command 4, grep 3, pushed 1, scope 1) | `ts/mcp/scripts/**`; `ts/mcp/test/package.test.ts`; `ts/mcp/package.json`; `.github/workflows/ci.yml`; `README.md`; `CHANGELOG.md`; `docs/**` |
 | XC-M1 M1 Devnet runner: F1-F6 over real x402 V2 /verify and /settle on Solana devnet | implement | done | XC-05 | XC-51 | R-GRANT | 5 (command 1, file_exists 1, grep 1, pushed 1, scope 1) | `src/x402conf/devnet/**`; `tests/test_devnet.py`; `evidence/devnet/**` |
 | XC-M2 M2 Facilitator matrix: >= 3 devnet facilitator reports, with operator permission | verify | signed | XC-05 | - | R-GRANT | 4 (command 1, grep 1, pushed 1, scope 1) | `evidence/matrix/**`; `docs/MATRIX.md` |
 | XC-M3 M3 Lean models: timeouts, settlement_pending reconciliation, concurrent settles | verify | done | XC-05 | XC-24 | R-GRANT | 4 (file_exists 1, grep 1, pushed 1, scope 1) | `lean/X402Conformance/Pending.lean` |

@@ -1,0 +1,136 @@
+{
+  "about": "PROPOSED, UNSIGNED. One Proofline task, XC-127: the npm package x402-conformance-mcp names only dependencies a registry can serve. 1.6.0 was published with \"x402-conformance-svm\": \"file:..\", the path this repository uses to test the MCP package against its own checkout; 1.4.0 and 1.5.0 were published with ^1.4.0 and ^1.5.0 by a step that was not in the repository, and nothing here failed when 1.6.0 skipped it. `npm i x402-conformance-mcp` fails with ENOENT on the symlink (reported 11 Nov 2026 and reproduced on Node 20 and 22). This task puts the step in the repository, makes a bare `npm publish` refuse, and has CI install the package that would be published. It does not publish: the fixed release is a release task of its own.",
+  "schema": "proofline/1",
+  "status": "proposed",
+  "proposed_by": "mgillr",
+  "target": "proofline.json tasks[]",
+  "applies_after": [
+    "XC-12"
+  ],
+  "tasks": [
+    {
+      "id": "XC-127",
+      "title": "x402-conformance-mcp: a registry can serve every dependency of the published package",
+      "phase": "implement",
+      "owner": "mgillr",
+      "depends_on": [
+        "XC-12"
+      ],
+      "requirements": [
+        "R-ADOPT",
+        "R-RELEASE"
+      ],
+      "description": "ts/mcp/scripts/manifest.mjs: isRegistryRange and unservable (dependencies, optionalDependencies and peerDependencies; a version or a range passes, anything else is refused), run as the package's prepublishOnly script. ts/mcp/scripts/publish.mjs (`npm run release`): packs the package, sets x402-conformance-svm to ^ the version in ts/package.json in the packed copy, refuses when that core version is not on the registry, publishes the copy's tarball, reads the dependencies back from the registry and runs verify-install on the published name; `--stage DIR` writes the copy and its tarball and publishes nothing; the working tree is not changed. ts/mcp/scripts/verify-install.mjs: an empty folder, npm init, npm install of the given specs, then the manifest, the command's --version, the import, initialize over stdio, and the ai-sdk and langchain entry points with the peer versions the release was tested with. ts/mcp/test/package.test.ts. CI's mcp job runs the install from the packed tarballs. Docs: CHANGELOG, docs/RELEASES.md; README and docs/INTERDEPENDENCY.md are regenerated.",
+      "scope": {
+        "allow": [
+          "ts/mcp/scripts/**",
+          "ts/mcp/test/package.test.ts",
+          "ts/mcp/package.json",
+          ".github/workflows/ci.yml",
+          "README.md",
+          "CHANGELOG.md",
+          "docs/**"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "XC-127-AC01",
+          "mandatory": true,
+          "statement": "A version or a range is a dependency a registry can serve and a path, a link, a workspace, a URL or a tag is not; npm publish stops at the prepublishOnly guard while a dependency is file:..; the released copy names ^ the core version and the checkout's package.json is left as it was",
+          "verifier": {
+            "type": "command",
+            "cmd": "o=$(mktemp) && { cd ts && npm ci --silent && npx tsc -p . && cd mcp && npm ci --silent && npm run build --silent && node --test --test-reporter=tap --test-name-pattern='^npm package: ' dist/test/package.test.js; } > \"$o\" 2>&1; rc=$?; cat \"$o\"; test \"$rc\" = 0 && node -e 'const[f,p,k]=process.argv.slice(1),re=new RegExp(p),min=+(k||1);let n=0,bad=0,cur=0;const fin=()=>{n+=cur;cur=0};for(const l of require(\"fs\").readFileSync(f,\"utf8\").split(\"\\n\")){const m=/^ *(not )?ok \\d+ - (.*)$/.exec(l);if(m){fin();if(m[1])bad++;else if(!/ # (SKIP|TODO)\\b/.test(m[2])&&re.test(m[2]))cur=1;continue}if(/^ *type: .suite.$/.test(l))cur=0}fin();console.log(\"guard: \"+n+\" passing test(s) named /\"+p+\"/ (need \"+min+\"), \"+bad+\" not ok\");process.exit(n>=min&&!bad?0:1)' \"$o\" '^npm package: ' 5",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-127-AC02",
+          "mandatory": true,
+          "statement": "The package as it would be published installs from its tarball in an empty folder beside the core tarball, and loads: the manifest names only versions and ranges, the command prints its version, the import works, the server answers initialize on stdio, and the ai-sdk and langchain entry points return tools",
+          "verifier": {
+            "type": "command",
+            "cmd": "T=$(mktemp -d) && cd ts && npm ci --silent && npm pack --silent --pack-destination \"$T\" > /dev/null && cd mcp && npm ci --silent && node scripts/publish.mjs --stage \"$T/mcp\" && node scripts/verify-install.mjs \"$T\"/x402-conformance-svm-*.tgz \"$T\"/mcp/x402-conformance-mcp-*.tgz",
+            "expect_exit": 0,
+            "timeout_s": 900
+          }
+        },
+        {
+          "id": "XC-127-AC03",
+          "mandatory": true,
+          "statement": "npm publish in ts/mcp exits non-zero and names the dependency a registry cannot serve, before anything is packed or sent",
+          "verifier": {
+            "type": "command",
+            "cmd": "cd ts/mcp && out=$(npm publish --dry-run 2>&1); rc=$?; echo \"$out\"; test \"$rc\" != 0 && echo \"$out\" | grep -q 'a registry cannot serve these dependencies' && echo \"$out\" | grep -q 'dependencies.x402-conformance-svm'",
+            "expect_exit": 0,
+            "timeout_s": 300
+          }
+        },
+        {
+          "id": "XC-127-AC04",
+          "mandatory": true,
+          "statement": "CI's mcp job installs the staged package from its tarball",
+          "verifier": {
+            "type": "grep",
+            "file": ".github/workflows/ci.yml",
+            "pattern": "node scripts/verify-install.mjs",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-127-AC05",
+          "mandatory": true,
+          "statement": "The changelog names the task and the two ways to install until a fixed release is out",
+          "verifier": {
+            "type": "grep",
+            "file": "CHANGELOG.md",
+            "pattern": "task XC-127",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-127-AC06",
+          "mandatory": true,
+          "statement": "docs/RELEASES.md says how the MCP package is published and that 1.6.0 cannot be installed",
+          "verifier": {
+            "type": "grep",
+            "file": "docs/RELEASES.md",
+            "pattern": "npm run release",
+            "must": "present"
+          }
+        },
+        {
+          "id": "XC-127-AC07",
+          "mandatory": true,
+          "statement": "The docs and the interdependency map agree with the tree (no drift)",
+          "verifier": {
+            "type": "command",
+            "cmd": "python3 tools/interdeps.py --check && python3 tools/interdeps.py --drift",
+            "expect_exit": 0,
+            "timeout_s": 120
+          }
+        },
+        {
+          "id": "XC-127-AC08",
+          "mandatory": true,
+          "statement": "Every changed file is inside this task's scope",
+          "verifier": {
+            "type": "scope"
+          }
+        },
+        {
+          "id": "XC-127-AC09",
+          "mandatory": true,
+          "statement": "Committed and pushed to main",
+          "verifier": {
+            "type": "pushed"
+          }
+        }
+      ],
+      "stop_rules": [
+        "If a criterion cannot pass, STOP and report what blocks it, what was tried and what is needed. Never weaken a criterion, skip a test or raise a timeout to make it pass.",
+        "Never publish from this task: no npm publish outside --dry-run or a loopback registry, no tag, no dist-tag change. The fixed release is its own task."
+      ]
+    }
+  ]
+}

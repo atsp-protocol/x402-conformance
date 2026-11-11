@@ -130,6 +130,14 @@ jobs:
         run: cd ts && npm ci --no-audit --no-fund && npm run build
       - name: MCP server over stdio, Vercel AI SDK and LangChain tools
         run: cd ts/mcp && npm ci --no-audit --no-fund && npm test
+      - name: The package that would be published installs in an empty folder and loads
+        # 1.6.0 was published with "x402-conformance-svm": "file:.." and could not be installed. This packs the core
+        # package, stages the MCP package as `npm run release` publishes it, and installs both tarballs the way a user does.
+        run: |
+          (cd ts && npm pack --silent --pack-destination "$RUNNER_TEMP" > /dev/null)
+          cd ts/mcp
+          node scripts/publish.mjs --stage "$RUNNER_TEMP/mcp"
+          node scripts/verify-install.mjs "$RUNNER_TEMP"/x402-conformance-svm-*.tgz "$RUNNER_TEMP"/mcp/x402-conformance-mcp-*.tgz
       - name: Registry metadata matches the package
         run: |
           cd ts/mcp

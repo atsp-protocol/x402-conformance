@@ -7,6 +7,11 @@ and [COVERAGE.md](COVERAGE.md) is what the suite covers today; this page is the 
 signed with my owner key (`guard/owner.pub`). Release tags from v1.4.0 on are signed with my SSH release key, and the
 `v1` tag always points at the latest 1.x release.
 
+The npm MCP package is published with `npm run release` in `ts/mcp`, after `x402-conformance-svm`. In this repository it
+depends on the core package by path (`file:..`), which no registry can serve, so the release command publishes a packed
+copy that names the released range and then installs it from the registry in an empty folder. `npm publish` in that
+folder is refused. 1.6.0 was published without that step and cannot be installed: use 1.5.0, or the release after 1.6.0.
+
 | release | published | tag commit | PyPI `x402-conformance` | npm `x402-conformance-svm` | npm `x402-conformance-mcp` | GHCR image |
 |---|---|---|---|---|---|---|
 | [1.6.0](#160) | 2026-10-24 | the `v1.6.0` tag | 1.6.0 | 1.6.0 | 1.6.0 | `1.6.0`, `1`, `latest` |

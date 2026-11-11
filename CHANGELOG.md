@@ -1,5 +1,14 @@
 # Changelog
 ## Unreleased
+- `x402-conformance-mcp` can be installed again (task XC-127). 1.6.0 was published with `"x402-conformance-svm": "file:.."`,
+  the path this repository uses to test against its own checkout, so `npm i x402-conformance-mcp` failed with
+  `ENOENT ... symlink`. `npm publish` in `ts/mcp` now stops at a `prepublishOnly` guard (`scripts/manifest.mjs`) while any
+  dependency is a path, a link, a workspace, a URL or a tag. `npm run release` (`scripts/publish.mjs`) packs the package,
+  names the released core range (`^` the version in `ts/package.json`) in the packed copy, publishes that copy, reads the
+  dependencies back from the registry and installs the package in an empty folder (`scripts/verify-install.mjs`): the
+  command, the import, `initialize` over stdio and both tool entry points. It refuses when that core version is not on the
+  registry yet. CI runs the same install from the packed tarballs on Node 20, 22 and 24. Until a fixed release is out,
+  `npm i x402-conformance-mcp@1.5.0` works, and so does an `"overrides": {"x402-conformance-svm": "1.6.0"}` entry.
 - Spec traceability (task XC-82). `tools/traceability.py` writes `docs/traceability.json` and [docs/TRACEABILITY.md](docs/TRACEABILITY.md) from the check catalogue: every check is normative (it tests a MUST or SHOULD clause, and its row names the pinned spec lines from XC-55) or hardening (it tests safety beyond the spec, and its row gives the reason). The table gives a count per class, not a coverage percentage. `python3 tools/traceability.py --check` fails CI on an unclassified check, a check in both classes, a normative row with no anchor or one that no longer resolves, a hardening row with no reason, and a stale table.
 - The vv shards are balanced by measured cost (task XC-126). `vv/costs.json` holds each task's median seconds from the shard receipts of six CI runs, and `--shard I/N` gives the tasks, longest first, to the shard with the smallest total. On those costs the six shards come to 8.3 to 8.4 minutes each, where the position split gave 6.0 to 13.7 (XC-26 alone is 7.6). The merge checks that every shard used the checkout's cost file; `tools/vv.py costs DIR --run ID` rebuilds it and `--predict` prints the largest shard's minutes. Without the file the split is by position, as before. No timeout and no matrix size changes.
 - The Python R24 list matches the TypeScript `MALFORMED_HEADERS` (task XC-110), twelve values in the same order. An uncapped probe sends each one. The tier-1 queue still budgets the original five inside eight requests.
