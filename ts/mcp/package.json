@@ -65,7 +65,9 @@
   "scripts": {
     "build": "tsc -p . && node -e \"require('fs').copyFileSync('../../docs/FIXES.md','dist/FIXES.md')\"",
     "test": "npm run build && node --test --test-reporter=spec dist/test/*.test.js",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "prepublishOnly": "node scripts/manifest.mjs",
+    "release": "node scripts/publish.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",
