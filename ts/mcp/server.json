@@ -9,13 +9,13 @@
     "subfolder": "ts/mcp"
   },
   "websiteUrl": "https://github.com/atsp-protocol/x402-conformance/blob/main/docs/USING.md",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "x402-conformance-mcp",
-      "version": "1.6.0",
+      "version": "1.6.1",
       "transport": {
         "type": "stdio"
       }

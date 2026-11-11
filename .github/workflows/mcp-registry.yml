@@ -34,7 +34,9 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          want="${TAG#v}"
+          # vX.Y.Z is a release of the whole suite; mcp-vX.Y.Z is a release of the MCP package alone.
+          want="${TAG#mcp-}"
+          want="${want#v}"
           have="$(jq -r .version ts/mcp/server.json)"
           if [ "$have" != "$want" ]; then
             echo "::error::ts/mcp/server.json version $have does not match release tag $TAG"
