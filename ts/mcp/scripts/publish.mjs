@@ -71,6 +71,9 @@ npm(["publish", tarball, ...args], { stdio: "inherit" });
 if (dry) process.exit(0);
 const reg = args.flatMap((a, i) => (a === "--registry" || a === "--userconfig") ? [a, args[i + 1]] : /^--(registry|userconfig)=/.test(a) ? [a] : []);
 const node = (argv) => execFileSync(process.execPath, argv, { cwd: HERE, stdio: "inherit" });
+// npm can take minutes to serve a new version: 1.6.1 was not readable 50 s after its publish. Wait up to 5 minutes.
+const ATTEMPTS = 30;
+const check = `node scripts/verify-install.mjs ${id}`;
 for (let attempt = 1; ; attempt++) {
   try {
     const deps = JSON.parse(npm(["view", id, "dependencies", "--json", ...reg], { stdio: ["ignore", "pipe", "ignore"] }));
@@ -79,8 +82,9 @@ for (let attempt = 1; ; attempt++) {
     node([join(HERE, "scripts", "verify-install.mjs"), id, ...reg]);
     break;
   } catch (e) {
-    if (attempt === 6) fail(`${id} is published, but it did not install from the registry: ${e.message}`);
-    console.error(`publish: ${id} is not readable from the registry yet (attempt ${attempt} of 6), waiting 10 s`);
+    if (attempt === ATTEMPTS)
+      fail(`${id} is published, but it did not install from the registry in 5 minutes: ${e.message}\nDo not publish again. Check it later with: ${check}`);
+    console.error(`publish: ${id} is not readable from the registry yet (attempt ${attempt} of ${ATTEMPTS}), waiting 10 s`);
     await new Promise((ok) => setTimeout(ok, 10_000));
   }
 }

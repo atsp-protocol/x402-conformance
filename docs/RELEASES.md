@@ -10,11 +10,15 @@ signed with my owner key (`guard/owner.pub`). Release tags from v1.4.0 on are si
 The npm MCP package is published with `npm run release` in `ts/mcp`, after `x402-conformance-svm`. In this repository it
 depends on the core package by path (`file:..`), which no registry can serve, so the release command publishes a packed
 copy that names the released range and then installs it from the registry in an empty folder. `npm publish` in that
-folder is refused. 1.6.0 was published without that step and cannot be installed: use 1.5.0, or the release after 1.6.0.
+folder is refused. 1.6.0 was published without that step and cannot be installed. `x402-conformance-mcp` 1.6.1
+(2026-11-11) replaces it on npm, and 1.6.0 is deprecated there. 1.6.1 is a release of that package alone, from the
+signed tag `mcp-v1.6.1` (the `v1.6.0` commit plus the publish scripts), with its own GitHub release. The Python package,
+`x402-conformance-svm`, the image and the Action stay at 1.6.0, `v1.6.0` stays the latest release of the suite, and the
+next release of the suite takes a number after 1.6.1.
 
 | release | published | tag commit | PyPI `x402-conformance` | npm `x402-conformance-svm` | npm `x402-conformance-mcp` | GHCR image |
 |---|---|---|---|---|---|---|
-| [1.6.0](#160) | 2026-10-24 | the `v1.6.0` tag | 1.6.0 | 1.6.0 | 1.6.0 | `1.6.0`, `1`, `latest` |
+| [1.6.0](#160) | 2026-10-24 | the `v1.6.0` tag | 1.6.0 | 1.6.0 | 1.6.1 (1.6.0 deprecated) | `1.6.0`, `1`, `latest` |
 | [1.5.0](#150) | 2026-10-23 | the `v1.5.0` tag | 1.5.0 | 1.5.0 | 1.5.0 | `1.5.0` |
 | [1.4.0](#140) | 2026-10-23 | `aee0f84a` | 1.4.0 | 1.4.0 | 1.4.0 | `1.4.0` |
 | [1.3.1](#131) | 2026-10-21 | `a2da1a19` | 1.3.1 (superseded) | 1.3.1 (deprecated) | | |
